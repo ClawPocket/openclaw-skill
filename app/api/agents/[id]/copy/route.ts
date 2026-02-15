@@ -17,7 +17,7 @@ export async function POST(
         return NextResponse.json({ error: "Missing subscriberWallet" }, { status: 400 });
     }
 
-    const agent = getAgent(id);
+    const agent = await getAgent(id);
     if (!agent) {
         return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
@@ -29,7 +29,7 @@ export async function POST(
 
     // Add subscriber to agent
     agent.subscribers.push(subscriberWallet);
-    saveAgent(agent);
+    await saveAgent(agent);
 
     // Create subscription record
     const subscription: Subscription = {
@@ -40,7 +40,7 @@ export async function POST(
         active: true,
         createdAt: Date.now(),
     };
-    addSubscription(subscription);
+    await addSubscription(subscription);
 
     return NextResponse.json({
         success: true,

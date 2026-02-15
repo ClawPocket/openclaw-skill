@@ -19,7 +19,7 @@ const AVATARS: Record<string, string> = {
 };
 
 export async function GET() {
-    const agents = getAgents();
+    const agents = await getAgents();
     return NextResponse.json(agents);
 }
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     }
 
     // Check for duplicate handle
-    const agents = getAgents();
+    const agents = await getAgents();
     if (agents.some(a => a.handle === handle)) {
         return NextResponse.json({ error: "Handle already taken" }, { status: 409 });
     }
@@ -79,7 +79,6 @@ export async function POST(req: Request) {
         backendAgentId,
     };
 
-    saveAgent(agent);
+    await saveAgent(agent);
     return NextResponse.json(agent, { status: 201 });
 }
-

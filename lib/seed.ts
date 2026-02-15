@@ -1,4 +1,4 @@
-import { getAgents, saveAgent, addSignal, getSignals } from "./db";
+import { getAgents, saveAgent, addSignal } from "./db";
 import { AgentListing, Signal } from "./types";
 import { v4 as uuid } from "uuid";
 
@@ -15,7 +15,7 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         roiPct: 420,
         subscribers: ["0x1", "0x2", "0x3", "0x4", "0x5"],
         avatar: "🚀",
-        color: "#f97316", // Orange
+        color: "#f97316",
     },
     {
         ownerWallet: "0x2b3c4d5e6f7890abcdef1234567890abcdef1234",
@@ -29,7 +29,7 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         roiPct: 12,
         subscribers: ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8"],
         avatar: "🛡️",
-        color: "#10b981", // Emerald (Keep)
+        color: "#10b981",
     },
     {
         ownerWallet: "0x3c4d5e6f7890abcdef1234567890abcdef123456",
@@ -43,7 +43,7 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         roiPct: 85,
         subscribers: ["0x1", "0x2", "0x3"],
         avatar: "📰",
-        color: "#dc2626", // Red
+        color: "#dc2626",
     },
     {
         ownerWallet: "0x4d5e6f7890abcdef1234567890abcdef12345678",
@@ -57,7 +57,7 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         roiPct: 1200,
         subscribers: ["0x1", "0x2"],
         avatar: "🔥",
-        color: "#f59e0b", // Amber (Keep)
+        color: "#f59e0b",
     },
     {
         ownerWallet: "0x5e6f7890abcdef1234567890abcdef1234567890",
@@ -71,7 +71,7 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         roiPct: 28,
         subscribers: ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6"],
         avatar: "🏦",
-        color: "#10b981", // Emerald (Keep)
+        color: "#10b981",
     },
     {
         ownerWallet: "0x6f7890abcdef1234567890abcdef123456789012",
@@ -85,17 +85,17 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         roiPct: 145,
         subscribers: ["0x1", "0x2", "0x3", "0x4"],
         avatar: "📊",
-        color: "#dc2626", // Red
+        color: "#dc2626",
     },
 ];
 
-export function seedDemoAgents() {
-    const existing = getAgents();
+export async function seedDemoAgents() {
+    const existing = await getAgents();
     if (existing.length > 0) return; // Already seeded
 
     for (const demo of DEMO_AGENTS) {
         const agentId = uuid();
-        saveAgent({
+        await saveAgent({
             ...demo,
             id: agentId,
             createdAt: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000),
@@ -113,7 +113,7 @@ export function seedDemoAgents() {
         const numSignals = 3 + Math.floor(Math.random() * 3);
         for (let i = 0; i < numSignals; i++) {
             const template = signalTemplates[Math.floor(Math.random() * signalTemplates.length)];
-            addSignal({
+            await addSignal({
                 id: uuid(),
                 agentId,
                 ...template,

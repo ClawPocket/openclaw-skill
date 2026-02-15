@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSignals, getAgents } from "@/lib/db";
 import { listBackendAgents } from "@/lib/backendClient";
-import type { BackendLog } from "@/lib/backendClient";
 
 // GET /api/feed — Global activity feed merging local signals + backend logs
 export async function GET() {
-    const agents = getAgents();
-    const allSignals = getSignals();
+    const agents = await getAgents();
+    const allSignals = await getSignals();
 
     // Fetch backend agent logs and convert to feed format
     let backendFeedItems: any[] = [];
@@ -14,7 +13,6 @@ export async function GET() {
         const backendAgents = await listBackendAgents();
         for (const ba of backendAgents) {
             if (ba.logs && ba.logs.length > 0) {
-                // Find matching marketplace agent
                 const marketplaceAgent = agents.find(
                     (a) => a.backendAgentId === ba.id
                 );

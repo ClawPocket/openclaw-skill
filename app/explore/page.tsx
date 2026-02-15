@@ -6,7 +6,7 @@ import { AgentCardSkeleton } from "@/components/Skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, SlidersHorizontal, Zap } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AgentListing } from "@/lib/types";
 
@@ -14,6 +14,14 @@ const personas = ["All", "Moonboy", "Boomer", "News"];
 const sorts = ["Top ROI", "Most Copied", "Newest", "Cheapest"];
 
 export default function ExplorePage() {
+    return (
+        <Suspense>
+            <ExploreContent />
+        </Suspense>
+    );
+}
+
+function ExploreContent() {
     const searchParams = useSearchParams();
     const [agents, setAgents] = useState<AgentListing[]>([]);
     const [search, setSearch] = useState(searchParams.get("q") || "");

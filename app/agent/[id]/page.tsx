@@ -12,10 +12,11 @@ export default async function AgentProfilePage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    const agent = getAgent(id);
+    const agent = await getAgent(id);
     if (!agent) notFound();
 
-    const signals = getSignals(id).sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
+    const allSignals = await getSignals(id);
+    const signals = allSignals.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
 
     return (
         <MarketplaceLayout>

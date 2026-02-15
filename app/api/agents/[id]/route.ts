@@ -6,9 +6,9 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-    const agent = getAgent(id);
+    const agent = await getAgent(id);
     if (!agent) return NextResponse.json({ error: "Agent not found" }, { status: 404 });
 
-    const signals = getSignals(id);
+    const signals = await getSignals(id);
     return NextResponse.json({ ...agent, signals });
 }

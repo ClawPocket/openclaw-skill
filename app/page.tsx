@@ -3,19 +3,20 @@ import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
 import { getAgents } from "@/lib/db";
+import { seedDemoAgents } from "@/lib/seed";
 import { Zap, TrendingUp, Users, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { seedDemoAgents } from "@/lib/seed";
+import { AgentListing } from "@/lib/types";
 
-export default function HomePage() {
-  seedDemoAgents();
-  const agents = getAgents();
-  const topAgents = agents.sort((a, b) => b.roiPct - a.roiPct).slice(0, 6);
+export default async function HomePage() {
+  await seedDemoAgents();
+  const agents = await getAgents();
+  const topAgents = [...agents].sort((a: AgentListing, b: AgentListing) => b.roiPct - a.roiPct).slice(0, 6);
 
   const stats = {
     totalAgents: agents.length,
-    totalTrades: agents.reduce((sum, a) => sum + a.totalTrades, 0),
-    totalCopiers: agents.reduce((sum, a) => sum + a.subscribers.length, 0),
+    totalTrades: agents.reduce((sum: number, a: AgentListing) => sum + a.totalTrades, 0),
+    totalCopiers: agents.reduce((sum: number, a: AgentListing) => sum + a.subscribers.length, 0),
   };
 
   return (
@@ -36,7 +37,7 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Glow orbs - Adjusted for new layout */}
+          {/* Glow orbs */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px] animate-pulse-glow z-0 mix-blend-screen" />
           <div className="absolute bottom-0 left-10 w-48 h-48 bg-red-600/10 rounded-full blur-[80px] animate-pulse-glow z-0" />
 
@@ -95,7 +96,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {topAgents.map((agent, i) => (
+            {topAgents.map((agent: AgentListing, i: number) => (
               <AgentCard key={agent.id} agent={agent} index={i} />
             ))}
           </div>

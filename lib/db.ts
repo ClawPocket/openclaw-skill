@@ -1,77 +1,170 @@
-import fs from "fs";
-import path from "path";
+import { supabaseAdmin } from "./supabase";
 import { AgentListing, Signal, Subscription } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// ── Helpers: Convert between Supabase snake_case and app camelCase ──
 
-function ensureDataDir() {
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
+function toAgent(row: any): AgentListing {
+    return {
+        id: row.id,
+        ownerWallet: row.owner_wallet,
+        name: row.name,
+        handle: row.handle,
+        persona: row.persona,
+        description: row.description,
+        signalPriceUsdc: row.signal_price_usdc,
+        walletAddress: row.wallet_address,
+        totalTrades: row.total_trades,
+        roiPct: row.roi_pct,
+        subscribers: row.subscribers || [],
+        avatar: row.avatar,
+        color: row.color,
+        createdAt: new Date(row.created_at).getTime(),
+        backendAgentId: row.backend_agent_id || undefined,
+    };
 }
 
-function readJSON<T>(filename: string): T[] {
-    ensureDataDir();
-    const filepath = path.join(DATA_DIR, filename);
-    if (!fs.existsSync(filepath)) {
-        fs.writeFileSync(filepath, "[]");
+function toSignal(row: any): Signal {
+    return {
+        id: row.id,
+        agentId: row.agent_id,
+        action: row.action,
+        tokenSymbol: row.token_symbol,
+        amount: row.amount,
+        reason: row.reason,
+        txHash: row.tx_hash || undefined,
+        createdAt: new Date(row.created_at).getTime(),
+    };
+}
+
+function toSubscription(row: any): Subscription {
+    return {
+        id: row.id,
+        subscriberWallet: row.subscriber_wallet,
+        agentId: row.agent_id,
+        type: row.type,
+        active: row.active,
+        createdAt: new Date(row.created_at).getTime(),
+    };
+}
+
+// ── Agents ──
+
+export async function getAgents(): Promise<AgentListing[]> {
+    const { data, error } = await supabaseAdmin
+        .from("agents")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("getAgents error:", error);
         return [];
     }
-    try {
-        return JSON.parse(fs.readFileSync(filepath, "utf-8"));
-    } catch {
+    return (data || []).map(toAgent);
+}
+
+export async function getAgent(id: string): Promise<AgentListing | undefined> {
+    const { data, error } = await supabaseAdmin
+        .from("agents")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+    if (error || !data) return undefined;
+    return toAgent(data);
+}
+
+export async function saveAgent(agent: AgentListing): Promise<void> {
+    const row = {
+        id: agent.id,
+        owner_wallet: agent.ownerWallet,
+        name: agent.name,
+        handle: agent.handle,
+        persona: agent.persona,
+        description: agent.description,
+        signal_price_usdc: agent.signalPriceUsdc,
+        wallet_address: agent.walletAddress,
+        total_trades: agent.totalTrades,
+        roi_pct: agent.roiPct,
+        subscribers: agent.subscribers,
+        avatar: agent.avatar,
+        color: agent.color,
+        backend_agent_id: agent.backendAgentId || null,
+        created_at: new Date(agent.createdAt).toISOString(),
+    };
+
+    const { error } = await supabaseAdmin
+        .from("agents")
+        .upsert(row, { onConflict: "id" });
+
+    if (error) console.error("saveAgent error:", error);
+}
+
+// ── Signals ──
+
+export async function getSignals(agentId?: string): Promise<Signal[]> {
+    let query = supabaseAdmin
+        .from("signals")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (agentId) {
+        query = query.eq("agent_id", agentId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+        console.error("getSignals error:", error);
         return [];
     }
+    return (data || []).map(toSignal);
 }
 
-function writeJSON<T>(filename: string, data: T[]) {
-    ensureDataDir();
-    const filepath = path.join(DATA_DIR, filename);
-    fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
+export async function addSignal(signal: Signal): Promise<void> {
+    const row = {
+        id: signal.id,
+        agent_id: signal.agentId,
+        action: signal.action,
+        token_symbol: signal.tokenSymbol,
+        amount: signal.amount,
+        reason: signal.reason,
+        tx_hash: signal.txHash || null,
+        created_at: new Date(signal.createdAt).toISOString(),
+    };
+
+    const { error } = await supabaseAdmin.from("signals").insert(row);
+    if (error) console.error("addSignal error:", error);
 }
 
-// --- Agents ---
-export function getAgents(): AgentListing[] {
-    return readJSON<AgentListing>("agents.json");
-}
+// ── Subscriptions ──
 
-export function getAgent(id: string): AgentListing | undefined {
-    return getAgents().find((a) => a.id === id);
-}
+export async function getSubscriptions(agentId?: string): Promise<Subscription[]> {
+    let query = supabaseAdmin
+        .from("subscriptions")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-export function saveAgent(agent: AgentListing) {
-    const agents = getAgents();
-    const index = agents.findIndex((a) => a.id === agent.id);
-    if (index >= 0) {
-        agents[index] = agent;
-    } else {
-        agents.push(agent);
+    if (agentId) {
+        query = query.eq("agent_id", agentId);
     }
-    writeJSON("agents.json", agents);
+
+    const { data, error } = await query;
+    if (error) {
+        console.error("getSubscriptions error:", error);
+        return [];
+    }
+    return (data || []).map(toSubscription);
 }
 
-// --- Signals ---
-export function getSignals(agentId?: string): Signal[] {
-    const signals = readJSON<Signal>("signals.json");
-    if (agentId) return signals.filter((s) => s.agentId === agentId);
-    return signals;
-}
+export async function addSubscription(sub: Subscription): Promise<void> {
+    const row = {
+        id: sub.id,
+        subscriber_wallet: sub.subscriberWallet,
+        agent_id: sub.agentId,
+        type: sub.type,
+        active: sub.active,
+        created_at: new Date(sub.createdAt).toISOString(),
+    };
 
-export function addSignal(signal: Signal) {
-    const signals = getSignals();
-    signals.push(signal);
-    writeJSON("signals.json", signals);
-}
-
-// --- Subscriptions ---
-export function getSubscriptions(agentId?: string): Subscription[] {
-    const subs = readJSON<Subscription>("subscriptions.json");
-    if (agentId) return subs.filter((s) => s.agentId === agentId);
-    return subs;
-}
-
-export function addSubscription(sub: Subscription) {
-    const subs = getSubscriptions();
-    subs.push(sub);
-    writeJSON("subscriptions.json", subs);
+    const { error } = await supabaseAdmin.from("subscriptions").upsert(row);
+    if (error) console.error("addSubscription error:", error);
 }
