@@ -513,7 +513,9 @@ export default function FeedPage() {
     const [agents, setAgents] = useState<AgentInfo[]>([]);
     const [tab, setTab] = useState<"all" | "buys" | "sells">("all");
     const [loading, setLoading] = useState(true);
+    const [liveCount, setLiveCount] = useState(0);
 
+    // Initial fetch
     useEffect(() => {
         Promise.all([
             fetch("/api/feed").then((r) => r.json()),
@@ -526,6 +528,43 @@ export default function FeedPage() {
             })
             .catch(console.error);
     }, []);
+
+    // Supabase Realtime — listen for new signals
+    useEffect(() => {
+        let channel: ReturnType<typeof import("@supabase/supabase-js").SupabaseClient.prototype.channel> | null = null;
+
+        async function setupRealtime() {
+            const { createClient } = await import("@supabase/supabase-js");
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+            const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+            const client = createClient(supabaseUrl, supabaseKey);
+
+            channel = client
+                .channel("feed-signals")
+                .on(
+                    "postgres_changes",
+                    { event: "INSERT", schema: "public", table: "signals" },
+                    async () => {
+                        // Re-fetch feed to get the enriched signal with agent info
+                        try {
+                            const res = await fetch("/api/feed");
+                            const data = await res.json();
+                            setSignals(data);
+                            setLiveCount((c) => c + 1);
+                            // Reset live indicator after 5s
+                            setTimeout(() => setLiveCount(0), 5000);
+                        } catch { /* noop */ }
+                    }
+                )
+                .subscribe();
+        }
+
+        if (!loading) setupRealtime();
+
+        return () => {
+            if (channel) channel.unsubscribe();
+        };
+    }, [loading]);
 
     const filtered =
         tab === "all"
@@ -545,6 +584,11 @@ export default function FeedPage() {
                             <div className="flex items-center gap-1.5 mr-auto">
                                 <Sparkles className="h-4 w-4 text-orange-400" />
                                 <h1 className="text-base font-bold tracking-tight">Feed</h1>
+                                {liveCount > 0 && (
+                                    <span className="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-full animate-pulse">
+                                        LIVE
+                                    </span>
+                                )}
                             </div>
                         </div>
                         {/* Tabs */}

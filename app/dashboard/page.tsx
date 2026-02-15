@@ -17,8 +17,11 @@ import {
     DollarSign,
     Shield,
     RefreshCw,
+    XCircle,
+    Loader2,
+    ExternalLink,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { AgentListing } from "@/lib/types";
 import Link from "next/link";
@@ -36,6 +39,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [health, setHealth] = useState<BackendHealth | null>(null);
     const [mounted, setMounted] = useState(false);
+    const [unsubbing, setUnsubbing] = useState<string | null>(null);
 
     useEffect(() => setMounted(true), []);
 
@@ -64,18 +68,54 @@ export default function DashboardPage() {
 
     // Agents I'm subscribed to
     const subscribedAgents = isConnected && address
-        ? agents.filter((a) => a.subscribers.includes(address))
+        ? agents.filter((a) => a.subscribers.some((s) => s.toLowerCase() === address.toLowerCase()))
         : [];
 
-    // Stats
+    // Stats — revenue is 90% (agent share after platform fee)
     const totalRevenue = myAgents.reduce(
-        (sum, a) => sum + a.subscribers.length * parseFloat(a.signalPriceUsdc),
+        (sum, a) => sum + a.subscribers.length * parseFloat(a.signalPriceUsdc) * 0.9,
+        0
+    );
+    const platformFees = myAgents.reduce(
+        (sum, a) => sum + a.subscribers.length * parseFloat(a.signalPriceUsdc) * 0.1,
         0
     );
     const totalSubscribers = myAgents.reduce((sum, a) => sum + a.subscribers.length, 0);
     const avgRoi = myAgents.length > 0
         ? Math.round(myAgents.reduce((sum, a) => sum + a.roiPct, 0) / myAgents.length)
         : 0;
+
+    // Unsubscribe handler
+    const handleUnsub = useCallback(async (agentId: string, agentName: string) => {
+        if (!address) return;
+        setUnsubbing(agentId);
+
+        try {
+            const res = await fetch(`/api/agents/${agentId}/unsub`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ subscriberWallet: address.toLowerCase() }),
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                setAgents((prev) =>
+                    prev.map((a) =>
+                        a.id === agentId
+                            ? { ...a, subscribers: a.subscribers.filter((s) => s.toLowerCase() !== address.toLowerCase()) }
+                            : a
+                    )
+                );
+                showToast(`Unsubscribed from ${agentName}`, "success");
+            } else {
+                showToast(data.error || "Failed to unsubscribe", "error");
+            }
+        } catch {
+            showToast("Network error", "error");
+        } finally {
+            setUnsubbing(null);
+        }
+    }, [address]);
 
     // Not connected state
     if (mounted && !isConnected) {
@@ -106,11 +146,23 @@ export default function DashboardPage() {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
                         <div>
                             <h1 className="text-xl font-bold tracking-tight">Dashboard</h1>
-                            <p className="text-xs text-zinc-600 mt-0.5">
-                                {mounted && address
-                                    ? `${address.slice(0, 6)}...${address.slice(-4)}`
-                                    : "Loading..."}
-                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs text-zinc-600 font-mono">
+                                    {mounted && address
+                                        ? `${address.slice(0, 6)}...${address.slice(-4)}`
+                                        : "Loading..."}
+                                </span>
+                                {mounted && address && (
+                                    <a
+                                        href={`https://basescan.org/address/${address}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-orange-500 hover:text-orange-400 transition-colors"
+                                    >
+                                        <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                )}
+                            </div>
                         </div>
                         <Link href="/create">
                             <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20 text-xs h-9 px-4">
@@ -139,7 +191,7 @@ export default function DashboardPage() {
                         <div className="glass-card rounded-xl p-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <DollarSign className="h-3.5 w-3.5 text-emerald-400" />
-                                <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Revenue</span>
+                                <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Revenue (90%)</span>
                             </div>
                             <p className="text-2xl font-bold font-mono text-emerald-400">
                                 {loading ? "—" : `$${totalRevenue.toFixed(2)}`}
@@ -155,6 +207,34 @@ export default function DashboardPage() {
                             </p>
                         </div>
                     </div>
+
+                    {/* Revenue Breakdown */}
+                    {!loading && myAgents.length > 0 && (
+                        <div className="glass-card rounded-xl p-4 animate-fade-in-up-delay-1">
+                            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <Wallet className="h-3.5 w-3.5 text-amber-400" />
+                                Revenue Breakdown
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                                <div>
+                                    <p className="text-sm font-bold font-mono text-emerald-400">${totalRevenue.toFixed(4)}</p>
+                                    <p className="text-[9px] text-zinc-600 mt-0.5">Your Earnings (90%)</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold font-mono text-orange-400">${platformFees.toFixed(4)}</p>
+                                    <p className="text-[9px] text-zinc-600 mt-0.5">Platform Fee (10%)</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold font-mono text-zinc-300">${(totalRevenue + platformFees).toFixed(4)}</p>
+                                    <p className="text-[9px] text-zinc-600 mt-0.5">Total Volume</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold font-mono text-zinc-300">{totalSubscribers}</p>
+                                    <p className="text-[9px] text-zinc-600 mt-0.5">Paying Subscribers</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Backend Status */}
                     <div className="glass-card rounded-xl p-4 animate-fade-in-up-delay-1">
@@ -208,33 +288,68 @@ export default function DashboardPage() {
                         </div>
                     </section>
 
-                    {/* My Subscriptions */}
+                    {/* My Subscriptions — with unsubscribe */}
                     <section className="animate-fade-in-up-delay-2">
                         <h2 className="text-sm font-semibold tracking-tight mb-3 text-zinc-400">
-                            My Subscriptions
+                            My Subscriptions ({subscribedAgents.length})
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {loading ? (
-                                [...Array(2)].map((_, i) => <AgentCardSkeleton key={i} />)
-                            ) : subscribedAgents.length > 0 ? (
-                                subscribedAgents.map((agent, i) => (
-                                    <AgentCard key={agent.id} agent={agent} index={i} />
-                                ))
-                            ) : (
-                                <div className="col-span-full flex flex-col items-center py-10 gap-2">
-                                    <div className="h-10 w-10 rounded-full bg-white/[0.03] flex items-center justify-center">
-                                        <RefreshCw className="h-4 w-4 text-zinc-700" />
+                        {loading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {[...Array(2)].map((_, i) => <AgentCardSkeleton key={i} />)}
+                            </div>
+                        ) : subscribedAgents.length > 0 ? (
+                            <div className="space-y-2">
+                                {subscribedAgents.map((agent) => (
+                                    <div
+                                        key={agent.id}
+                                        className="flex items-center gap-3 glass-card rounded-xl p-4 transition-colors hover:bg-white/[0.03]"
+                                    >
+                                        <Link href={`/agent/${agent.id}`} className="shrink-0">
+                                            <div
+                                                className="h-10 w-10 rounded-lg flex items-center justify-center text-lg hover:ring-1 hover:ring-white/10 transition-all"
+                                                style={{ backgroundColor: `${agent.color}12` }}
+                                            >
+                                                {agent.avatar}
+                                            </div>
+                                        </Link>
+                                        <Link href={`/agent/${agent.id}`} className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-zinc-200 hover:underline">{agent.name}</p>
+                                            <p className="text-[10px] text-zinc-600">
+                                                ${agent.signalPriceUsdc}/signal · {agent.totalTrades} trades · {agent.subscribers.length} copiers
+                                            </p>
+                                        </Link>
+                                        <span className={`text-xs font-mono font-bold ${agent.roiPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                                            {agent.roiPct >= 0 ? "+" : ""}{agent.roiPct}%
+                                        </span>
+                                        <button
+                                            onClick={() => handleUnsub(agent.id, agent.name)}
+                                            disabled={unsubbing === agent.id}
+                                            className="ml-1 p-2 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-50"
+                                            title="Unsubscribe"
+                                        >
+                                            {unsubbing === agent.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <XCircle className="h-4 w-4" />
+                                            )}
+                                        </button>
                                     </div>
-                                    <p className="text-sm text-zinc-500 font-medium">No subscriptions</p>
-                                    <p className="text-xs text-zinc-700">Copy an agent to start receiving signals</p>
-                                    <Link href="/explore">
-                                        <Button variant="outline" className="border-white/10 text-zinc-400 text-xs h-8 mt-2">
-                                            Explore Agents
-                                        </Button>
-                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center py-10 gap-2">
+                                <div className="h-10 w-10 rounded-full bg-white/[0.03] flex items-center justify-center">
+                                    <RefreshCw className="h-4 w-4 text-zinc-700" />
                                 </div>
-                            )}
-                        </div>
+                                <p className="text-sm text-zinc-500 font-medium">No subscriptions</p>
+                                <p className="text-xs text-zinc-700">Copy an agent to start receiving signals</p>
+                                <Link href="/explore">
+                                    <Button variant="outline" className="border-white/10 text-zinc-400 text-xs h-8 mt-2">
+                                        Explore Agents
+                                    </Button>
+                                </Link>
+                            </div>
+                        )}
                     </section>
                 </div>
             </ErrorBoundary>
