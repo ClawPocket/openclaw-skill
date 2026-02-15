@@ -1,61 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { useAccount } from "wagmi";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Key, Lock, Copy, Check, Loader2 } from "lucide-react";
-import { useSignMessage, useAccount } from "wagmi";
+import { Key, Copy, Check, Eye } from "lucide-react";
 import { showToast } from "@/components/Toast";
 
-interface ApiKeyModalProps {
-    agentId: string;
-    agentName: string;
-    ownerWallet: string;
-}
-
-export function ApiKeyModal({ agentId, agentName, ownerWallet }: ApiKeyModalProps) {
+export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: string, agentName: string, ownerWallet: string }) {
     const { address } = useAccount();
     const [isOpen, setIsOpen] = useState(false);
     const [apiKey, setApiKey] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
-    const { signMessageAsync } = useSignMessage();
 
-    // Only show button if user owns this agent
+    // Only show button if connected wallet is owner
     if (!address || address.toLowerCase() !== ownerWallet.toLowerCase()) {
         return null;
     }
 
-    const fetchKey = async () => {
+    async function fetchKey() {
+        if (!address) return;
         setLoading(true);
         try {
-            const timestamp = Date.now();
-            const message = `View API Key for ${agentName} (${timestamp})`;
-
-            // 1. Request Signature
-            const signature = await signMessageAsync({ message });
-
-            // 2. Verify on Backend
-            const res = await fetch(`/api/agents/${agentId}/key`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ signature, timestamp }),
-            });
-
+            const res = await fetch(`/api/agents/${agentId}/key?wallet=${address}`);
+            if (!res.ok) throw new Error("Unauthorized");
             const data = await res.json();
-
-            if (res.ok && data.apiKey) {
-                setApiKey(data.apiKey);
-            } else {
-                showToast(data.error || "Failed to verify ownership", "error");
-            }
-        } catch (error) {
-            console.error(error);
-            showToast("Failed to sign message", "error");
+            setApiKey(data.apiKey);
+        } catch {
+            showToast("Failed to fetch API Key", "error");
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     const copyToClipboard = () => {
         if (apiKey) {
@@ -69,68 +46,50 @@ export function ApiKeyModal({ agentId, agentName, ownerWallet }: ApiKeyModalProp
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="border-white/10 text-zinc-400 hover:text-white hover:bg-white/10">
-                    <Key className="mr-2 h-4 w-4" />
+                <Button variant="outline" size="sm" className="gap-2 border-orange-500/20 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10" onClick={() => fetchKey()}>
+                    <Key className="h-3.5 w-3.5" />
                     API Key
                 </Button>
             </DialogTrigger>
-            <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-md">
+            <DialogContent className="sm:max-w-md bg-[#18181b] border-white/10">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Lock className="h-5 w-5 text-orange-500" />
-                        Bot Integration Key
-                    </DialogTitle>
+                    <DialogTitle>API Key for {agentName}</DialogTitle>
                 </DialogHeader>
-
                 <div className="space-y-4 py-4">
-                    {!apiKey ? (
-                        <div className="text-center space-y-4">
-                            <p className="text-zinc-400 text-sm">
-                                To view your API Key, you must verify ownership of this agent by signing a message with your wallet.
-                            </p>
+                    <p className="text-sm text-zinc-400">
+                        Use this key to authenticate your external bot (`x-api-key` header).
+                        <br />
+                        <span className="text-red-400/80 text-xs">Do not share this key with anyone.</span>
+                    </p>
+
+                    <div className="flex items-center gap-2 p-3 bg-black/40 rounded-lg border border-white/5 font-mono text-sm break-all relative group">
+                        {loading ? (
+                            <span className="text-zinc-500 animate-pulse">Revealing...</span>
+                        ) : (
+                            <span className="text-zinc-200">{apiKey || "Error loading key"}</span>
+                        )}
+
+                        {apiKey && (
                             <Button
-                                onClick={fetchKey}
-                                disabled={loading}
-                                className="w-full bg-orange-600 hover:bg-orange-500"
-                            >
-                                {loading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Verifying...
-                                    </>
-                                ) : (
-                                    "Reveal Key"
-                                )}
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="p-3 bg-black/50 rounded-lg border border-white/10 font-mono text-sm break-all relative group">
-                                {apiKey}
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/10 pointer-events-none" />
-                            </div>
-                            <Button
+                                size="icon"
+                                variant="ghost"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-white/10 text-zinc-400 hover:text-white"
                                 onClick={copyToClipboard}
-                                variant="outline"
-                                className="w-full border-white/10 hover:bg-white/5"
                             >
-                                {copied ? (
-                                    <>
-                                        <Check className="mr-2 h-4 w-4 text-emerald-500" />
-                                        Copied
-                                    </>
-                                ) : (
-                                    <>
-                                        <Copy className="mr-2 h-4 w-4" />
-                                        Copy Key
-                                    </>
-                                )}
+                                {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
                             </Button>
-                            <p className="text-xs text-center text-zinc-500">
-                                Warning: Do not share this key. It allows anyone to post trades as your agent.
-                            </p>
-                        </div>
-                    )}
+                        )}
+                    </div>
+
+                    <div className="bg-zinc-900/50 p-3 rounded-lg text-xs space-y-2 border border-white/5">
+                        <p className="font-semibold text-zinc-300">Example Usage:</p>
+                        <code className="block text-emerald-400/90 font-mono bg-black/30 p-2 rounded overflow-x-auto">
+                            curl -X POST \<br />
+                            &nbsp;&nbsp;https://clawpocket.vercel.app/api/signals/webhook \<br />
+                            &nbsp;&nbsp;-H "x-api-key: {apiKey ? apiKey.slice(0, 8) + "..." : "YOUR_KEY"}" \<br />
+                            &nbsp;&nbsp;-d '{"{"} "action": "buy", "tokenSymbol": "ETH", ... {"}"}'
+                        </code>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

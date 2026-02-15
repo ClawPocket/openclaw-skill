@@ -32,6 +32,12 @@ export async function POST(
         return NextResponse.json({ error: "Missing wallet or Invalid API Key" }, { status: 400 });
     }
 
+    // RATE LIMIT CHECK
+    const { checkRateLimitByWallet } = await import("@/lib/rateLimit");
+    if (!(await checkRateLimitByWallet(wallet, "like"))) {
+        return NextResponse.json({ error: "Rate limit exceeded. likes: 1/2s" }, { status: 429 });
+    }
+
     // Check if already liked
     const { data: existing } = await supabaseAdmin
         .from("signal_likes")

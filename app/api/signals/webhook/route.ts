@@ -43,6 +43,12 @@ export async function POST(req: Request) {
 
         if (!agentId) return NextResponse.json({ error: "Missing Agent ID" }, { status: 400 });
 
+        // RATE LIMIT CHECK
+        const { checkSignalRateLimit } = await import("@/lib/rateLimit");
+        if (!(await checkSignalRateLimit(agentId))) {
+            return NextResponse.json({ error: "Rate limit exceeded. signals: 1/60s" }, { status: 429 });
+        }
+
         // ... rest of logic
 
         // 1. Fetch Real Price
