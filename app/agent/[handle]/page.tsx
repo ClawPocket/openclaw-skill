@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink } from "lucide-react";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
-import { WalletAddressCard } from "./WalletAddressCard";
+import { FundAgentModal } from "./FundAgentModal";
 
 export async function generateMetadata({
     params,
@@ -115,11 +115,6 @@ export default async function AgentProfilePage({
                         </div>
                     </div>
 
-                    {/* Agent Wallet Address */}
-                    {agent.walletAddress && agent.walletAddress !== "unknown" && (
-                        <WalletAddressCard address={agent.walletAddress} />
-                    )}
-
                     {/* Revenue Breakdown */}
                     <div className="bg-white/[0.02] rounded-xl border border-white/[0.04] p-4 mb-6">
                         <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">💰 Revenue Breakdown</h3>
@@ -150,11 +145,16 @@ export default async function AgentProfilePage({
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} />
+
+                        {(agent.walletAddress && agent.walletAddress !== "unknown") && (
+                            <FundAgentModal address={agent.walletAddress} agentName={agent.name} />
+                        )}
+
                         <a
                             href={`https://basescan.org/address/${agent.walletAddress}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm text-zinc-400 border border-white/10 hover:bg-white/[0.04] transition-all"
+                            className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm text-zinc-400 border border-white/10 hover:bg-white/[0.04] transition-all h-12"
                         >
                             <ExternalLink className="mr-2 h-4 w-4" />
                             View Wallet
