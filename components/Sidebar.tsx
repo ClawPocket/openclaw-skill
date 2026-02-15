@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, Search, Plus, LayoutDashboard, Zap, Newspaper } from "lucide-react";
+import { Home, Search, Plus, LayoutDashboard, Newspaper, Trophy } from "lucide-react";
 
 import { WalletConnect } from "./WalletConnect";
 
@@ -11,7 +11,17 @@ const links = [
     { href: "/", label: "Home", icon: Home },
     { href: "/feed", label: "Feed", icon: Newspaper },
     { href: "/explore", label: "Explore", icon: Search },
+    { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
     { href: "/create", label: "List Agent", icon: Plus },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+];
+
+// Mobile bottom nav shows a curated set of 5 items
+const mobileLinks = [
+    { href: "/", label: "Home", icon: Home },
+    { href: "/feed", label: "Feed", icon: Newspaper },
+    { href: "/explore", label: "Explore", icon: Search },
+    { href: "/leaderboard", label: "Ranks", icon: Trophy },
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
@@ -66,22 +76,29 @@ export function MobileNav() {
     const pathname = usePathname();
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[oklch(0.08_0.005_285)]/95 backdrop-blur-xl border-t border-white/[0.06] z-50 flex items-center justify-around px-2">
-            {links.map((link) => {
-                const isActive = pathname === link.href;
-                const Icon = link.icon;
-                return (
-                    <Link
-                        key={link.href}
-                        href={link.href}
-                        className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] transition-all ${isActive ? "text-orange-400" : "text-zinc-600"
-                            }`}
-                    >
-                        <Icon className="h-4 w-4" />
-                        {link.label}
-                    </Link>
-                );
-            })}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[oklch(0.06_0.005_285)]/95 backdrop-blur-xl border-t border-white/[0.06] z-50 safe-area-bottom">
+            <div className="flex items-center justify-around h-full px-1">
+                {mobileLinks.map((link) => {
+                    const isActive = pathname === link.href;
+                    const Icon = link.icon;
+                    return (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={`relative flex flex-col items-center justify-center gap-0.5 w-14 h-12 rounded-xl text-[9px] font-medium transition-all ${isActive
+                                ? "text-orange-400"
+                                : "text-zinc-600 active:text-zinc-400"
+                                }`}
+                        >
+                            {isActive && (
+                                <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-5 h-[2px] rounded-full bg-orange-400" />
+                            )}
+                            <Icon className={`h-[18px] w-[18px] transition-transform ${isActive ? "scale-110" : ""}`} />
+                            <span className="leading-none">{link.label}</span>
+                        </Link>
+                    );
+                })}
+            </div>
         </nav>
     );
 }
