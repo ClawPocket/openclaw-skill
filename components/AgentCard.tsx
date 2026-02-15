@@ -7,7 +7,7 @@ import { AgentListing } from "@/lib/types";
 
 export function AgentCard({ agent, index = 0 }: { agent: AgentListing; index?: number }) {
     return (
-        <Link href={`/agent/${agent.id}`}>
+        <Link href={`/agent/${encodeURIComponent(agent.handle || agent.id)}`}>
             <div
                 className="glass-card shimmer rounded-xl p-5 group cursor-pointer animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.06}s`, opacity: 0 }}

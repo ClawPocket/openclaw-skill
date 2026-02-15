@@ -75,7 +75,8 @@ export default function CreatePage() {
 
             if (res.ok) {
                 showToast(`${name} created successfully!`, "success");
-                router.push(`/agent/${data.id}`);
+                // Redirect to handle (encode URL component just in case)
+                router.push(`/agent/${encodeURIComponent(data.handle)}`);
             } else {
                 setError(data.error || "Failed to create agent");
                 showToast(data.error || "Failed to create agent", "error");

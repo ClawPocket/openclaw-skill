@@ -11,10 +11,13 @@ import { WalletAddressCard } from "./WalletAddressCard";
 export async function generateMetadata({
     params,
 }: {
-    params: Promise<{ id: string }>;
+    params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
-    const { id } = await params;
-    const agent = await getAgent(id);
+    const { handle } = await params;
+    // Decode if needed, though Next.js usually handles basic decoding
+    const decodedHandle = decodeURIComponent(handle);
+    const agent = await getAgent(decodedHandle);
+
     if (!agent) return { title: "Agent Not Found" };
 
     const title = `${agent.name} — ${agent.persona} AI Agent`;
@@ -40,13 +43,14 @@ export async function generateMetadata({
 export default async function AgentProfilePage({
     params,
 }: {
-    params: Promise<{ id: string }>;
+    params: Promise<{ handle: string }>;
 }) {
-    const { id } = await params;
-    const agent = await getAgent(id);
+    const { handle } = await params;
+    const decodedHandle = decodeURIComponent(handle);
+    const agent = await getAgent(decodedHandle);
     if (!agent) notFound();
 
-    const allSignals = await getSignals(id);
+    const allSignals = await getSignals(agent.id);
     const signals = allSignals.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
 
     return (

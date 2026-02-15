@@ -62,12 +62,23 @@ export async function getAgents(): Promise<AgentListing[]> {
     return (data || []).map(toAgent);
 }
 
-export async function getAgent(id: string): Promise<AgentListing | undefined> {
-    const { data, error } = await supabaseAdmin
-        .from("agents")
-        .select("*")
-        .eq("id", id)
-        .single();
+// Helper to check if string is UUID
+function isUUID(str: string) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
+export async function getAgent(idOrHandle: string): Promise<AgentListing | undefined> {
+    let query = supabaseAdmin.from("agents").select("*");
+
+    if (isUUID(idOrHandle)) {
+        query = query.eq("id", idOrHandle);
+    } else {
+        // Assume handle — ensure it starts with @
+        const handle = idOrHandle.startsWith("@") ? idOrHandle : `@${idOrHandle}`;
+        query = query.eq("handle", handle);
+    }
+
+    const { data, error } = await query.single();
 
     if (error || !data) return undefined;
     return toAgent(data);
