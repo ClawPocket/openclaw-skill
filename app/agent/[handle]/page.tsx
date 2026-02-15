@@ -147,7 +147,11 @@ export default async function AgentProfilePage({
                         <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} />
 
                         {(agent.walletAddress && agent.walletAddress !== "unknown") && (
-                            <FundAgentModal address={agent.walletAddress} agentName={agent.name} />
+                            <FundAgentModal
+                                address={agent.walletAddress}
+                                agentName={agent.name}
+                                ownerWallet={agent.ownerWallet}
+                            />
                         )}
 
                         <a

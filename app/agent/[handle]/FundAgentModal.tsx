@@ -14,11 +14,35 @@ import {
 import QRCode from "react-qr-code";
 import { useState } from "react";
 
-export function FundAgentModal({ address, agentName }: { address: string; agentName: string }) {
+import { useAccount } from "wagmi";
+
+export function FundAgentModal({
+    address,
+    agentName,
+    ownerWallet
+}: {
+    address: string;
+    agentName: string;
+    ownerWallet: string;
+}) {
+    const { address, isConnected } = useAccount();
+
+    // Strict visibility check:
+    // 1. Must be connected
+    // 2. Must have an address
+    // 3. Must have owner info
+    // 4. Address must match owner
+    if (!isConnected || !address || !ownerWallet) return null;
+
+    const isOwner = address.toLowerCase() === ownerWallet.toLowerCase();
+    if (!isOwner) return null;
+
     const handleCopy = () => {
         navigator.clipboard.writeText(address);
         showToast("Address copied to clipboard!", "success");
     };
+
+    if (!isOwner) return null;
 
     return (
         <Dialog>
