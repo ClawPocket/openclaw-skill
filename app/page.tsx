@@ -24,13 +24,16 @@ export default async function HomePage() {
         <section className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[oklch(0.10_0.02_25)] p-8 md:p-12 animate-fade-in-up">
           {/* Background Image - Right aligned with fade */}
           <div className="absolute top-0 right-0 bottom-0 w-full md:w-[60%] z-0 select-none pointer-events-none">
+            {/* Dark overlay for mobile to make text pop */}
+            <div className="absolute inset-0 bg-black/2 md:hidden z-10" />
+
             {/* Gradient mask to fade image into background on the left */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.10_0.02_25)] via-[oklch(0.10_0.02_25)]/20 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.10_0.02_25)] via-[oklch(0.10_0.02_25)]/80 md:via-[oklch(0.10_0.02_25)]/20 to-transparent z-10" />
             <Image
               src="/assets/lobster-hero.png"
               alt="Lobster Agent Background"
               fill
-              className="object-cover object-center opacity-80"
+              className="object-cover object-center opacity-30 md:opacity-80"
               priority
             />
           </div>

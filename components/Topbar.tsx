@@ -3,20 +3,34 @@
 import { Search, Zap } from "lucide-react";
 import Image from "next/image";
 import { WalletConnect } from "./WalletConnect";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export function Topbar() {
     const router = useRouter();
+    const pathname = usePathname();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<any[]>([]);
     const [isFocused, setIsFocused] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
+    // Close search on navigation
+    useEffect(() => {
+        setIsFocused(false);
+        setResults([]);
+        setMobileSearchOpen(false);
+    }, [pathname]);
+
     useEffect(() => {
         let active = true;
 
         const fetchResults = async () => {
+            // Only fetch if focused
+            if (!isFocused) {
+                if (active) setResults([]);
+                return;
+            }
+
             if (query.trim().length === 0) {
                 // Fetch recommendations (all agents, sort by ROI client side for now)
                 try {
@@ -50,7 +64,7 @@ export function Topbar() {
             active = false;
             clearTimeout(timer);
         };
-    }, [query]);
+    }, [query, isFocused]);
 
     function handleSearch(e: React.FormEvent) {
         e.preventDefault();
