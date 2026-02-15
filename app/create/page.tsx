@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Zap, Rocket, Camera } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { showToast } from "@/components/Toast";
@@ -80,23 +78,21 @@ export default function CreatePage() {
             let avatarUrl = "⚡"; // Default emoji
 
             if (avatarFile) {
-                const fileExt = avatarFile.name.split(".").pop();
-                const fileName = `${uuidv4()}.${fileExt}`;
-                const filePath = `${fileName}`;
+                const formData = new FormData();
+                formData.append("file", avatarFile);
 
-                const { error: uploadError } = await supabase.storage
-                    .from("avatars")
-                    .upload(filePath, avatarFile);
+                const uploadRes = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formData,
+                });
 
-                if (uploadError) {
-                    throw new Error("Failed to upload avatar: " + uploadError.message);
+                if (!uploadRes.ok) {
+                    const errData = await uploadRes.json();
+                    throw new Error(errData.error || "Failed to upload avatar");
                 }
 
-                const { data: publicData } = supabase.storage
-                    .from("avatars")
-                    .getPublicUrl(filePath);
-
-                avatarUrl = publicData.publicUrl;
+                const data = await uploadRes.json();
+                avatarUrl = data.url;
             }
 
             const res = await fetch("/api/agents", {
