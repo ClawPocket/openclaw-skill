@@ -11,9 +11,9 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         description: "Aggressive momentum trader. Chases volume spikes and trending tokens on Base. High risk, high reward.",
         signalPriceUsdc: "0.05",
         walletAddress: "0xaaaa111122223333444455556666777788889999",
-        totalTrades: 347,
-        roiPct: 420,
-        subscribers: ["0x1", "0x2", "0x3", "0x4", "0x5"],
+        totalTrades: 0,
+        roiPct: 0,
+        subscribers: [],
         avatar: "🚀",
         color: "#f97316",
     },
@@ -25,9 +25,9 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         description: "Ultra-conservative. Only trades ETH, WETH, USDC. Dollar-cost-averages into dips. Sleeps well at night.",
         signalPriceUsdc: "0.01",
         walletAddress: "0xbbbb111122223333444455556666777788889999",
-        totalTrades: 89,
-        roiPct: 12,
-        subscribers: ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8"],
+        totalTrades: 0,
+        roiPct: 0,
+        subscribers: [],
         avatar: "🛡️",
         color: "#10b981",
     },
@@ -39,9 +39,9 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         description: "Event-driven trader. Reacts to market data and volume anomalies. Only trades when the data screams.",
         signalPriceUsdc: "0.03",
         walletAddress: "0xcccc111122223333444455556666777788889999",
-        totalTrades: 156,
-        roiPct: 85,
-        subscribers: ["0x1", "0x2", "0x3"],
+        totalTrades: 0,
+        roiPct: 0,
+        subscribers: [],
         avatar: "📰",
         color: "#dc2626",
     },
@@ -53,9 +53,9 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         description: "Full send. Apes into anything with volume. NFA. DYOR. WAGMI.",
         signalPriceUsdc: "0.10",
         walletAddress: "0xdddd111122223333444455556666777788889999",
-        totalTrades: 1203,
-        roiPct: 1200,
-        subscribers: ["0x1", "0x2"],
+        totalTrades: 0,
+        roiPct: 0,
+        subscribers: [],
         avatar: "🔥",
         color: "#f59e0b",
     },
@@ -67,9 +67,9 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         description: "Slow and steady wins the race. Weekly DCA into ETH. Never panic sells.",
         signalPriceUsdc: "0.01",
         walletAddress: "0xeeee111122223333444455556666777788889999",
-        totalTrades: 52,
-        roiPct: 28,
-        subscribers: ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6"],
+        totalTrades: 0,
+        roiPct: 0,
+        subscribers: [],
         avatar: "🏦",
         color: "#10b981",
     },
@@ -81,9 +81,9 @@ const DEMO_AGENTS: Omit<AgentListing, "id" | "createdAt">[] = [
         description: "Pure data analysis. Combines on-chain metrics with price action. Only acts on high-confidence signals.",
         signalPriceUsdc: "0.08",
         walletAddress: "0xffff111122223333444455556666777788889999",
-        totalTrades: 78,
-        roiPct: 145,
-        subscribers: ["0x1", "0x2", "0x3", "0x4"],
+        totalTrades: 0,
+        roiPct: 0,
+        subscribers: [],
         avatar: "📊",
         color: "#dc2626",
     },
@@ -95,13 +95,15 @@ export async function seedDemoAgents() {
 
     for (const demo of DEMO_AGENTS) {
         const agentId = uuid();
+        const now = Date.now();
+
         await saveAgent({
             ...demo,
             id: agentId,
-            createdAt: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000),
+            createdAt: now,
         });
 
-        // Seed demo signals for this agent
+        // Seed a few initial demo signals so the feed isn't empty
         const signalTemplates = [
             { action: "buy" as const, tokenSymbol: "ETH", amount: "0.05", reason: "Strong volume spike detected. Momentum confirms uptrend." },
             { action: "buy" as const, tokenSymbol: "USDC", amount: "100", reason: "DCA scheduled buy. Dollar-cost averaging into position." },
@@ -110,16 +112,24 @@ export async function seedDemoAgents() {
             { action: "buy" as const, tokenSymbol: "WETH", amount: "0.1", reason: "Wrapping ETH for DeFi position. Liquidity pool entry." },
         ];
 
-        const numSignals = 3 + Math.floor(Math.random() * 3);
+        // 2-3 initial signals per agent
+        const numSignals = 2 + Math.floor(Math.random() * 2);
         for (let i = 0; i < numSignals; i++) {
-            const template = signalTemplates[Math.floor(Math.random() * signalTemplates.length)];
+            const template = signalTemplates[i % signalTemplates.length];
             await addSignal({
                 id: uuid(),
                 agentId,
                 ...template,
-                txHash: `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`,
-                createdAt: Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000),
+                createdAt: now - (i + 1) * 3600000, // stagger by 1 hour each
             });
         }
+
+        // Update the agent's total_trades to match seeded signals
+        await saveAgent({
+            ...demo,
+            id: agentId,
+            totalTrades: numSignals,
+            createdAt: now,
+        });
     }
 }

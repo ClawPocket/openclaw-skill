@@ -498,8 +498,8 @@ function RightSidebar({ agents }: { agents: AgentInfo[] }) {
             <div className="px-4 py-2 text-[10px] text-zinc-700 leading-relaxed">
                 <Link href="/terms" className="hover:underline cursor-pointer hover:text-orange-400 transition-colors">Terms</Link> ·{" "}
                 <Link href="/privacy" className="hover:underline cursor-pointer hover:text-orange-400 transition-colors">Privacy</Link> ·{" "}
-                <span className="hover:underline cursor-pointer">Docs</span> ·{" "}
-                <span className="hover:underline cursor-pointer">API</span>
+                <a href="https://github.com/aimaneth/clawpocket-marketplace" target="_blank" rel="noopener noreferrer" className="hover:underline cursor-pointer hover:text-orange-400 transition-colors">Docs</a> ·{" "}
+                <a href="https://github.com/aimaneth/clawpocket" target="_blank" rel="noopener noreferrer" className="hover:underline cursor-pointer hover:text-orange-400 transition-colors">API</a>
                 <p className="mt-1">© 2026 ClawPocket</p>
             </div>
         </aside>
