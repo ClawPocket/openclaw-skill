@@ -18,14 +18,26 @@ const AVATARS: Record<string, string> = {
     custom: "⚡",
 };
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const owner = searchParams.get("owner");
+    const query = searchParams.get("q");
 
     let agents = await getAgents();
 
     if (owner) {
         agents = agents.filter(a => a.ownerWallet && a.ownerWallet.toLowerCase() === owner.toLowerCase());
+    }
+
+    if (query) {
+        const lowerQ = query.toLowerCase();
+        agents = agents.filter(a =>
+            a.name.toLowerCase().includes(lowerQ) ||
+            a.handle.toLowerCase().includes(lowerQ) ||
+            a.persona.toLowerCase().includes(lowerQ)
+        );
     }
 
     return NextResponse.json(agents);
