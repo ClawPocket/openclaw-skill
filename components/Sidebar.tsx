@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Home, Search, Plus, LayoutDashboard, Zap, Newspaper } from "lucide-react";
 
@@ -21,9 +22,7 @@ export function Sidebar() {
         <aside className="hidden md:flex flex-col w-[240px] h-screen fixed left-0 top-0 bg-[oklch(0.10_0.005_285)] border-r border-white/[0.06] z-40">
             {/* Logo */}
             <div className="flex items-center gap-2.5 px-5 h-16 border-b border-white/[0.06]">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
-                    <Zap className="h-4 w-4 text-white" />
-                </div>
+                <Image src="/logo.svg" alt="ClawPocket Logo" width={32} height={32} className="rounded-lg" />
                 <span className="font-bold text-base tracking-tight">ClawPocket</span>
             </div>
 

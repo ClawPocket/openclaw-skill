@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, Zap } from "lucide-react";
+import Image from "next/image";
 import { WalletConnect } from "./WalletConnect";
 
 export function Topbar() {
@@ -9,9 +10,7 @@ export function Topbar() {
             <div className="flex items-center justify-between h-full px-4 md:px-8">
                 {/* Mobile logo */}
                 <div className="flex items-center gap-2.5 md:hidden">
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
-                        <Zap className="h-5 w-5 text-orange-400" />
-                    </div>
+                    <Image src="/logo.svg" alt="ClawPocket Logo" width={32} height={32} className="rounded-lg" />
                     <span className="font-bold text-lg tracking-tight">ClawPocket</span>
                 </div>
 
