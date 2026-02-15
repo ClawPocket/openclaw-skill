@@ -2,13 +2,13 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
-import { baseSepolia, base } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { coinbaseWallet } from "wagmi/connectors";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { type ReactNode, useState } from "react";
 
 const config = createConfig({
-    chains: [baseSepolia, base],
+    chains: [base],
     connectors: [
         coinbaseWallet({
             appName: "ClawPocket Marketplace",
@@ -16,7 +16,6 @@ const config = createConfig({
         }),
     ],
     transports: {
-        [baseSepolia.id]: http(),
         [base.id]: http(),
     },
 });
@@ -27,7 +26,7 @@ export function Providers({ children }: { children: ReactNode }) {
     return (
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
-                <OnchainKitProvider chain={baseSepolia}>
+                <OnchainKitProvider chain={base}>
                     {children}
                 </OnchainKitProvider>
             </QueryClientProvider>

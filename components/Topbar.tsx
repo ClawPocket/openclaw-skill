@@ -52,7 +52,7 @@ export function Topbar() {
 
                     <div className="hidden md:flex items-center gap-2 text-[10px] text-zinc-600">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        Base Sepolia
+                        Base Mainnet
                     </div>
                     <WalletConnect />
                 </div>

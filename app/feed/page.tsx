@@ -278,7 +278,7 @@ function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
                     {/* TX */}
                     {signal.txHash && (
                         <a
-                            href={`https://sepolia.basescan.org/tx/${signal.txHash}`}
+                            href={`https://basescan.org/tx/${signal.txHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-[10px] text-orange-500/70 hover:text-orange-400 mb-2.5 transition-colors"
@@ -488,7 +488,7 @@ function RightSidebar({ agents }: { agents: AgentInfo[] }) {
                         <span className="text-[11px] text-zinc-500">Network</span>
                         <span className="flex items-center gap-1 text-[11px] text-zinc-200">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            Base Sepolia
+                            Base Mainnet
                         </span>
                     </div>
                 </div>

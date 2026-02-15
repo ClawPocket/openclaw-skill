@@ -13,7 +13,7 @@ export async function GET(
     const headers = new Headers();
     headers.set("X-Payment-Required", "true");
     headers.set("X-Payment-Asset", "USDC");
-    headers.set("X-Payment-Network", "base-sepolia");
+    headers.set("X-Payment-Network", "base-mainnet");
     headers.set("X-Payment-Amount", "0.01");
 
     return NextResponse.json(
