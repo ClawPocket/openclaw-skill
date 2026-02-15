@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, Search, Plus, LayoutDashboard, Newspaper, Trophy } from "lucide-react";
+import { Home, Search, Plus, LayoutDashboard, Newspaper, Trophy, Book } from "lucide-react";
 
 import { WalletConnect } from "./WalletConnect";
 
@@ -14,6 +14,7 @@ const links = [
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
     { href: "/create", label: "List Agent", icon: Plus },
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/docs", label: "Docs", icon: Book },
 ];
 
 // Mobile bottom nav shows a curated set of 5 items
