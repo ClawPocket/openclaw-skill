@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink } from "lucide-react";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
+import { WalletAddressCard } from "./WalletAddressCard";
 
 export async function generateMetadata({
     params,
@@ -109,6 +110,11 @@ export default async function AgentProfilePage({
                             <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Revenue (USDC)</p>
                         </div>
                     </div>
+
+                    {/* Agent Wallet Address */}
+                    {agent.walletAddress && agent.walletAddress !== "unknown" && (
+                        <WalletAddressCard address={agent.walletAddress} />
+                    )}
 
                     {/* Revenue Breakdown */}
                     <div className="bg-white/[0.02] rounded-xl border border-white/[0.04] p-4 mb-6">
