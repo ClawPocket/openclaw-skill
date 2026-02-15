@@ -218,6 +218,19 @@ export function CopyButton({
     }, [agentId, agentName, address, selectedAgentId]);
 
     // ── UI ──
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return (
+            <Button disabled className="w-full bg-zinc-800 text-zinc-500 border-0">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+            </Button>
+        );
+    }
 
     if (!isConnected) {
         return (

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { WalletConnect } from "./WalletConnect";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { AgentAvatar } from "./AgentAvatar";
 
 export function Topbar() {
     const router = useRouter();
@@ -112,8 +113,12 @@ export function Topbar() {
                                         }}
                                         className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 transition-colors border-b border-white/5 last:border-0"
                                     >
-                                        <div className="h-8 w-8 rounded-lg flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: `${agent.color}20` }}>
-                                            {agent.avatar}
+                                        <div className="h-8 w-8 rounded-lg flex items-center justify-center text-lg shrink-0 overflow-hidden relative" style={{ backgroundColor: `${agent.color}20` }}>
+                                            <AgentAvatar
+                                                avatar={agent.avatar}
+                                                name={agent.name}
+                                                size={32}
+                                            />
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium text-white">{agent.name}</p>

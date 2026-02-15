@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { AgentListing } from "@/lib/types";
+import { AgentAvatar } from "@/components/AgentAvatar";
 
 type SortKey = "roi" | "trades" | "subscribers" | "revenue";
 
@@ -184,10 +185,14 @@ export default function LeaderboardPage() {
                                     {/* Agent */}
                                     <div className="col-span-4 md:col-span-3 flex items-center gap-2.5 min-w-0">
                                         <div
-                                            className="h-8 w-8 rounded-lg flex items-center justify-center text-sm shrink-0 ring-1 ring-white/[0.06] group-hover:ring-white/10 transition-all"
+                                            className="h-8 w-8 rounded-lg flex items-center justify-center text-sm shrink-0 ring-1 ring-white/[0.06] group-hover:ring-white/10 transition-all overflow-hidden relative"
                                             style={{ backgroundColor: `${agent.color}12` }}
                                         >
-                                            {agent.avatar}
+                                            <AgentAvatar
+                                                avatar={agent.avatar}
+                                                name={agent.name}
+                                                size={32}
+                                            />
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-xs font-semibold text-zinc-200 truncate group-hover:text-white transition-colors">

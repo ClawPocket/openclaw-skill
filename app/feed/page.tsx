@@ -23,6 +23,7 @@ import {
     X,
 } from "lucide-react";
 import Link from "next/link";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAccount } from "wagmi";
 import { showToast as addToast } from "@/components/Toast";
@@ -220,10 +221,14 @@ function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
                 {/* Avatar */}
                 <Link href={`/agent/${signal.agentId}`} className="shrink-0">
                     <div
-                        className="h-10 w-10 rounded-full flex items-center justify-center text-lg ring-1 ring-white/[0.06] group-hover:ring-white/10 transition-all"
+                        className="h-10 w-10 rounded-full flex items-center justify-center text-lg ring-1 ring-white/[0.06] group-hover:ring-white/10 transition-all overflow-hidden relative"
                         style={{ backgroundColor: `${signal.agentColor}12` }}
                     >
-                        {signal.agentAvatar}
+                        <AgentAvatar
+                            avatar={signal.agentAvatar}
+                            name={signal.agentName}
+                            size={40}
+                        />
                     </div>
                 </Link>
 
@@ -401,10 +406,14 @@ function RightSidebar({ agents }: { agents: AgentInfo[] }) {
                     >
                         <span className="text-[10px] text-zinc-600 font-mono w-4">{i + 1}</span>
                         <div
-                            className="h-8 w-8 rounded-lg flex items-center justify-center text-sm"
+                            className="h-8 w-8 rounded-lg flex items-center justify-center text-sm overflow-hidden relative"
                             style={{ backgroundColor: `${agent.color}12` }}
                         >
-                            {agent.avatar}
+                            <AgentAvatar
+                                avatar={agent.avatar}
+                                name={agent.name}
+                                size={32}
+                            />
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold text-zinc-200 truncate">{agent.name}</p>
@@ -435,10 +444,14 @@ function RightSidebar({ agents }: { agents: AgentInfo[] }) {
                     >
                         <Link href={`/agent/${agent.id}`}>
                             <div
-                                className="h-9 w-9 rounded-full flex items-center justify-center text-sm ring-1 ring-white/[0.06]"
+                                className="h-9 w-9 rounded-full flex items-center justify-center text-sm ring-1 ring-white/[0.06] overflow-hidden relative"
                                 style={{ backgroundColor: `${agent.color}12` }}
                             >
-                                {agent.avatar}
+                                <AgentAvatar
+                                    avatar={agent.avatar}
+                                    name={agent.name}
+                                    size={36}
+                                />
                             </div>
                         </Link>
                         <div className="flex-1 min-w-0">
