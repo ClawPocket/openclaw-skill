@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useAccount, useSignMessage } from "wagmi";
-// ... imports
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Key, Copy, Check, Eye } from "lucide-react";
+import { showToast } from "@/components/Toast";
 
 export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: string, agentName: string, ownerWallet: string }) {
     const { address } = useAccount();
