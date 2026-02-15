@@ -19,9 +19,13 @@ import {
     UserPlus,
     BarChart3,
     Sparkles,
+    Send,
+    X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useAccount } from "wagmi";
+import { showToast as addToast } from "@/components/Toast";
 
 interface FeedSignal {
     id: string;
@@ -51,6 +55,14 @@ interface AgentInfo {
     signalPriceUsdc: string;
 }
 
+interface SocialData {
+    likes: number;
+    likedBy: string[];
+    comments: { id: string; wallet: string; content: string; createdAt: number }[];
+    reposts: number;
+    repostedBy: string[];
+}
+
 function timeAgo(timestamp: number): string {
     const seconds = Math.floor((Date.now() - timestamp) / 1000);
     if (seconds < 60) return `${seconds}s`;
@@ -62,14 +74,126 @@ function timeAgo(timestamp: number): string {
     return `${days}d`;
 }
 
+function shortWallet(wallet: string): string {
+    return `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
+}
+
 /* ───────────────────────── SIGNAL POST ───────────────────────── */
 
 function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
+    const { address } = useAccount();
+    const wallet = address?.toLowerCase() || "";
+
+    const [social, setSocial] = useState<SocialData>({ likes: 0, likedBy: [], comments: [], reposts: 0, repostedBy: [] });
     const [liked, setLiked] = useState(false);
-    const [likes, setLikes] = useState(Math.floor(Math.random() * 42) + 1);
     const [reposted, setReposted] = useState(false);
-    const reposts = Math.floor(Math.random() * 15);
-    const replies = Math.floor(Math.random() * 8);
+    const [showComments, setShowComments] = useState(false);
+    const [commentText, setCommentText] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const commentInputRef = useRef<HTMLInputElement>(null);
+
+    // Fetch social data on mount
+    useEffect(() => {
+        fetch(`/api/signals/${signal.id}/social`)
+            .then((r) => r.json())
+            .then((data: SocialData) => {
+                setSocial(data);
+                if (wallet) {
+                    setLiked(data.likedBy.includes(wallet));
+                    setReposted(data.repostedBy.includes(wallet));
+                }
+            })
+            .catch(() => { });
+    }, [signal.id, wallet]);
+
+    const handleLike = useCallback(async () => {
+        if (!wallet) {
+            addToast("Connect your wallet to like", "info");
+            return;
+        }
+        // Optimistic update
+        setLiked((prev) => !prev);
+        setSocial((prev) => ({
+            ...prev,
+            likes: liked ? prev.likes - 1 : prev.likes + 1,
+            likedBy: liked ? prev.likedBy.filter((w) => w !== wallet) : [...prev.likedBy, wallet],
+        }));
+
+        try {
+            await fetch(`/api/signals/${signal.id}/like`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ wallet }),
+            });
+        } catch {
+            // Revert on error
+            setLiked((prev) => !prev);
+            setSocial((prev) => ({
+                ...prev,
+                likes: liked ? prev.likes + 1 : prev.likes - 1,
+            }));
+        }
+    }, [signal.id, wallet, liked]);
+
+    const handleRepost = useCallback(async () => {
+        if (!wallet) {
+            addToast("Connect your wallet to repost", "info");
+            return;
+        }
+        setReposted((prev) => !prev);
+        setSocial((prev) => ({
+            ...prev,
+            reposts: reposted ? prev.reposts - 1 : prev.reposts + 1,
+            repostedBy: reposted ? prev.repostedBy.filter((w) => w !== wallet) : [...prev.repostedBy, wallet],
+        }));
+
+        try {
+            await fetch(`/api/signals/${signal.id}/repost`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ wallet }),
+            });
+        } catch {
+            setReposted((prev) => !prev);
+            setSocial((prev) => ({
+                ...prev,
+                reposts: reposted ? prev.reposts + 1 : prev.reposts - 1,
+            }));
+        }
+    }, [signal.id, wallet, reposted]);
+
+    const handleComment = useCallback(async () => {
+        if (!wallet) {
+            addToast("Connect your wallet to comment", "info");
+            return;
+        }
+        if (!commentText.trim()) return;
+
+        setSubmitting(true);
+        try {
+            const res = await fetch(`/api/signals/${signal.id}/comment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ wallet, content: commentText.trim() }),
+            });
+            const newComment = await res.json();
+            setSocial((prev) => ({
+                ...prev,
+                comments: [...prev.comments, newComment],
+            }));
+            setCommentText("");
+        } catch {
+            addToast("Failed to post comment", "error");
+        } finally {
+            setSubmitting(false);
+        }
+    }, [signal.id, wallet, commentText]);
+
+    const handleShare = useCallback(() => {
+        const url = `${window.location.origin}/agent/${signal.agentId}`;
+        navigator.clipboard.writeText(url);
+        addToast("Link copied to clipboard!", "success");
+    }, [signal.agentId]);
 
     const actionIcon =
         signal.action === "buy" ? (
@@ -167,33 +291,86 @@ function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
 
                     {/* Engagement */}
                     <div className="flex items-center gap-1 -ml-2">
-                        <button className="flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setShowComments(!showComments); }}
+                            className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${showComments ? "text-orange-400" : "text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5"}`}
+                        >
                             <MessageCircle className="h-5 w-5 md:h-3.5 md:w-3.5" />
-                            <span className="text-xs md:text-[11px]">{replies}</span>
+                            <span className="text-xs md:text-[11px]">{social.comments.length}</span>
                         </button>
 
                         <button
-                            onClick={(e) => { e.stopPropagation(); setReposted(!reposted); }}
+                            onClick={(e) => { e.stopPropagation(); handleRepost(); }}
                             className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${reposted ? "text-emerald-400" : "text-zinc-600 hover:text-emerald-400 hover:bg-emerald-400/5"
                                 }`}
                         >
                             <Repeat2 className="h-5 w-5 md:h-3.5 md:w-3.5" />
-                            <span className="text-xs md:text-[11px]">{reposts + (reposted ? 1 : 0)}</span>
+                            <span className="text-xs md:text-[11px]">{social.reposts}</span>
                         </button>
 
                         <button
-                            onClick={(e) => { e.stopPropagation(); setLiked(!liked); setLikes(l => liked ? l - 1 : l + 1); }}
+                            onClick={(e) => { e.stopPropagation(); handleLike(); }}
                             className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${liked ? "text-pink-500" : "text-zinc-600 hover:text-pink-500 hover:bg-pink-500/5"
                                 }`}
                         >
                             <Heart className="h-5 w-5 md:h-3.5 md:w-3.5" fill={liked ? "currentColor" : "none"} />
-                            <span className="text-xs md:text-[11px]">{likes}</span>
+                            <span className="text-xs md:text-[11px]">{social.likes}</span>
                         </button>
 
-                        <button className="flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleShare(); }}
+                            className="flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all"
+                        >
                             <Share className="h-5 w-5 md:h-3.5 md:w-3.5" />
                         </button>
                     </div>
+
+                    {/* Comments Section */}
+                    {showComments && (
+                        <div className="mt-3 pt-3 border-t border-white/[0.04] space-y-3">
+                            {/* Existing comments */}
+                            {social.comments.length > 0 && (
+                                <div className="space-y-2.5 max-h-48 overflow-y-auto">
+                                    {social.comments.map((c) => (
+                                        <div key={c.id} className="flex gap-2">
+                                            <div className="h-6 w-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-zinc-500 shrink-0">
+                                                {c.wallet.slice(2, 4).toUpperCase()}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[11px] font-mono text-zinc-400">{shortWallet(c.wallet)}</span>
+                                                    <span className="text-zinc-700 text-[10px]">·</span>
+                                                    <span className="text-zinc-700 text-[10px]">{timeAgo(c.createdAt)}</span>
+                                                </div>
+                                                <p className="text-[12px] text-zinc-300 leading-relaxed">{c.content}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Comment input */}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    ref={commentInputRef}
+                                    type="text"
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleComment()}
+                                    placeholder={wallet ? "Post your reply..." : "Connect wallet to comment"}
+                                    disabled={!wallet || submitting}
+                                    className="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-lg h-8 px-3 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-orange-500/30 disabled:opacity-50 transition-all"
+                                />
+                                <button
+                                    onClick={handleComment}
+                                    disabled={!wallet || !commentText.trim() || submitting}
+                                    className="h-8 w-8 rounded-lg bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center text-white disabled:opacity-30 hover:opacity-90 transition-all shrink-0"
+                                >
+                                    <Send className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </article>
@@ -205,7 +382,6 @@ function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
 function RightSidebar({ agents }: { agents: AgentInfo[] }) {
     const topPerformers = [...agents].sort((a, b) => b.roiPct - a.roiPct).slice(0, 3);
     const mostCopied = [...agents].sort((a, b) => b.subscribers.length - a.subscribers.length).slice(0, 3);
-    const newest = [...agents].sort((a, b) => 0).slice(0, 2); // they're all seeded
 
     return (
         <aside className="hidden xl:block w-[300px] shrink-0 space-y-4 sticky top-20 self-start">
@@ -366,7 +542,6 @@ export default function FeedPage() {
                     {/* Sticky tabs */}
                     <div className="sticky top-16 z-20 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.04] rounded-t-xl">
                         <div className="hidden md:flex items-center gap-2 pt-4 pb-0 px-4">
-
                             <div className="flex items-center gap-1.5 mr-auto">
                                 <Sparkles className="h-4 w-4 text-orange-400" />
                                 <h1 className="text-base font-bold tracking-tight">Feed</h1>
