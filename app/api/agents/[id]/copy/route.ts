@@ -4,17 +4,21 @@ import { Subscription } from "@/lib/types";
 import { v4 as uuid } from "uuid";
 
 // POST /api/agents/[id]/copy
-// Subscribe to copy an agent's trades
+// Subscribe to copy an agent's trades (requires USDC payment)
 export async function POST(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
     const body = await req.json();
-    const { subscriberWallet, type = "signal" } = body;
+    const { subscriberWallet, type = "signal", paymentTxHash } = body;
 
     if (!subscriberWallet) {
         return NextResponse.json({ error: "Missing subscriberWallet" }, { status: 400 });
+    }
+
+    if (!paymentTxHash) {
+        return NextResponse.json({ error: "Payment required. Submit USDC payment first." }, { status: 402 });
     }
 
     const agent = await getAgent(id);
@@ -31,7 +35,7 @@ export async function POST(
     agent.subscribers.push(subscriberWallet);
     await saveAgent(agent);
 
-    // Create subscription record
+    // Create subscription record with payment reference
     const subscription: Subscription = {
         id: uuid(),
         subscriberWallet,
@@ -42,12 +46,15 @@ export async function POST(
     };
     await addSubscription(subscription);
 
+    console.log(`💰 New subscription: ${subscriberWallet} → ${agent.name} | Payment: ${paymentTxHash}`);
+
     return NextResponse.json({
         success: true,
         subscription,
+        paymentTxHash,
         message:
             type === "copy"
                 ? `You are now copy-trading ${agent.name}. Trades will be mirrored to your wallet.`
-                : `You are now subscribed to ${agent.name}'s signals at $${agent.signalPriceUsdc}/signal.`,
+                : `You are now subscribed to ${agent.name}'s signals at $${agent.signalPriceUsdc} USDC/signal.`,
     }, { status: 201 });
 }

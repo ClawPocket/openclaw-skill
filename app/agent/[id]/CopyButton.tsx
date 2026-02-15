@@ -1,11 +1,32 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Loader2 } from "lucide-react";
-import { useAccount } from "wagmi";
-import { useState } from "react";
+import { Copy, Check, Loader2, Wallet } from "lucide-react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useState, useEffect } from "react";
 import { WalletConnect } from "@/components/WalletConnect";
 import { showToast } from "@/components/Toast";
+import { parseUnits } from "viem";
+
+// USDC on Base Mainnet
+const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
+
+// Platform treasury wallet — receives subscription payments
+const PLATFORM_WALLET = "0xaaaa111122223333444455556666777788889999" as const;
+
+// Minimal ERC20 ABI for transfer
+const ERC20_ABI = [
+    {
+        name: "transfer",
+        type: "function",
+        stateMutability: "nonpayable",
+        inputs: [
+            { name: "to", type: "address" },
+            { name: "amount", type: "uint256" },
+        ],
+        outputs: [{ name: "", type: "bool" }],
+    },
+] as const;
 
 export function CopyButton({
     agentId,
@@ -17,13 +38,67 @@ export function CopyButton({
     price: string;
 }) {
     const { address, isConnected } = useAccount();
-    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [status, setStatus] = useState<"idle" | "paying" | "confirming" | "subscribing" | "success" | "error">("idle");
     const [message, setMessage] = useState("");
 
-    const handleCopy = async () => {
-        if (!isConnected || !address) return;
+    // Wagmi write contract hook
+    const {
+        writeContract,
+        data: txHash,
+        isPending: isWriting,
+        error: writeError,
+    } = useWriteContract();
 
-        setStatus("loading");
+    // Wait for transaction confirmation
+    const {
+        isLoading: isConfirming,
+        isSuccess: isConfirmed,
+        error: confirmError,
+    } = useWaitForTransactionReceipt({
+        hash: txHash,
+    });
+
+    // Handle write error
+    useEffect(() => {
+        if (writeError) {
+            const msg = writeError.message?.includes("User rejected")
+                ? "Transaction cancelled"
+                : "Payment failed";
+            setStatus("error");
+            setMessage(msg);
+            showToast(msg, "error");
+            setTimeout(() => setStatus("idle"), 3000);
+        }
+    }, [writeError]);
+
+    // Handle confirmation error
+    useEffect(() => {
+        if (confirmError) {
+            setStatus("error");
+            setMessage("Transaction failed on-chain");
+            showToast("Transaction failed on-chain", "error");
+            setTimeout(() => setStatus("idle"), 3000);
+        }
+    }, [confirmError]);
+
+    // When TX is confirmed, create subscription
+    useEffect(() => {
+        if (isConfirmed && txHash && status === "confirming") {
+            createSubscription(txHash);
+        }
+    }, [isConfirmed, txHash, status]);
+
+    // Track status transitions
+    useEffect(() => {
+        if (isWriting) setStatus("paying");
+    }, [isWriting]);
+
+    useEffect(() => {
+        if (txHash && !isConfirmed) setStatus("confirming");
+    }, [txHash, isConfirmed]);
+
+    async function createSubscription(paymentTxHash: string) {
+        setStatus("subscribing");
         try {
             const res = await fetch(`/api/agents/${agentId}/copy`, {
                 method: "POST",
@@ -31,6 +106,7 @@ export function CopyButton({
                 body: JSON.stringify({
                     subscriberWallet: address,
                     type: "signal",
+                    paymentTxHash,
                 }),
             });
 
@@ -54,6 +130,21 @@ export function CopyButton({
         setTimeout(() => {
             if (status !== "success") setStatus("idle");
         }, 3000);
+    }
+
+    const handleCopy = () => {
+        if (!isConnected || !address) return;
+
+        // Convert price to USDC amount (6 decimals)
+        const usdcAmount = parseUnits(price, 6);
+
+        // Initiate USDC transfer
+        writeContract({
+            address: USDC_ADDRESS,
+            abi: ERC20_ABI,
+            functionName: "transfer",
+            args: [PLATFORM_WALLET, usdcAmount],
+        });
     };
 
     if (!isConnected) {
@@ -74,20 +165,42 @@ export function CopyButton({
         );
     }
 
+    const buttonLabel = {
+        idle: `Copy This Agent — $${price} USDC`,
+        paying: "Approve in wallet...",
+        confirming: "Confirming tx...",
+        subscribing: "Activating subscription...",
+        error: message || "Try again",
+    };
+
+    const isLoading = status === "paying" || status === "confirming" || status === "subscribing";
+
     return (
         <div className="flex-1 space-y-1">
             <Button
                 onClick={handleCopy}
-                disabled={status === "loading"}
+                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20"
             >
-                {status === "loading" ? (
+                {isLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : status === "error" ? (
+                    <Wallet className="mr-2 h-4 w-4" />
                 ) : (
                     <Copy className="mr-2 h-4 w-4" />
                 )}
-                Copy This Agent — ${price}/signal
+                {buttonLabel[status]}
             </Button>
+            {status === "confirming" && txHash && (
+                <a
+                    href={`https://basescan.org/tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-[10px] text-orange-500 hover:text-orange-400 text-center"
+                >
+                    View on BaseScan ↗
+                </a>
+            )}
             {status === "error" && (
                 <p className="text-xs text-red-400 text-center">{message}</p>
             )}
