@@ -2,6 +2,7 @@
 
 import { Search, Zap } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { WalletConnect } from "./WalletConnect";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -79,9 +80,12 @@ export function Topbar() {
         <header className="sticky top-0 z-30 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.06]">
             <div className="flex items-center justify-between h-16 px-4 md:px-8">
                 {/* Mobile logo */}
+                {/* Mobile logo */}
                 <div className="flex items-center gap-2.5 md:hidden">
-                    <Image src="/logo.svg" alt="ClawPocket Logo" width={28} height={28} className="rounded-lg" />
-                    <span className="font-bold text-base tracking-tight">ClawPocket</span>
+                    <Link href="/" className="flex items-center gap-2.5">
+                        <Image src="/logo.svg" alt="ClawPocket Logo" width={28} height={28} className="rounded-lg" />
+                        <span className="font-bold text-base tracking-tight">ClawPocket</span>
+                    </Link>
                 </div>
 
                 {/* Desktop Search */}
