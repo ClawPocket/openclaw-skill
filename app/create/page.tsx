@@ -4,8 +4,11 @@ import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { WalletStatus } from "@/components/WalletConnect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Zap, Rocket } from "lucide-react";
+import { Zap, Rocket, Camera } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { showToast } from "@/components/Toast";
@@ -25,6 +28,8 @@ export default function CreatePage() {
     const [persona, setPersona] = useState("moonboy");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("0.01");
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -44,6 +49,21 @@ export default function CreatePage() {
         setHandle(val);
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // VALIDATION: Max 2MB
+        if (file.size > 2 * 1024 * 1024) {
+            showToast("Image must be smaller than 2MB", "error");
+            return;
+        }
+
+        setAvatarFile(file);
+        const objectUrl = URL.createObjectURL(file);
+        setAvatarPreview(objectUrl);
+    };
+
     const handleSubmit = async () => {
         if (!name.trim() || !handle.trim() || !isConnected) return;
 
@@ -57,6 +77,28 @@ export default function CreatePage() {
         setError("");
 
         try {
+            let avatarUrl = "⚡"; // Default emoji
+
+            if (avatarFile) {
+                const fileExt = avatarFile.name.split(".").pop();
+                const fileName = `${uuidv4()}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from("avatars")
+                    .upload(filePath, avatarFile);
+
+                if (uploadError) {
+                    throw new Error("Failed to upload avatar: " + uploadError.message);
+                }
+
+                const { data: publicData } = supabase.storage
+                    .from("avatars")
+                    .getPublicUrl(filePath);
+
+                avatarUrl = publicData.publicUrl;
+            }
+
             const res = await fetch("/api/agents", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -67,6 +109,7 @@ export default function CreatePage() {
                     description,
                     signalPriceUsdc: price,
                     ownerWallet: address,
+                    avatar: avatarUrl,
                 }),
             });
             // ... (rest of logic same) ...
@@ -113,6 +156,48 @@ export default function CreatePage() {
                     </div>
                 )}
                 <div className="space-y-6 animate-fade-in-up-delay-1">
+                    {/* Avatar & Ident */}
+                    <div>
+                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-3 block">
+                            Agent Avatar
+                        </label>
+                        <div className="flex items-center gap-6">
+                            <div className="relative group cursor-pointer">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                />
+                                <div className={`h-20 w-20 rounded-2xl flex items-center justify-center border-2 border-dashed transition-all overflow-hidden ${avatarPreview ? "border-orange-500/50 bg-black" : "border-white/10 bg-white/[0.03] hover:border-white/20"
+                                    }`}>
+                                    {avatarPreview ? (
+                                        <Image
+                                            src={avatarPreview}
+                                            alt="Preview"
+                                            width={80}
+                                            height={80}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <Camera className="h-6 w-6 text-zinc-500 group-hover:text-zinc-400" />
+                                    )}
+                                </div>
+                                <div className="absolute -bottom-2 -right-2 bg-orange-500 text-white rounded-full p-1 shadow-lg pointer-events-none">
+                                    <div className="h-3 w-3 bg-white rounded-full animate-ping absolute inset-0 opacity-20"></div>
+                                    <span className="text-[8px] font-bold px-1">+</span>
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-zinc-200">Upload Identity</p>
+                                <p className="text-xs text-zinc-500 mt-1">
+                                    Recommended: 500x500px. Max 2MB.<br />
+                                    Supports JPG, PNG, WEBP.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Name & Handle */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>

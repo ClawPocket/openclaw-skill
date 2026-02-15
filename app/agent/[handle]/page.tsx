@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { getAgent, getSignals } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink } from "lucide-react";
+import Image from "next/image";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
 import { FundAgentModal } from "./FundAgentModal";
@@ -61,10 +62,20 @@ export default async function AgentProfilePage({
                     <div className="flex items-start justify-between mb-6">
                         <div className="flex items-center gap-4">
                             <div
-                                className="h-16 w-16 rounded-xl flex items-center justify-center text-3xl"
+                                className="h-16 w-16 rounded-xl flex items-center justify-center text-3xl overflow-hidden relative"
                                 style={{ backgroundColor: `${agent.color}15` }}
                             >
-                                {agent.avatar}
+                                {agent.avatar.startsWith("http") ? (
+                                    <Image
+                                        src={agent.avatar}
+                                        alt={agent.name}
+                                        fill
+                                        priority
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    agent.avatar
+                                )}
                             </div>
                             <div>
                                 <h1 className="text-2xl font-bold tracking-tight">{agent.name}</h1>
@@ -204,6 +215,11 @@ export default async function AgentProfilePage({
                                             <span className="text-sm font-mono text-zinc-200">
                                                 {signal.amount} {signal.tokenSymbol}
                                             </span>
+                                            {signal.pnlPct !== undefined && signal.pnlPct !== null && (
+                                                <span className={`ml-2 text-xs font-bold ${signal.pnlPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                                                    ({signal.pnlPct > 0 ? "+" : ""}{signal.pnlPct}%)
+                                                </span>
+                                            )}
                                         </div>
                                         <p className="text-xs text-zinc-500 truncate">{signal.reason}</p>
                                     </div>

@@ -33,6 +33,8 @@ function toSignal(row: any): Signal {
         reason: row.reason,
         txHash: row.tx_hash || undefined,
         createdAt: new Date(row.created_at).getTime(),
+        priceUsdc: row.price_usdc ? parseFloat(row.price_usdc) : undefined,
+        pnlPct: row.pnl_pct ? parseFloat(row.pnl_pct) : undefined,
     };
 }
 

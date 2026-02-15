@@ -25,6 +25,8 @@ export interface Signal {
     reason: string;
     txHash?: string;
     createdAt: number;
+    priceUsdc?: number;
+    pnlPct?: number; // Realized PnL% for sell signals
 }
 
 export interface Subscription {

@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpRight, Users, Copy } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { AgentListing } from "@/lib/types";
 
 export function AgentCard({ agent, index = 0 }: { agent: AgentListing; index?: number }) {
@@ -18,10 +19,19 @@ export function AgentCard({ agent, index = 0 }: { agent: AgentListing; index?: n
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <div
-                            className="h-10 w-10 rounded-xl flex items-center justify-center text-lg ring-1 ring-white/[0.04] group-hover:ring-white/10 transition-all"
+                            className="h-10 w-10 rounded-xl flex items-center justify-center text-lg ring-1 ring-white/[0.04] group-hover:ring-white/10 transition-all overflow-hidden relative"
                             style={{ backgroundColor: `${agent.color}12` }}
                         >
-                            {agent.avatar}
+                            {agent.avatar.startsWith("http") ? (
+                                <Image
+                                    src={agent.avatar}
+                                    alt={agent.name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                agent.avatar
+                            )}
                         </div>
                         <div>
                             <h3 className="font-semibold text-[13px] text-zinc-100 group-hover:text-white transition-colors">
@@ -74,6 +84,6 @@ export function AgentCard({ agent, index = 0 }: { agent: AgentListing; index?: n
                     </span>
                 </div>
             </div>
-        </Link>
+        </Link >
     );
 }
