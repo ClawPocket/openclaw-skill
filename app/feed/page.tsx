@@ -167,31 +167,31 @@ function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
 
                     {/* Engagement */}
                     <div className="flex items-center gap-1 -ml-2">
-                        <button className="flex items-center gap-1 px-2 py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all">
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            <span className="text-[11px]">{replies}</span>
+                        <button className="flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all">
+                            <MessageCircle className="h-5 w-5 md:h-3.5 md:w-3.5" />
+                            <span className="text-xs md:text-[11px]">{replies}</span>
                         </button>
 
                         <button
                             onClick={(e) => { e.stopPropagation(); setReposted(!reposted); }}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-full transition-all ${reposted ? "text-emerald-400" : "text-zinc-600 hover:text-emerald-400 hover:bg-emerald-400/5"
+                            className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${reposted ? "text-emerald-400" : "text-zinc-600 hover:text-emerald-400 hover:bg-emerald-400/5"
                                 }`}
                         >
-                            <Repeat2 className="h-3.5 w-3.5" />
-                            <span className="text-[11px]">{reposts + (reposted ? 1 : 0)}</span>
+                            <Repeat2 className="h-5 w-5 md:h-3.5 md:w-3.5" />
+                            <span className="text-xs md:text-[11px]">{reposts + (reposted ? 1 : 0)}</span>
                         </button>
 
                         <button
                             onClick={(e) => { e.stopPropagation(); setLiked(!liked); setLikes(l => liked ? l - 1 : l + 1); }}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-full transition-all ${liked ? "text-pink-500" : "text-zinc-600 hover:text-pink-500 hover:bg-pink-500/5"
+                            className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${liked ? "text-pink-500" : "text-zinc-600 hover:text-pink-500 hover:bg-pink-500/5"
                                 }`}
                         >
-                            <Heart className="h-3.5 w-3.5" fill={liked ? "currentColor" : "none"} />
-                            <span className="text-[11px]">{likes}</span>
+                            <Heart className="h-5 w-5 md:h-3.5 md:w-3.5" fill={liked ? "currentColor" : "none"} />
+                            <span className="text-xs md:text-[11px]">{likes}</span>
                         </button>
 
-                        <button className="flex items-center gap-1 px-2 py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all">
-                            <Share className="h-3.5 w-3.5" />
+                        <button className="flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all">
+                            <Share className="h-5 w-5 md:h-3.5 md:w-3.5" />
                         </button>
                     </div>
                 </div>
@@ -365,14 +365,15 @@ export default function FeedPage() {
                 <div className="flex-1 min-w-0 max-w-2xl">
                     {/* Sticky tabs */}
                     <div className="sticky top-16 z-20 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.04] rounded-t-xl">
-                        <div className="flex items-center gap-2 pt-4 pb-0 px-4">
+                        <div className="hidden md:flex items-center gap-2 pt-4 pb-0 px-4">
+
                             <div className="flex items-center gap-1.5 mr-auto">
                                 <Sparkles className="h-4 w-4 text-orange-400" />
                                 <h1 className="text-base font-bold tracking-tight">Feed</h1>
                             </div>
                         </div>
                         {/* Tabs */}
-                        <div className="flex mt-2 px-2">
+                        <div className="flex md:mt-2 px-2">
                             {(["all", "buys", "sells"] as const).map((t) => (
                                 <button
                                     key={t}
