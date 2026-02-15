@@ -13,6 +13,7 @@ export interface AgentListing {
     avatar: string;
     color: string;
     createdAt: number;
+    backendAgentId?: string; // Links to Pocket Trader backend AI agent
 }
 
 export interface Signal {

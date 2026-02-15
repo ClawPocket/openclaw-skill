@@ -4,6 +4,7 @@ import { getAgent, getSignals } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink } from "lucide-react";
 import { CopyButton } from "./CopyButton";
+import { AgentBrain } from "./AgentBrain";
 
 export default async function AgentProfilePage({
     params,
@@ -91,8 +92,13 @@ export default async function AgentProfilePage({
                     </div>
                 </div>
 
-                {/* Trade Feed */}
+                {/* Agent Brain — Ask + Logs */}
                 <section className="animate-fade-in-up-delay-1">
+                    <AgentBrain agentId={agent.id} />
+                </section>
+
+                {/* Trade Feed */}
+                <section className="animate-fade-in-up-delay-2">
                     <h2 className="text-lg font-semibold tracking-tight mb-4">Recent Trade Signals</h2>
 
                     {signals.length > 0 ? (
