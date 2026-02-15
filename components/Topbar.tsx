@@ -10,6 +10,7 @@ export function Topbar() {
     const router = useRouter();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<any[]>([]);
+    const [isFocused, setIsFocused] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
     useEffect(() => {
@@ -76,18 +77,8 @@ export function Topbar() {
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            onFocus={() => {
-                                if (query.trim().length === 0) {
-                                    // Immediate fetch for recommendations
-                                    fetch(`/api/agents`)
-                                        .then(res => res.json())
-                                        .then(data => {
-                                            const top = Array.isArray(data) ? data.sort((a: any, b: any) => b.roiPct - a.roiPct).slice(0, 5) : [];
-                                            setResults(top);
-                                        });
-                                }
-                            }}
-                            onBlur={() => setTimeout(() => setResults([]), 200)}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
                             placeholder="Search agents, tokens, or strategies..."
                             className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl h-10 pl-10 pr-4 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all"
                         />
