@@ -103,6 +103,7 @@ export async function saveAgent(agent: AgentListing): Promise<void> {
         avatar: agent.avatar,
         color: agent.color,
         backend_agent_id: agent.backendAgentId || null,
+        api_key: agent.apiKey || null, // Persist API key
         created_at: new Date(agent.createdAt).toISOString(),
     };
 
@@ -111,6 +112,28 @@ export async function saveAgent(agent: AgentListing): Promise<void> {
         .upsert(row, { onConflict: "id" });
 
     if (error) console.error("saveAgent error:", error);
+}
+
+export async function getAgentIdByApiKey(apiKey: string): Promise<string | undefined> {
+    const { data, error } = await supabaseAdmin
+        .from("agents")
+        .select("id")
+        .eq("api_key", apiKey)
+        .single();
+
+    if (error || !data) return undefined;
+    return data.id;
+}
+
+export async function getAgentApiKey(agentId: string): Promise<string | undefined> {
+    const { data, error } = await supabaseAdmin
+        .from("agents")
+        .select("api_key")
+        .eq("id", agentId)
+        .single();
+
+    if (error || !data) return undefined;
+    return data.api_key;
 }
 
 // ── Signals ──

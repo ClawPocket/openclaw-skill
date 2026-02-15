@@ -8,6 +8,7 @@ import Image from "next/image";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
 import { FundAgentModal } from "./FundAgentModal";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
 
 export async function generateMetadata({
     params,
@@ -174,6 +175,10 @@ export default async function AgentProfilePage({
                             <ExternalLink className="mr-2 h-4 w-4" />
                             View Wallet
                         </a>
+
+                        <div className="hidden sm:block">
+                            <ApiKeyModal agentId={agent.id} agentName={agent.name} ownerWallet={agent.ownerWallet} />
+                        </div>
                     </div>
                 </div>
 

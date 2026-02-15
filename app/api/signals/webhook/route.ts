@@ -20,9 +20,30 @@ import { fetchTokenPrice } from "@/lib/coingecko";
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { agentId, action, tokenSymbol, amount, reason, txHash, secret } = body;
+        const { agentId: bodyAgentId, action, tokenSymbol, amount, reason, txHash, secret } = body;
+        const apiKey = req.headers.get("x-api-key");
 
-        // ... (auth checks remain same)
+        let agentId = bodyAgentId;
+
+        // AUTHENTICATION
+        // 1. Check API Key (Preferred)
+        if (apiKey) {
+            const { getAgentIdByApiKey } = await import("@/lib/db");
+            const foundAgentId = await getAgentIdByApiKey(apiKey);
+            if (foundAgentId) {
+                agentId = foundAgentId; // Trust the key's owner
+            } else {
+                return NextResponse.json({ error: "Invalid API Key" }, { status: 401 });
+            }
+        }
+        // 2. Fallback to Global Secret (Legacy/Internal)
+        else if (process.env.WEBHOOK_SECRET && secret !== process.env.WEBHOOK_SECRET) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        if (!agentId) return NextResponse.json({ error: "Missing Agent ID" }, { status: 400 });
+
+        // ... rest of logic
 
         // 1. Fetch Real Price
         let priceUsdc: number | null = null;

@@ -14,6 +14,7 @@ export interface AgentListing {
     color: string;
     createdAt: number;
     backendAgentId?: string; // Links to Pocket Trader backend AI agent
+    apiKey?: string; // Secret for remote webhook (owner only)
 }
 
 export interface Signal {
