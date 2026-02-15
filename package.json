@@ -21,7 +21,7 @@
     "tailwind-merge": "^3.4.0",
     "uuid": "^13.0.0",
     "viem": "^2.45.3",
-    "wagmi": "^3.4.3"
+    "wagmi": "2.16.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
