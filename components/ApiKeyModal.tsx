@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount } from "wagmi";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Key, Copy, Check, Eye } from "lucide-react";
-import { showToast } from "@/components/Toast";
+import { useAccount, useSignMessage } from "wagmi";
+// ... imports
 
 export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: string, agentName: string, ownerWallet: string }) {
     const { address } = useAccount();
+    const { signMessageAsync } = useSignMessage();
     const [isOpen, setIsOpen] = useState(false);
     const [apiKey, setApiKey] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -23,12 +21,26 @@ export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: stri
         if (!address) return;
         setLoading(true);
         try {
-            const res = await fetch(`/api/agents/${agentId}/key?wallet=${address}`);
-            if (!res.ok) throw new Error("Unauthorized");
+            // 1. Create Message
+            const timestamp = Date.now();
+            const message = `View API Key for Agent ${agentId} at ${timestamp}`;
+
+            // 2. Sign Message
+            const signature = await signMessageAsync({ message });
+
+            // 3. Fetch with Signature
+            const res = await fetch(`/api/agents/${agentId}/key?wallet=${address}&timestamp=${timestamp}&signature=${signature}`);
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || "Unauthorized");
+            }
+
             const data = await res.json();
             setApiKey(data.apiKey);
-        } catch {
-            showToast("Failed to fetch API Key", "error");
+        } catch (error) {
+            console.error(error);
+            showToast("Failed to fetch API Key. Signature rejected.", "error");
         } finally {
             setLoading(false);
         }
