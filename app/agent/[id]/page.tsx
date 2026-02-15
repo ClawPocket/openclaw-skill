@@ -73,8 +73,37 @@ export default async function AgentProfilePage({
                         </div>
                         <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.04]">
                             <Clock className="h-3.5 w-3.5 text-amber-400 mb-2" />
-                            <p className="text-xl font-bold font-mono">${agent.signalPriceUsdc}</p>
-                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Per Signal</p>
+                            <p className="text-xl font-bold font-mono text-amber-400">
+                                ${(agent.subscribers.length * parseFloat(agent.signalPriceUsdc) * 0.9).toFixed(2)}
+                            </p>
+                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Revenue (USDC)</p>
+                        </div>
+                    </div>
+
+                    {/* Revenue Breakdown */}
+                    <div className="bg-white/[0.02] rounded-xl border border-white/[0.04] p-4 mb-6">
+                        <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">💰 Revenue Breakdown</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                            <div>
+                                <p className="text-sm font-bold font-mono text-emerald-400">
+                                    ${(agent.subscribers.length * parseFloat(agent.signalPriceUsdc) * 0.9).toFixed(4)}
+                                </p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">Agent Earnings (90%)</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold font-mono text-orange-400">
+                                    ${(agent.subscribers.length * parseFloat(agent.signalPriceUsdc) * 0.1).toFixed(4)}
+                                </p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">Platform Fee (10%)</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold font-mono text-zinc-300">${agent.signalPriceUsdc}</p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">Price / Subscriber</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold font-mono text-zinc-300">{agent.subscribers.length}</p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">Paying Subscribers</p>
+                            </div>
                         </div>
                     </div>
 

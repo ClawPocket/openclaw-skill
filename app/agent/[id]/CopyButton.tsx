@@ -3,15 +3,19 @@
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Loader2, Wallet } from "lucide-react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { WalletConnect } from "@/components/WalletConnect";
 import { showToast } from "@/components/Toast";
 import { parseUnits } from "viem";
 
-// USDC on Base Mainnet
+// USDC on Base Mainnet (6 decimals)
 const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
 
-// Minimal ERC20 ABI for transfer
+// Platform treasury — receives 10% fee
+const PLATFORM_WALLET = "0x1D8FC785C126064cA0E2de2273C278B4215560b2" as const;
+const PLATFORM_FEE_BPS = 1000; // 10% in basis points (1000 / 10000)
+
+// Minimal ERC20 ABI
 const ERC20_ABI = [
     {
         name: "transfer",
@@ -25,6 +29,8 @@ const ERC20_ABI = [
     },
 ] as const;
 
+type Status = "idle" | "paying_agent" | "confirming_agent" | "paying_platform" | "confirming_platform" | "subscribing" | "success" | "error";
+
 export function CopyButton({
     agentId,
     agentName,
@@ -37,27 +43,30 @@ export function CopyButton({
     agentWallet: string;
 }) {
     const { address, isConnected } = useAccount();
-    const [status, setStatus] = useState<"idle" | "paying" | "confirming" | "subscribing" | "success" | "error">("idle");
+    const [status, setStatus] = useState<Status>("idle");
     const [message, setMessage] = useState("");
+    const [agentTxHash, setAgentTxHash] = useState<`0x${string}` | undefined>();
 
-    // Wagmi write contract hook
+    // Calculate split amounts
+    const totalUsdc = parseUnits(price, 6);
+    const platformFee = (totalUsdc * BigInt(PLATFORM_FEE_BPS)) / BigInt(10000);
+    const agentAmount = totalUsdc - platformFee;
+
+    // ── Transfer hook ──
     const {
         writeContract,
-        data: txHash,
+        data: currentTxHash,
         isPending: isWriting,
         error: writeError,
+        reset: resetWrite,
     } = useWriteContract();
 
-    // Wait for transaction confirmation
     const {
-        isLoading: isConfirming,
-        isSuccess: isConfirmed,
+        isSuccess: isTxConfirmed,
         error: confirmError,
-    } = useWaitForTransactionReceipt({
-        hash: txHash,
-    });
+    } = useWaitForTransactionReceipt({ hash: currentTxHash });
 
-    // Handle write error
+    // Handle write errors
     useEffect(() => {
         if (writeError) {
             const msg = writeError.message?.includes("User rejected")
@@ -66,37 +75,68 @@ export function CopyButton({
             setStatus("error");
             setMessage(msg);
             showToast(msg, "error");
-            setTimeout(() => setStatus("idle"), 3000);
+            setTimeout(() => { setStatus("idle"); resetWrite(); }, 3000);
         }
-    }, [writeError]);
+    }, [writeError, resetWrite]);
 
-    // Handle confirmation error
+    // Handle confirm errors
     useEffect(() => {
         if (confirmError) {
             setStatus("error");
             setMessage("Transaction failed on-chain");
             showToast("Transaction failed on-chain", "error");
-            setTimeout(() => setStatus("idle"), 3000);
+            setTimeout(() => { setStatus("idle"); resetWrite(); }, 3000);
         }
-    }, [confirmError]);
+    }, [confirmError, resetWrite]);
 
-    // When TX is confirmed, create subscription
+    // Track pending state
     useEffect(() => {
-        if (isConfirmed && txHash && status === "confirming") {
-            createSubscription(txHash);
+        if (isWriting && status === "idle") setStatus("paying_agent");
+        if (isWriting && status === "confirming_agent") setStatus("paying_platform");
+    }, [isWriting, status]);
+
+    // Track tx hash emission
+    useEffect(() => {
+        if (currentTxHash && status === "paying_agent") {
+            setStatus("confirming_agent");
         }
-    }, [isConfirmed, txHash, status]);
+        if (currentTxHash && status === "paying_platform") {
+            setStatus("confirming_platform");
+        }
+    }, [currentTxHash, status]);
 
-    // Track status transitions
+    // When agent tx confirms, send platform fee
     useEffect(() => {
-        if (isWriting) setStatus("paying");
-    }, [isWriting]);
+        if (isTxConfirmed && status === "confirming_agent" && currentTxHash) {
+            setAgentTxHash(currentTxHash);
 
+            if (platformFee > BigInt(0)) {
+                // Small delay to let wagmi reset
+                setTimeout(() => {
+                    resetWrite();
+                    setStatus("paying_platform");
+                    writeContract({
+                        address: USDC_ADDRESS,
+                        abi: ERC20_ABI,
+                        functionName: "transfer",
+                        args: [PLATFORM_WALLET, platformFee],
+                    });
+                }, 500);
+            } else {
+                // No platform fee, go straight to subscription
+                createSubscription(currentTxHash);
+            }
+        }
+    }, [isTxConfirmed, status, currentTxHash]);
+
+    // When platform tx confirms, create subscription
     useEffect(() => {
-        if (txHash && !isConfirmed) setStatus("confirming");
-    }, [txHash, isConfirmed]);
+        if (isTxConfirmed && status === "confirming_platform" && agentTxHash) {
+            createSubscription(agentTxHash);
+        }
+    }, [isTxConfirmed, status, agentTxHash]);
 
-    async function createSubscription(paymentTxHash: string) {
+    const createSubscription = useCallback(async (paymentTxHash: string) => {
         setStatus("subscribing");
         try {
             const res = await fetch(`/api/agents/${agentId}/copy`, {
@@ -113,38 +153,34 @@ export function CopyButton({
 
             if (res.ok) {
                 setStatus("success");
-                setMessage(data.message);
                 showToast(`Subscribed to ${agentName}!`, "success");
             } else {
                 setStatus("error");
                 setMessage(data.error || "Failed to subscribe");
-                showToast(data.error || "Failed to subscribe", "error");
+                showToast(data.error || "Subscription failed", "error");
             }
         } catch {
             setStatus("error");
             setMessage("Network error");
-            showToast("Network error — please try again", "error");
+            showToast("Network error", "error");
         }
-
-        setTimeout(() => {
-            if (status !== "success") setStatus("idle");
-        }, 3000);
-    }
+    }, [agentId, agentName, address]);
 
     const handleCopy = () => {
         if (!isConnected || !address) return;
+        resetWrite();
+        setStatus("paying_agent");
 
-        // Convert price to USDC amount (6 decimals)
-        const usdcAmount = parseUnits(price, 6);
-
-        // Initiate USDC transfer to the agent's own wallet
+        // Step 1: Send 90% to agent wallet
         writeContract({
             address: USDC_ADDRESS,
             abi: ERC20_ABI,
             functionName: "transfer",
-            args: [agentWallet as `0x${string}`, usdcAmount],
+            args: [agentWallet as `0x${string}`, agentAmount],
         });
     };
+
+    // ── UI ──
 
     if (!isConnected) {
         return (
@@ -164,15 +200,19 @@ export function CopyButton({
         );
     }
 
-    const buttonLabel = {
+    const labels: Record<Status, string> = {
         idle: `Copy This Agent — $${price} USDC`,
-        paying: "Approve in wallet...",
-        confirming: "Confirming tx...",
+        paying_agent: "Approve payment to agent...",
+        confirming_agent: "Confirming agent payment...",
+        paying_platform: "Approve platform fee...",
+        confirming_platform: "Confirming platform fee...",
         subscribing: "Activating subscription...",
+        success: "Subscribed!",
         error: message || "Try again",
     };
 
-    const isLoading = status === "paying" || status === "confirming" || status === "subscribing";
+    const isLoading = !["idle", "error", "success"].includes(status);
+    const displayTxHash = currentTxHash || agentTxHash;
 
     return (
         <div className="flex-1 space-y-1">
@@ -188,11 +228,20 @@ export function CopyButton({
                 ) : (
                     <Copy className="mr-2 h-4 w-4" />
                 )}
-                {buttonLabel[status]}
+                {labels[status]}
             </Button>
-            {status === "confirming" && txHash && (
+
+            {/* Fee breakdown */}
+            {status === "idle" && (
+                <p className="text-[10px] text-zinc-600 text-center">
+                    90% to agent · 10% platform fee
+                </p>
+            )}
+
+            {/* TX link */}
+            {isLoading && displayTxHash && (
                 <a
-                    href={`https://basescan.org/tx/${txHash}`}
+                    href={`https://basescan.org/tx/${displayTxHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block text-[10px] text-orange-500 hover:text-orange-400 text-center"
@@ -200,6 +249,7 @@ export function CopyButton({
                     View on BaseScan ↗
                 </a>
             )}
+
             {status === "error" && (
                 <p className="text-xs text-red-400 text-center">{message}</p>
             )}
