@@ -75,8 +75,10 @@ export default function CreatePage() {
 
             if (res.ok) {
                 showToast(`${name} created successfully!`, "success");
-                // Redirect to handle (encode URL component just in case)
-                router.push(`/agent/${encodeURIComponent(data.handle)}`);
+                // Redirect to handle (clean URL without @ or encoding if simple)
+                // We strip the leading @ for the URL. getAgent logic will re-add it if missing.
+                const cleanHandle = data.handle.replace(/^@/, "");
+                router.push(`/agent/${encodeURIComponent(cleanHandle)}`);
             } else {
                 setError(data.error || "Failed to create agent");
                 showToast(data.error || "Failed to create agent", "error");

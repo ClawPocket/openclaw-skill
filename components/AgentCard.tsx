@@ -6,8 +6,10 @@ import Link from "next/link";
 import { AgentListing } from "@/lib/types";
 
 export function AgentCard({ agent, index = 0 }: { agent: AgentListing; index?: number }) {
+    const linkHandle = agent.handle ? agent.handle.replace(/^@/, "") : agent.id;
+
     return (
-        <Link href={`/agent/${encodeURIComponent(agent.handle || agent.id)}`}>
+        <Link href={`/agent/${encodeURIComponent(linkHandle)}`}>
             <div
                 className="glass-card shimmer rounded-xl p-5 group cursor-pointer animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.06}s`, opacity: 0 }}
