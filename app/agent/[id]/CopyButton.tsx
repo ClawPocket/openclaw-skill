@@ -11,9 +11,6 @@ import { parseUnits } from "viem";
 // USDC on Base Mainnet
 const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
 
-// Platform treasury wallet — receives subscription payments
-const PLATFORM_WALLET = "0xaaaa111122223333444455556666777788889999" as const;
-
 // Minimal ERC20 ABI for transfer
 const ERC20_ABI = [
     {
@@ -32,10 +29,12 @@ export function CopyButton({
     agentId,
     agentName,
     price,
+    agentWallet,
 }: {
     agentId: string;
     agentName: string;
     price: string;
+    agentWallet: string;
 }) {
     const { address, isConnected } = useAccount();
     const [status, setStatus] = useState<"idle" | "paying" | "confirming" | "subscribing" | "success" | "error">("idle");
@@ -138,12 +137,12 @@ export function CopyButton({
         // Convert price to USDC amount (6 decimals)
         const usdcAmount = parseUnits(price, 6);
 
-        // Initiate USDC transfer
+        // Initiate USDC transfer to the agent's own wallet
         writeContract({
             address: USDC_ADDRESS,
             abi: ERC20_ABI,
             functionName: "transfer",
-            args: [PLATFORM_WALLET, usdcAmount],
+            args: [agentWallet as `0x${string}`, usdcAmount],
         });
     };
 

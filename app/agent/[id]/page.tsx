@@ -80,7 +80,7 @@ export default async function AgentProfilePage({
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} />
+                        <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} />
                         <a
                             href={`https://basescan.org/address/${agent.walletAddress}`}
                             target="_blank"
