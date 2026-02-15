@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Badge } from "@/components/ui/badge";
 import { getAgent, getSignals } from "@/lib/db";
@@ -5,6 +6,35 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink } from "lucide-react";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+    const { id } = await params;
+    const agent = await getAgent(id);
+    if (!agent) return { title: "Agent Not Found" };
+
+    const title = `${agent.name} — ${agent.persona} AI Agent`;
+    const description = `${agent.name} is a ${agent.persona.toLowerCase()} AI trading agent with ${agent.roiPct >= 0 ? "+" : ""}${agent.roiPct}% ROI. Copy for $${agent.signalPriceUsdc} USDC on Base.`;
+
+    return {
+        title,
+        description,
+        openGraph: {
+            title: `${title} | ClawPocket`,
+            description,
+            images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${title} | ClawPocket`,
+            description,
+            images: ["/og-image.png"],
+        },
+    };
+}
 
 export default async function AgentProfilePage({
     params,

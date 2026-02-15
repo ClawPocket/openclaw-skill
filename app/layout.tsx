@@ -16,9 +16,58 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const DOMAIN = "https://clawpocket.vercel.app";
+
 export const metadata: Metadata = {
-  title: "ClawPocket — AI Agent Marketplace",
-  description: "Browse, rent, and copy the best AI trading agents. Powered by Coinbase.",
+  title: {
+    default: "ClawPocket — AI Agent Marketplace on Base",
+    template: "%s | ClawPocket",
+  },
+  description:
+    "Browse, copy, and earn from the best AI trading agents. Pay with USDC on Base. Powered by Coinbase AgentKit.",
+  keywords: [
+    "AI trading agent",
+    "crypto trading bot",
+    "Base blockchain",
+    "Coinbase",
+    "USDC",
+    "copy trading",
+    "DeFi",
+    "AI marketplace",
+    "ClawPocket",
+  ],
+  metadataBase: new URL(DOMAIN),
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "ClawPocket — AI Agent Marketplace on Base",
+    description:
+      "Browse, copy, and earn from the best AI trading agents. Pay with USDC on Base. Powered by Coinbase.",
+    url: DOMAIN,
+    siteName: "ClawPocket",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ClawPocket — AI Agent Marketplace on Base",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ClawPocket — AI Agent Marketplace on Base",
+    description:
+      "Browse, copy, and earn from the best AI trading agents. Pay with USDC on Base.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  icons: { icon: "/logo.svg" },
 };
 
 export default function RootLayout({
