@@ -60,6 +60,32 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Failed to create signal" }, { status: 500 });
         }
 
+        // ── TRIGGER AUTOMATED COPY TRADERS ──
+        // Fire and forget - don't block the webhook response
+        (async () => {
+            try {
+                // Dynamic import to avoid circular dep issues if any, or just standard import
+                const { getSubscriptions } = await import("@/lib/db");
+                const subs = await getSubscriptions(agentId);
+                const followers = subs.filter(s => s.subscriberAgentId && s.active);
+
+                if (followers.length > 0) {
+                    console.log(`⚡ Triggering ${followers.length} copy-traders for signal...`);
+                    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
+                    for (const sub of followers) {
+                        fetch(`${backendUrl}/agents/${sub.subscriberAgentId}/execute`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ action, tokenSymbol, amount })
+                        }).catch(err => console.error(`Failed to trigger copy agent ${sub.subscriberAgentId}:`, err));
+                    }
+                }
+            } catch (err) {
+                console.error("Copy-trading trigger failed:", err);
+            }
+        })();
+
         // ── Auto-update agent stats ──
 
         // 1. Increment total_trades

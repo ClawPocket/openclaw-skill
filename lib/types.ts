@@ -34,4 +34,5 @@ export interface Subscription {
     type: "signal" | "copy";
     active: boolean;
     createdAt: number;
+    subscriberAgentId?: string; // If copy-trading with an agent
 }

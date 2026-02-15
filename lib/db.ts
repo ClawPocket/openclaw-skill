@@ -44,6 +44,7 @@ function toSubscription(row: any): Subscription {
         type: row.type,
         active: row.active,
         createdAt: new Date(row.created_at).getTime(),
+        subscriberAgentId: row.subscriber_agent_id || undefined,
     };
 }
 
@@ -174,6 +175,7 @@ export async function addSubscription(sub: Subscription): Promise<void> {
         type: sub.type,
         active: sub.active,
         created_at: new Date(sub.createdAt).toISOString(),
+        subscriber_agent_id: sub.subscriberAgentId || null,
     };
 
     const { error } = await supabaseAdmin.from("subscriptions").upsert(row);

@@ -136,6 +136,56 @@ export function CopyButton({
         }
     }, [isTxConfirmed, status, agentTxHash]);
 
+
+
+    // ── User Agent Fetching ──
+    const [userAgents, setUserAgents] = useState<any[]>([]);
+    const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null); // null = manual (wallet)
+    const [showAgentSelector, setShowAgentSelector] = useState(false);
+
+    useEffect(() => {
+        if (isConnected && address) {
+            fetch(`/api/agents?owner=${address}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setUserAgents(data);
+                })
+                .catch(err => console.error("Failed to fetch user agents:", err));
+        }
+    }, [isConnected, address]);
+
+    // ── Payment & Sub Logic ──
+
+    // 1. Initial Click: Show selector if user has agents
+    const onInitialClick = () => {
+        if (!isConnected) return;
+        if (userAgents.length > 0) {
+            setShowAgentSelector(true);
+        } else {
+            // No agents -> Go straight to manual copy payment
+            startPaymentFlow();
+        }
+    };
+
+    const confirmAgentSelection = () => {
+        setShowAgentSelector(false);
+        startPaymentFlow();
+    };
+
+    const startPaymentFlow = () => {
+        if (!isConnected || !address) return;
+        resetWrite();
+        setStatus("paying_agent");
+
+        writeContract({
+            address: USDC_ADDRESS,
+            abi: ERC20_ABI,
+            functionName: "transfer",
+            args: [agentWallet as `0x${string}`, agentAmount],
+        });
+    };
+
+    // ── Sub API Call ──
     const createSubscription = useCallback(async (paymentTxHash: string) => {
         setStatus("subscribing");
         try {
@@ -144,8 +194,9 @@ export function CopyButton({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     subscriberWallet: address,
-                    type: "signal",
+                    type: "copy", // Assume copy intent
                     paymentTxHash,
+                    subscriberAgentId: selectedAgentId || undefined,
                 }),
             });
 
@@ -153,7 +204,7 @@ export function CopyButton({
 
             if (res.ok) {
                 setStatus("success");
-                showToast(`Subscribed to ${agentName}!`, "success");
+                showToast(`Subscribed! ${selectedAgentId ? "Your agent will now auto-copy trades." : "Signals will appear in your feed."}`, "success");
             } else {
                 setStatus("error");
                 setMessage(data.error || "Failed to subscribe");
@@ -164,21 +215,7 @@ export function CopyButton({
             setMessage("Network error");
             showToast("Network error", "error");
         }
-    }, [agentId, agentName, address]);
-
-    const handleCopy = () => {
-        if (!isConnected || !address) return;
-        resetWrite();
-        setStatus("paying_agent");
-
-        // Step 1: Send 90% to agent wallet
-        writeContract({
-            address: USDC_ADDRESS,
-            abi: ERC20_ABI,
-            functionName: "transfer",
-            args: [agentWallet as `0x${string}`, agentAmount],
-        });
-    };
+    }, [agentId, agentName, address, selectedAgentId]);
 
     // ── UI ──
 
@@ -195,7 +232,7 @@ export function CopyButton({
         return (
             <Button className="flex-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 cursor-default">
                 <Check className="mr-2 h-4 w-4" />
-                Subscribed to {agentName}
+                Subscribed
             </Button>
         );
     }
@@ -215,9 +252,71 @@ export function CopyButton({
     const displayTxHash = currentTxHash || agentTxHash;
 
     return (
-        <div className="flex-1 space-y-1">
+        <div className="flex-1 space-y-1 relative">
+            {/* Agent Selector Dialog/Overlay for simplicity */}
+            {showAgentSelector && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-sm p-6 space-y-4 animate-in fade-in zoom-in duration-200">
+                        <div className="text-center">
+                            <h3 className="text-lg font-bold text-white mb-2">Select Follower Agent</h3>
+                            <p className="text-sm text-zinc-400">
+                                Choose which of your agents effectively copies {agentName}.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                            <button
+                                onClick={() => setSelectedAgentId(null)}
+                                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${selectedAgentId === null
+                                    ? "bg-white/10 border-orange-500/50 ring-1 ring-orange-500/50"
+                                    : "bg-white/5 border-white/5 hover:bg-white/10"
+                                    }`}
+                            >
+                                <div className="h-10 w-10 rounded-lg bg-zinc-800 flex items-center justify-center text-xl shrink-0">
+                                    📱
+                                </div>
+                                <div className="text-left flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-white truncate">Manual (Me)</p>
+                                    <p className="text-[10px] text-zinc-500">I will execute trades manually</p>
+                                </div>
+                                {selectedAgentId === null && <Check className="h-4 w-4 text-orange-500" />}
+                            </button>
+
+                            {userAgents.map((agent: any) => (
+                                <button
+                                    key={agent.id}
+                                    onClick={() => setSelectedAgentId(agent.id)}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${selectedAgentId === agent.id
+                                        ? "bg-white/10 border-orange-500/50 ring-1 ring-orange-500/50"
+                                        : "bg-white/5 border-white/5 hover:bg-white/10"
+                                        }`}
+                                >
+                                    <div className="h-10 w-10 rounded-lg flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: `${agent.color}20` }}>
+                                        {agent.avatar}
+                                    </div>
+                                    <div className="text-left flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-white truncate">{agent.name}</p>
+                                        <p className="text-[10px] text-zinc-500">Auto-execute trades</p>
+                                    </div>
+                                    {selectedAgentId === agent.id && <Check className="h-4 w-4 text-orange-500" />}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <Button variant="outline" className="flex-1" onClick={() => setShowAgentSelector(false)}>
+                                Cancel
+                            </Button>
+                            <Button className="flex-1 bg-orange-600 hover:bg-orange-500" onClick={confirmAgentSelection}>
+                                Continue
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Button
-                onClick={handleCopy}
+                onClick={onInitialClick}
                 disabled={isLoading}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20"
             >

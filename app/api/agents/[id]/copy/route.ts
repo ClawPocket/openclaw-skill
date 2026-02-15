@@ -11,7 +11,7 @@ export async function POST(
 ) {
     const { id } = await params;
     const body = await req.json();
-    const { subscriberWallet, type = "signal", paymentTxHash } = body;
+    const { subscriberWallet, type = "signal", paymentTxHash, subscriberAgentId } = body;
 
     if (!subscriberWallet) {
         return NextResponse.json({ error: "Missing subscriberWallet" }, { status: 400 });
@@ -26,7 +26,7 @@ export async function POST(
         return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
 
-    // Check if already subscribed
+    // Check if already subscribed (by wallet)
     if (agent.subscribers.includes(subscriberWallet)) {
         return NextResponse.json({ error: "Already subscribed" }, { status: 409 });
     }
@@ -43,6 +43,7 @@ export async function POST(
         type: type as "signal" | "copy",
         active: true,
         createdAt: Date.now(),
+        subscriberAgentId,
     };
     await addSubscription(subscription);
 

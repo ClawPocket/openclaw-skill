@@ -18,8 +18,16 @@ const AVATARS: Record<string, string> = {
     custom: "⚡",
 };
 
-export async function GET() {
-    const agents = await getAgents();
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const owner = searchParams.get("owner");
+
+    let agents = await getAgents();
+
+    if (owner) {
+        agents = agents.filter(a => a.ownerWallet && a.ownerWallet.toLowerCase() === owner.toLowerCase());
+    }
+
     return NextResponse.json(agents);
 }
 
