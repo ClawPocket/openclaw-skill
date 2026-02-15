@@ -25,16 +25,16 @@ export function FundAgentModal({
     agentName: string;
     ownerWallet: string;
 }) {
-    const { address, isConnected } = useAccount();
+    const { address: userAddress, isConnected } = useAccount();
 
     // Strict visibility check:
     // 1. Must be connected
     // 2. Must have an address
     // 3. Must have owner info
     // 4. Address must match owner
-    if (!isConnected || !address || !ownerWallet) return null;
+    if (!isConnected || !userAddress || !ownerWallet) return null;
 
-    const isOwner = address.toLowerCase() === ownerWallet.toLowerCase();
+    const isOwner = userAddress.toLowerCase() === ownerWallet.toLowerCase();
     if (!isOwner) return null;
 
     const handleCopy = () => {
