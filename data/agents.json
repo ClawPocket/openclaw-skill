@@ -1,0 +1,126 @@
+[
+  {
+    "ownerWallet": "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12",
+    "name": "AlphaSeeker",
+    "persona": "moonboy",
+    "description": "Aggressive momentum trader. Chases volume spikes and trending tokens on Base. High risk, high reward.",
+    "signalPriceUsdc": "0.05",
+    "walletAddress": "0xaaaa111122223333444455556666777788889999",
+    "totalTrades": 347,
+    "roiPct": 420,
+    "subscribers": [
+      "0x1",
+      "0x2",
+      "0x3",
+      "0x4",
+      "0x5"
+    ],
+    "avatar": "🚀",
+    "color": "#06b6d4",
+    "id": "5efc6b20-2e46-43dc-9c44-31d967c8cd7b",
+    "createdAt": 1769441453198
+  },
+  {
+    "ownerWallet": "0x2b3c4d5e6f7890abcdef1234567890abcdef1234",
+    "name": "SafeYield",
+    "persona": "boomer",
+    "description": "Ultra-conservative. Only trades ETH, WETH, USDC. Dollar-cost-averages into dips. Sleeps well at night.",
+    "signalPriceUsdc": "0.01",
+    "walletAddress": "0xbbbb111122223333444455556666777788889999",
+    "totalTrades": 89,
+    "roiPct": 12,
+    "subscribers": [
+      "0x1",
+      "0x2",
+      "0x3",
+      "0x4",
+      "0x5",
+      "0x6",
+      "0x7",
+      "0x8"
+    ],
+    "avatar": "🛡️",
+    "color": "#10b981",
+    "id": "988ba767-dff2-4dc4-8a08-06fe9b9d1944",
+    "createdAt": 1769563611798
+  },
+  {
+    "ownerWallet": "0x3c4d5e6f7890abcdef1234567890abcdef123456",
+    "name": "NewsBot_9000",
+    "persona": "news",
+    "description": "Event-driven trader. Reacts to market data and volume anomalies. Only trades when the data screams.",
+    "signalPriceUsdc": "0.03",
+    "walletAddress": "0xcccc111122223333444455556666777788889999",
+    "totalTrades": 156,
+    "roiPct": 85,
+    "subscribers": [
+      "0x1",
+      "0x2",
+      "0x3"
+    ],
+    "avatar": "📰",
+    "color": "#7c3aed",
+    "id": "46305bbc-742d-4259-8d96-bd04d49b91bd",
+    "createdAt": 1769687918574
+  },
+  {
+    "ownerWallet": "0x4d5e6f7890abcdef1234567890abcdef12345678",
+    "name": "DegenKing",
+    "persona": "moonboy",
+    "description": "Full send. Apes into anything with volume. NFA. DYOR. WAGMI.",
+    "signalPriceUsdc": "0.10",
+    "walletAddress": "0xdddd111122223333444455556666777788889999",
+    "totalTrades": 1203,
+    "roiPct": 1200,
+    "subscribers": [
+      "0x1",
+      "0x2"
+    ],
+    "avatar": "🔥",
+    "color": "#f59e0b",
+    "id": "3188e80b-98fc-456d-8c31-b8ff326a21ee",
+    "createdAt": 1768650774339
+  },
+  {
+    "ownerWallet": "0x5e6f7890abcdef1234567890abcdef1234567890",
+    "name": "SteadyEddie",
+    "persona": "boomer",
+    "description": "Slow and steady wins the race. Weekly DCA into ETH. Never panic sells.",
+    "signalPriceUsdc": "0.01",
+    "walletAddress": "0xeeee111122223333444455556666777788889999",
+    "totalTrades": 52,
+    "roiPct": 28,
+    "subscribers": [
+      "0x1",
+      "0x2",
+      "0x3",
+      "0x4",
+      "0x5",
+      "0x6"
+    ],
+    "avatar": "🏦",
+    "color": "#10b981",
+    "id": "3ba24934-c5d5-4fd9-aad5-22e0d7b65ec3",
+    "createdAt": 1768829936561
+  },
+  {
+    "ownerWallet": "0x6f7890abcdef1234567890abcdef123456789012",
+    "name": "DataDriven",
+    "persona": "news",
+    "description": "Pure data analysis. Combines on-chain metrics with price action. Only acts on high-confidence signals.",
+    "signalPriceUsdc": "0.08",
+    "walletAddress": "0xffff111122223333444455556666777788889999",
+    "totalTrades": 78,
+    "roiPct": 145,
+    "subscribers": [
+      "0x1",
+      "0x2",
+      "0x3",
+      "0x4"
+    ],
+    "avatar": "📊",
+    "color": "#7c3aed",
+    "id": "15ec80c8-b365-4582-8808-40dad9edcc0e",
+    "createdAt": 1769481142253
+  }
+]

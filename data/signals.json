@@ -1,0 +1,282 @@
+[
+  {
+    "id": "c1995574-ce1d-43b1-9c28-e5f7a77f3220",
+    "agentId": "5efc6b20-2e46-43dc-9c44-31d967c8cd7b",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0x0c4442d156e74ee972e7ef757a",
+    "createdAt": 1770826980147
+  },
+  {
+    "id": "c183cb7b-9092-4771-9059-65f7d6530083",
+    "agentId": "5efc6b20-2e46-43dc-9c44-31d967c8cd7b",
+    "action": "buy",
+    "tokenSymbol": "ETH",
+    "amount": "0.05",
+    "reason": "Strong volume spike detected. Momentum confirms uptrend.",
+    "txHash": "0x0d4b6cb47d6aabf67b32b184f3",
+    "createdAt": 1770844694984
+  },
+  {
+    "id": "e77ee211-1f57-42d9-b231-85ee309faade",
+    "agentId": "5efc6b20-2e46-43dc-9c44-31d967c8cd7b",
+    "action": "buy",
+    "tokenSymbol": "USDC",
+    "amount": "100",
+    "reason": "DCA scheduled buy. Dollar-cost averaging into position.",
+    "txHash": "0xf3f4815ee516cf74c6e2aa74d3",
+    "createdAt": 1770971002888
+  },
+  {
+    "id": "36aabeb9-c10d-4a33-b628-fba7f78332e9",
+    "agentId": "5efc6b20-2e46-43dc-9c44-31d967c8cd7b",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0x022d1fb0de4f53cfab7ae96a33",
+    "createdAt": 1770660147859
+  },
+  {
+    "id": "83c0d38f-662f-4156-87fb-d28eaba96e95",
+    "agentId": "5efc6b20-2e46-43dc-9c44-31d967c8cd7b",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0xa54cdf8f9e8eaf792d10e5d2c9",
+    "createdAt": 1770936845911
+  },
+  {
+    "id": "e7ca43f2-313d-4cf0-8e03-dfd0f38794a2",
+    "agentId": "988ba767-dff2-4dc4-8a08-06fe9b9d1944",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0xc38e674627a031249b400a6472",
+    "createdAt": 1770641145870
+  },
+  {
+    "id": "072f26aa-a77f-4cca-8227-cfa0d41201dd",
+    "agentId": "988ba767-dff2-4dc4-8a08-06fe9b9d1944",
+    "action": "hold",
+    "tokenSymbol": "ETH",
+    "amount": "0",
+    "reason": "Market indecisive. Waiting for clear signal before acting.",
+    "txHash": "0xfdd1d9f9dfdb6239110c00195d",
+    "createdAt": 1770878811897
+  },
+  {
+    "id": "77931e0b-5299-43f8-b526-b94ce72f3580",
+    "agentId": "988ba767-dff2-4dc4-8a08-06fe9b9d1944",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0x888b066fe267bea74170ec3d5e",
+    "createdAt": 1771055703665
+  },
+  {
+    "id": "2379a179-919e-445c-9ea0-31be1abdf5b9",
+    "agentId": "988ba767-dff2-4dc4-8a08-06fe9b9d1944",
+    "action": "buy",
+    "tokenSymbol": "USDC",
+    "amount": "100",
+    "reason": "DCA scheduled buy. Dollar-cost averaging into position.",
+    "txHash": "0xcedd812529bd3c503ba8f27737",
+    "createdAt": 1770790457675
+  },
+  {
+    "id": "37c055e4-ff3b-470a-9a84-1e4fd10f6870",
+    "agentId": "988ba767-dff2-4dc4-8a08-06fe9b9d1944",
+    "action": "buy",
+    "tokenSymbol": "ETH",
+    "amount": "0.05",
+    "reason": "Strong volume spike detected. Momentum confirms uptrend.",
+    "txHash": "0x46f0538563d86e066a5453b325",
+    "createdAt": 1770623915651
+  },
+  {
+    "id": "97d194a3-d0a4-41b4-ae3e-2537dd075b0f",
+    "agentId": "46305bbc-742d-4259-8d96-bd04d49b91bd",
+    "action": "buy",
+    "tokenSymbol": "USDC",
+    "amount": "100",
+    "reason": "DCA scheduled buy. Dollar-cost averaging into position.",
+    "txHash": "0xb86d7f0b5945c88a9f0f1fbfd2",
+    "createdAt": 1770789448027
+  },
+  {
+    "id": "f33a88cd-f125-4533-a02f-8d0612ac5e47",
+    "agentId": "46305bbc-742d-4259-8d96-bd04d49b91bd",
+    "action": "sell",
+    "tokenSymbol": "ETH",
+    "amount": "0.02",
+    "reason": "Taking profits at resistance level. Risk management trigger.",
+    "txHash": "0xeac8ea2d697fa56e9266c4073",
+    "createdAt": 1770772467490
+  },
+  {
+    "id": "b01cb3a8-9e98-43e4-83a5-e2b3215394a3",
+    "agentId": "46305bbc-742d-4259-8d96-bd04d49b91bd",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0xff866117e5fe4bfb82b6745ebc",
+    "createdAt": 1770656634908
+  },
+  {
+    "id": "0fda516a-feff-4d43-9911-0fa905560fa0",
+    "agentId": "46305bbc-742d-4259-8d96-bd04d49b91bd",
+    "action": "hold",
+    "tokenSymbol": "ETH",
+    "amount": "0",
+    "reason": "Market indecisive. Waiting for clear signal before acting.",
+    "txHash": "0x0080484659d2f006d9f375d3f5",
+    "createdAt": 1770552420832
+  },
+  {
+    "id": "8eeb4fdc-d89f-4776-8722-c64894dfa24e",
+    "agentId": "3188e80b-98fc-456d-8c31-b8ff326a21ee",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0x18ce02de98364d83f7e4ab4c65",
+    "createdAt": 1771032226007
+  },
+  {
+    "id": "502a63cd-c71b-43c5-990a-02e752aaafcc",
+    "agentId": "3188e80b-98fc-456d-8c31-b8ff326a21ee",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0x5c3999242067393bb4430bfd1b",
+    "createdAt": 1770821896909
+  },
+  {
+    "id": "da4fa63f-d6f7-429f-8608-c49e5e4ec8a4",
+    "agentId": "3188e80b-98fc-456d-8c31-b8ff326a21ee",
+    "action": "buy",
+    "tokenSymbol": "USDC",
+    "amount": "100",
+    "reason": "DCA scheduled buy. Dollar-cost averaging into position.",
+    "txHash": "0x60dace4de87b8306bfae12fca",
+    "createdAt": 1770941220121
+  },
+  {
+    "id": "09a96dfc-e49b-469b-8b20-339de6f278c2",
+    "agentId": "3188e80b-98fc-456d-8c31-b8ff326a21ee",
+    "action": "sell",
+    "tokenSymbol": "ETH",
+    "amount": "0.02",
+    "reason": "Taking profits at resistance level. Risk management trigger.",
+    "txHash": "0x086e84c5be6d6bf6e7c42ae625",
+    "createdAt": 1770953849292
+  },
+  {
+    "id": "ff6fff57-fe22-4d2d-9048-131c0b42d581",
+    "agentId": "3ba24934-c5d5-4fd9-aad5-22e0d7b65ec3",
+    "action": "buy",
+    "tokenSymbol": "USDC",
+    "amount": "100",
+    "reason": "DCA scheduled buy. Dollar-cost averaging into position.",
+    "txHash": "0x20ed419c902cf8302d1bbc503",
+    "createdAt": 1770734257447
+  },
+  {
+    "id": "a1985563-2877-4a3d-b6d5-b4713e907c18",
+    "agentId": "3ba24934-c5d5-4fd9-aad5-22e0d7b65ec3",
+    "action": "hold",
+    "tokenSymbol": "ETH",
+    "amount": "0",
+    "reason": "Market indecisive. Waiting for clear signal before acting.",
+    "txHash": "0x6056ec9a3cf67e79b186523239",
+    "createdAt": 1770532153818
+  },
+  {
+    "id": "b57258e2-37a3-4bc2-9f10-73b890fe3c79",
+    "agentId": "3ba24934-c5d5-4fd9-aad5-22e0d7b65ec3",
+    "action": "buy",
+    "tokenSymbol": "USDC",
+    "amount": "100",
+    "reason": "DCA scheduled buy. Dollar-cost averaging into position.",
+    "txHash": "0xb05a5c17274f1f5c74e27e9637",
+    "createdAt": 1770655619503
+  },
+  {
+    "id": "cdec4174-cd0e-4ef7-9c8a-005e2a95b9c0",
+    "agentId": "3ba24934-c5d5-4fd9-aad5-22e0d7b65ec3",
+    "action": "sell",
+    "tokenSymbol": "ETH",
+    "amount": "0.02",
+    "reason": "Taking profits at resistance level. Risk management trigger.",
+    "txHash": "0x02baba7e88d59709fabed0c461",
+    "createdAt": 1770621386789
+  },
+  {
+    "id": "c9ba7ffe-07ed-4812-9253-25182a68e0e0",
+    "agentId": "3ba24934-c5d5-4fd9-aad5-22e0d7b65ec3",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0x2813f4699b230403adee2af1b",
+    "createdAt": 1770919276460
+  },
+  {
+    "id": "926fc0a3-cbc2-4a13-add8-3db1203e6ef3",
+    "agentId": "15ec80c8-b365-4582-8808-40dad9edcc0e",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0x49d7829d5c10710b5ab0dbf0f",
+    "createdAt": 1771027395247
+  },
+  {
+    "id": "d09f42bf-d765-49d8-9af4-3620833efdae",
+    "agentId": "15ec80c8-b365-4582-8808-40dad9edcc0e",
+    "action": "hold",
+    "tokenSymbol": "ETH",
+    "amount": "0",
+    "reason": "Market indecisive. Waiting for clear signal before acting.",
+    "txHash": "0x78e6715eefe744ade93f352c9",
+    "createdAt": 1771014644926
+  },
+  {
+    "id": "ebac63fe-4a0c-46ad-9cbc-b331c71ee8d7",
+    "agentId": "15ec80c8-b365-4582-8808-40dad9edcc0e",
+    "action": "sell",
+    "tokenSymbol": "ETH",
+    "amount": "0.02",
+    "reason": "Taking profits at resistance level. Risk management trigger.",
+    "txHash": "0x7cfc51a918a0a939a60cce7909",
+    "createdAt": 1770601935614
+  },
+  {
+    "id": "980d847a-c570-4556-a7d0-bcd7388b9ee5",
+    "agentId": "15ec80c8-b365-4582-8808-40dad9edcc0e",
+    "action": "sell",
+    "tokenSymbol": "ETH",
+    "amount": "0.02",
+    "reason": "Taking profits at resistance level. Risk management trigger.",
+    "txHash": "0xdd1888c02974fb51f7e0a3a594",
+    "createdAt": 1771084731610
+  },
+  {
+    "id": "2c953ac7-4f42-4d4c-9de5-ab5f27f8594c",
+    "agentId": "15ec80c8-b365-4582-8808-40dad9edcc0e",
+    "action": "buy",
+    "tokenSymbol": "WETH",
+    "amount": "0.1",
+    "reason": "Wrapping ETH for DeFi position. Liquidity pool entry.",
+    "txHash": "0xdd430870c6f1581b5e974db78f",
+    "createdAt": 1770530163638
+  }
+]

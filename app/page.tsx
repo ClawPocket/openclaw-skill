@@ -1,65 +1,106 @@
 import Image from "next/image";
+import { MarketplaceLayout } from "@/components/MarketplaceLayout";
+import { Button } from "@/components/ui/button";
+import { AgentCard } from "@/components/AgentCard";
+import { getAgents } from "@/lib/db";
+import { Zap, TrendingUp, Users, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { seedDemoAgents } from "@/lib/seed";
 
-export default function Home() {
+export default function HomePage() {
+  seedDemoAgents();
+  const agents = getAgents();
+  const topAgents = agents.sort((a, b) => b.roiPct - a.roiPct).slice(0, 6);
+
+  const stats = {
+    totalAgents: agents.length,
+    totalTrades: agents.reduce((sum, a) => sum + a.totalTrades, 0),
+    totalCopiers: agents.reduce((sum, a) => sum + a.subscribers.length, 0),
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+    <MarketplaceLayout>
+      <div className="space-y-12">
+        {/* Hero */}
+        <section className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[oklch(0.10_0.02_25)] p-8 md:p-12 animate-fade-in-up">
+          {/* Background Image - Right aligned with fade */}
+          <div className="absolute top-0 right-0 bottom-0 w-full md:w-[60%] z-0 select-none pointer-events-none">
+            {/* Gradient mask to fade image into background on the left */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.10_0.02_25)] via-[oklch(0.10_0.02_25)]/20 to-transparent z-10" />
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src="/assets/lobster-hero.png"
+              alt="Lobster Agent Background"
+              fill
+              className="object-cover object-center opacity-80"
+              priority
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          </div>
+
+          {/* Glow orbs - Adjusted for new layout */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px] animate-pulse-glow z-0 mix-blend-screen" />
+          <div className="absolute bottom-0 left-10 w-48 h-48 bg-red-600/10 rounded-full blur-[80px] animate-pulse-glow z-0" />
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-6 w-6 rounded-md bg-orange-400/20 flex items-center justify-center">
+                <Zap className="h-3 w-3 text-orange-400" />
+              </div>
+              <span className="text-xs text-orange-400 font-medium tracking-wider uppercase">AI Agent Marketplace</span>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 max-w-xl">
+              Rent the best{" "}
+              <span className="text-gradient-lobster">AI trading agents</span>
+            </h1>
+            <p className="text-zinc-400 text-sm md:text-base max-w-lg mb-8 leading-relaxed">
+              Browse, copy, and deploy autonomous agents that trade 24/7.
+              Pay per signal with USDC. Powered by Coinbase.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link href="/explore">
+                <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20 px-6">
+                  Explore Agents
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/create">
+                <Button variant="outline" className="border-white/10 text-zinc-300 hover:bg-white/[0.04] px-6">
+                  List Your Agent
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats */}
+        <section className="grid grid-cols-3 gap-4 animate-fade-in-up-delay-1">
+          {[
+            { label: "Active Agents", value: stats.totalAgents, icon: Zap, color: "text-orange-400" },
+            { label: "Total Trades", value: stats.totalTrades.toLocaleString(), icon: TrendingUp, color: "text-emerald-400" },
+            { label: "Active Copiers", value: stats.totalCopiers.toLocaleString(), icon: Users, color: "text-red-400" },
+          ].map((stat) => (
+            <div key={stat.label} className="glass-card rounded-xl p-4 text-center">
+              <stat.icon className={`h-4 w-4 mx-auto mb-2 ${stat.color}`} />
+              <p className="text-xl md:text-2xl font-bold font-mono">{stat.value}</p>
+              <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">{stat.label}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* Top Agents */}
+        <section className="animate-fade-in-up-delay-2">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold tracking-tight">Top Performing Agents</h2>
+            <Link href="/explore" className="text-xs text-orange-400 hover:text-orange-300 transition-colors">
+              View all →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {topAgents.map((agent, i) => (
+              <AgentCard key={agent.id} agent={agent} index={i} />
+            ))}
+          </div>
+        </section>
+      </div>
+    </MarketplaceLayout>
   );
 }
