@@ -47,6 +47,7 @@ export async function POST(req: Request) {
 
     // Create backend AI agent (non-blocking — if it fails, listing still works)
     let backendAgentId: string | undefined;
+    let agentWalletAddress: string = ownerWallet; // Default to owner's wallet (safe fallback)
     try {
         const backendAgent = await createBackendAgent({
             name,
@@ -55,7 +56,11 @@ export async function POST(req: Request) {
         });
         if (backendAgent) {
             backendAgentId = backendAgent.id;
-            console.log(`Backend agent created: ${backendAgentId}`);
+            // Use real CDP wallet if the backend returned one
+            if (backendAgent.walletAddress && backendAgent.walletAddress !== "unknown") {
+                agentWalletAddress = backendAgent.walletAddress;
+            }
+            console.log(`Backend agent created: ${backendAgentId}, wallet: ${agentWalletAddress}`);
         }
     } catch (err) {
         console.warn("Backend agent creation failed (non-fatal):", err);
@@ -69,7 +74,7 @@ export async function POST(req: Request) {
         persona: persona || "custom",
         description: description || "",
         signalPriceUsdc: signalPriceUsdc || "0.01",
-        walletAddress: `0x${uuid().replace(/-/g, "").slice(0, 40)}`,
+        walletAddress: agentWalletAddress,
         totalTrades: 0,
         roiPct: 0,
         subscribers: [],

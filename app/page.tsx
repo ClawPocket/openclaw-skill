@@ -3,13 +3,11 @@ import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
 import { getAgents } from "@/lib/db";
-import { seedDemoAgents } from "@/lib/seed";
 import { Zap, TrendingUp, Users, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { AgentListing } from "@/lib/types";
 
 export default async function HomePage() {
-  await seedDemoAgents();
   const agents = await getAgents();
   const topAgents = [...agents].sort((a: AgentListing, b: AgentListing) => b.roiPct - a.roiPct).slice(0, 6);
 

@@ -206,7 +206,7 @@ export default function CreatePage() {
                     {/* Submit */}
                     <Button
                         onClick={handleSubmit}
-                        disabled={!name.trim() || !handle.trim() || loading}
+                        disabled={!name.trim() || !handle.trim() || !isConnected || loading}
                         className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20 disabled:opacity-50"
                     >
                         {loading ? (
