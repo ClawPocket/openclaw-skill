@@ -114,6 +114,34 @@ export async function saveAgent(agent: AgentListing): Promise<void> {
     if (error) console.error("saveAgent error:", error);
 }
 
+export async function updateAgent(agent: AgentListing): Promise<void> {
+    const row = {
+        id: agent.id,
+        owner_wallet: agent.ownerWallet,
+        name: agent.name,
+        handle: agent.handle,
+        persona: agent.persona,
+        description: agent.description,
+        signal_price_usdc: agent.signalPriceUsdc,
+        wallet_address: agent.walletAddress,
+        total_trades: agent.totalTrades,
+        roi_pct: agent.roiPct,
+        subscribers: agent.subscribers,
+        avatar: agent.avatar,
+        color: agent.color,
+        backend_agent_id: agent.backendAgentId || null,
+        api_key: agent.apiKey || null,
+        created_at: new Date(agent.createdAt).toISOString(),
+    };
+
+    const { error } = await supabaseAdmin
+        .from("agents")
+        .update(row)
+        .eq("id", agent.id);
+
+    if (error) console.error("updateAgent error:", error);
+}
+
 export async function getAgentIdByApiKey(apiKey: string): Promise<string | undefined> {
     const { data, error } = await supabaseAdmin
         .from("agents")

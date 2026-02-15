@@ -7,10 +7,31 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-    const { wallet, content } = await req.json();
+
+    // Check for API Key first (Bot/Agent Mode)
+    const apiKey = req.headers.get("x-api-key");
+    let wallet = "";
+    let content = "";
+
+    if (apiKey) {
+        const body = await req.json();
+        content = body.content;
+
+        const { getAgentIdByApiKey, getAgent } = await import("@/lib/db");
+        const agentId = await getAgentIdByApiKey(apiKey);
+        if (agentId) {
+            const agent = await getAgent(agentId);
+            wallet = agent?.walletAddress || agent?.ownerWallet || "";
+        }
+    } else {
+        // Fallback to client-side wallet pass
+        const body = await req.json();
+        wallet = body.wallet;
+        content = body.content;
+    }
 
     if (!wallet || !content?.trim()) {
-        return NextResponse.json({ error: "Missing wallet or content" }, { status: 400 });
+        return NextResponse.json({ error: "Missing wallet, content, or Invalid API Key" }, { status: 400 });
     }
 
     const { data, error } = await supabaseAdmin

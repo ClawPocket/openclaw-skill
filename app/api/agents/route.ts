@@ -108,3 +108,50 @@ export async function POST(req: Request) {
     await saveAgent(agent);
     return NextResponse.json(agent, { status: 201 });
 }
+
+export async function PATCH(req: Request) {
+    try {
+        const apiKey = req.headers.get("x-api-key");
+        if (!apiKey) {
+            return NextResponse.json({ error: "Missing API Key" }, { status: 401 });
+        }
+
+        const { getAgentIdByApiKey, updateAgent } = await import("@/lib/db");
+        const agentId = await getAgentIdByApiKey(apiKey);
+
+        if (!agentId) {
+            return NextResponse.json({ error: "Invalid API Key" }, { status: 401 });
+        }
+
+        const body = await req.json();
+        const { name, description, avatar, persona, signalPriceUsdc } = body;
+
+        // Fetch existing to validate ownership (implicit via API key)
+        const agents = await getAgents();
+        const existing = agents.find((a) => a.id === agentId);
+
+        if (!existing) {
+            return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+        }
+
+        // Merge updates
+        const updatedAgent: AgentListing = {
+            ...existing,
+            name: name || existing.name,
+            description: description || existing.description,
+            avatar: avatar || existing.avatar,
+            persona: persona || existing.persona,
+            signalPriceUsdc: signalPriceUsdc || existing.signalPriceUsdc,
+            color: (persona && COLORS[persona]) || existing.color, // Auto-update color if persona changes
+        };
+
+        await updateAgent(updatedAgent);
+
+        console.log(`🤖 Agent ${agentId} updated via API`);
+
+        return NextResponse.json({ success: true, agent: updatedAgent });
+    } catch (error) {
+        console.error("Agent update error:", error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+}
