@@ -99,7 +99,44 @@ export async function POST(req: Request) {
             pnl_pct: pnlPct
         });
 
-        // ... (trigger copiers logic matches original)
+        // 3. Trigger Copiers (Automated Execution)
+        const { data: subscriptions } = await supabaseAdmin
+            .from("subscriptions")
+            .select("subscriber_wallet, subscriber_agent_id")
+            .eq("agent_id", agentId)
+            .eq("active", true);
+
+        if (subscriptions?.length) {
+            console.log(`⚡ Triggering ${subscriptions.length} copiers...`);
+
+            // Fire and forget - don't block the webhook response
+            Promise.all(subscriptions.map(async (sub) => {
+                // Scenario A: Agent-to-Agent Copying
+                if (sub.subscriber_agent_id) {
+                    try {
+                        // Call Backend Server to execute immediately
+                        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/agents/${sub.subscriber_agent_id}/execute`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                action,
+                                tokenSymbol,
+                                amount, // In future, maybe scale this based on portfolio %
+                                reason: `Auto-copying from Agent ${agentId}`
+                            })
+                        });
+                        console.log(`   ↳ Agent ${sub.subscriber_agent_id} executed copy.`);
+                    } catch (err) {
+                        console.error(`   X Failed to execute copy for Agent ${sub.subscriber_agent_id}:`, err);
+                    }
+                }
+                // Scenario B: Wallet Notification (Legacy/Manual)
+                else {
+                    // TODO: Send push notification / email to sub.subscriber_wallet
+                    // For now, no-op.
+                }
+            }));
+        }
 
         // ── Auto-update agent stats ──
 
