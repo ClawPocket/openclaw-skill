@@ -7,14 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, SlidersHorizontal, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { AgentListing } from "@/lib/types";
 
 const personas = ["All", "Moonboy", "Boomer", "News"];
 const sorts = ["Top ROI", "Most Copied", "Newest", "Cheapest"];
 
 export default function ExplorePage() {
+    const searchParams = useSearchParams();
     const [agents, setAgents] = useState<AgentListing[]>([]);
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(searchParams.get("q") || "");
     const [activePersona, setActivePersona] = useState("All");
     const [activeSort, setActiveSort] = useState("Top ROI");
     const [loading, setLoading] = useState(true);
@@ -32,7 +34,10 @@ export default function ExplorePage() {
     const filtered = agents
         .filter((a) => {
             if (activePersona !== "All" && a.persona !== activePersona.toLowerCase()) return false;
-            if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false;
+            if (search) {
+                const q = search.toLowerCase();
+                if (!a.name.toLowerCase().includes(q) && !(a.handle || "").toLowerCase().includes(q)) return false;
+            }
             return true;
         })
         .sort((a, b) => {

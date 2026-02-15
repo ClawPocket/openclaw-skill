@@ -3,8 +3,20 @@
 import { Search, Zap } from "lucide-react";
 import Image from "next/image";
 import { WalletConnect } from "./WalletConnect";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function Topbar() {
+    const router = useRouter();
+    const [query, setQuery] = useState("");
+
+    function handleSearch(e: React.FormEvent) {
+        e.preventDefault();
+        if (query.trim()) {
+            router.push(`/explore?q=${encodeURIComponent(query.trim())}`);
+        }
+    }
+
     return (
         <header className="sticky top-0 z-30 h-16 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.06]">
             <div className="flex items-center justify-between h-full px-4 md:px-8">
@@ -15,14 +27,16 @@ export function Topbar() {
                 </div>
 
                 {/* Global Search */}
-                <div className="hidden md:flex flex-1 max-w-md relative">
+                <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                     <input
                         type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search agents, tokens, or strategies..."
                         className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl h-10 pl-10 pr-4 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all"
                     />
-                </div>
+                </form>
 
                 {/* Right side */}
                 <div className="flex items-center gap-3">

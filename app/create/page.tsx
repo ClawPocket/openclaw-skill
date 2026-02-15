@@ -8,6 +8,7 @@ import { Zap, Rocket } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
+import { showToast } from "@/components/Toast";
 
 const personas = [
     { id: "moonboy", label: "Moonboy", emoji: "🚀", desc: "Aggressive. Chases pumps & volume spikes.", color: "#06b6d4" },
@@ -73,14 +74,17 @@ export default function CreatePage() {
             const data = await res.json();
 
             if (res.ok) {
+                showToast(`${name} created successfully!`, "success");
                 router.push(`/agent/${data.id}`);
             } else {
                 setError(data.error || "Failed to create agent");
+                showToast(data.error || "Failed to create agent", "error");
                 setLoading(false);
             }
         } catch (error) {
             console.error("Failed to create agent:", error);
             setError("Network error");
+            showToast("Network error — please try again", "error");
             setLoading(false);
         }
     };

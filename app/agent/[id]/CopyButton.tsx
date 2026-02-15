@@ -5,6 +5,7 @@ import { Copy, Check, Loader2 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useState } from "react";
 import { WalletConnect } from "@/components/WalletConnect";
+import { showToast } from "@/components/Toast";
 
 export function CopyButton({
     agentId,
@@ -38,13 +39,16 @@ export function CopyButton({
             if (res.ok) {
                 setStatus("success");
                 setMessage(data.message);
+                showToast(`Subscribed to ${agentName}!`, "success");
             } else {
                 setStatus("error");
                 setMessage(data.error || "Failed to subscribe");
+                showToast(data.error || "Failed to subscribe", "error");
             }
         } catch {
             setStatus("error");
             setMessage("Network error");
+            showToast("Network error — please try again", "error");
         }
 
         setTimeout(() => {

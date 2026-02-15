@@ -4,6 +4,7 @@ import "./globals.css";
 import "@coinbase/onchainkit/styles.css";
 import { Providers } from "@/components/Providers";
 import { Analytics } from "@vercel/analytics/react";
+import { ToastProvider } from "@/components/Toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
           {children}
         </Providers>
         <Analytics />
+        <ToastProvider />
       </body>
     </html>
   );

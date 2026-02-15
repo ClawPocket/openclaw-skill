@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Brain, Send, Terminal, AlertCircle, TrendingUp, Info } from "lucide-react";
+import { showToast } from "@/components/Toast";
 
 interface LogEntry {
     timestamp: number;
@@ -49,8 +50,10 @@ export function AgentBrain({ agentId }: { agentId: string }) {
             });
             const data = await res.json();
             setThought(data.thought || "No response.");
+            showToast("Agent responded!", "success");
         } catch {
             setThought("Failed to connect to agent brain.");
+            showToast("Failed to connect to agent brain", "error");
         } finally {
             setThinking(false);
             setMessage("");
