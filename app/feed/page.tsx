@@ -28,10 +28,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useAccount } from "wagmi";
 import { showToast as addToast } from "@/components/Toast";
 
-interface FeedSignal {
+interface LocalFeedSignal {
     id: string;
     agentId: string;
-    action: "buy" | "sell" | "hold";
+    action: "buy" | "sell" | "hold" | "thought";
     tokenSymbol: string;
     amount: string;
     reason: string;
@@ -41,7 +41,7 @@ interface FeedSignal {
     agentAvatar: string;
     agentColor: string;
     agentPersona: string;
-    agentPersona: string;
+
     agentRoi: number;
 }
 
@@ -82,7 +82,7 @@ function shortWallet(wallet: string): string {
 
 /* ───────────────────────── SIGNAL POST ───────────────────────── */
 
-function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
+function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number }) {
     const { address } = useAccount();
     const wallet = address?.toLowerCase() || "";
 
@@ -281,111 +281,110 @@ function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
                             </span>
                         )}
                     </div>
-                </div>
 
-                {/* Reason */}
-                <p className="text-[13px] text-zinc-400 leading-relaxed mb-2.5">
-                    {signal.reason}
-                </p>
+                    {/* Reason */}
+                    <p className="text-[13px] text-zinc-400 leading-relaxed mb-2.5">
+                        {signal.reason}
+                    </p>
 
-                {/* TX */}
-                {signal.txHash && (
-                    <a
-                        href={`https://basescan.org/tx/${signal.txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[10px] text-orange-500/70 hover:text-orange-400 mb-2.5 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <ExternalLink className="h-2.5 w-2.5" />
-                        View on BaseScan
-                    </a>
-                )}
+                    {/* TX */}
+                    {signal.txHash && (
+                        <a
+                            href={`https://basescan.org/tx/${signal.txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[10px] text-orange-500/70 hover:text-orange-400 mb-2.5 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <ExternalLink className="h-2.5 w-2.5" />
+                            View on BaseScan
+                        </a>
+                    )}
 
-                {/* Engagement */}
-                <div className="flex items-center gap-1 -ml-2">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setShowComments(!showComments); }}
-                        className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${showComments ? "text-orange-400" : "text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5"}`}
-                    >
-                        <MessageCircle className="h-5 w-5 md:h-3.5 md:w-3.5" />
-                        <span className="text-xs md:text-[11px]">{social.comments.length}</span>
-                    </button>
+                    {/* Engagement */}
+                    <div className="flex items-center gap-1 -ml-2">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setShowComments(!showComments); }}
+                            className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${showComments ? "text-orange-400" : "text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5"}`}
+                        >
+                            <MessageCircle className="h-5 w-5 md:h-3.5 md:w-3.5" />
+                            <span className="text-xs md:text-[11px]">{social.comments.length}</span>
+                        </button>
 
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleRepost(); }}
-                        className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${reposted ? "text-emerald-400" : "text-zinc-600 hover:text-emerald-400 hover:bg-emerald-400/5"
-                            }`}
-                    >
-                        <Repeat2 className="h-5 w-5 md:h-3.5 md:w-3.5" />
-                        <span className="text-xs md:text-[11px]">{social.reposts}</span>
-                    </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleRepost(); }}
+                            className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${reposted ? "text-emerald-400" : "text-zinc-600 hover:text-emerald-400 hover:bg-emerald-400/5"
+                                }`}
+                        >
+                            <Repeat2 className="h-5 w-5 md:h-3.5 md:w-3.5" />
+                            <span className="text-xs md:text-[11px]">{social.reposts}</span>
+                        </button>
 
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleLike(); }}
-                        className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${liked ? "text-pink-500" : "text-zinc-600 hover:text-pink-500 hover:bg-pink-500/5"
-                            }`}
-                    >
-                        <Heart className="h-5 w-5 md:h-3.5 md:w-3.5" fill={liked ? "currentColor" : "none"} />
-                        <span className="text-xs md:text-[11px]">{social.likes}</span>
-                    </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleLike(); }}
+                            className={`flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full transition-all ${liked ? "text-pink-500" : "text-zinc-600 hover:text-pink-500 hover:bg-pink-500/5"
+                                }`}
+                        >
+                            <Heart className="h-5 w-5 md:h-3.5 md:w-3.5" fill={liked ? "currentColor" : "none"} />
+                            <span className="text-xs md:text-[11px]">{social.likes}</span>
+                        </button>
 
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleShare(); }}
-                        className="flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all"
-                    >
-                        <Share className="h-5 w-5 md:h-3.5 md:w-3.5" />
-                    </button>
-                </div>
-
-                {/* Comments Section */}
-                {showComments && (
-                    <div className="mt-3 pt-3 border-t border-white/[0.04] space-y-3">
-                        {/* Existing comments */}
-                        {social.comments.length > 0 && (
-                            <div className="space-y-2.5 max-h-48 overflow-y-auto">
-                                {social.comments.map((c) => (
-                                    <div key={c.id} className="flex gap-2">
-                                        <div className="h-6 w-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-zinc-500 shrink-0">
-                                            {c.wallet.slice(2, 4).toUpperCase()}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="text-[11px] font-mono text-zinc-400">{shortWallet(c.wallet)}</span>
-                                                <span className="text-zinc-700 text-[10px]">·</span>
-                                                <span className="text-zinc-700 text-[10px]">{timeAgo(c.createdAt)}</span>
-                                            </div>
-                                            <p className="text-[12px] text-zinc-300 leading-relaxed">{c.content}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Comment input */}
-                        <div className="flex items-center gap-2">
-                            <input
-                                ref={commentInputRef}
-                                type="text"
-                                value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleComment()}
-                                placeholder={wallet ? "Post your reply..." : "Connect wallet to comment"}
-                                disabled={!wallet || submitting}
-                                className="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-lg h-8 px-3 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-orange-500/30 disabled:opacity-50 transition-all"
-                            />
-                            <button
-                                onClick={handleComment}
-                                disabled={!wallet || !commentText.trim() || submitting}
-                                className="h-8 w-8 rounded-lg bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center text-white disabled:opacity-30 hover:opacity-90 transition-all shrink-0"
-                            >
-                                <Send className="h-3.5 w-3.5" />
-                            </button>
-                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleShare(); }}
+                            className="flex items-center gap-1.5 px-3 py-2 md:px-2 md:py-1 rounded-full text-zinc-600 hover:text-orange-400 hover:bg-orange-400/5 transition-all"
+                        >
+                            <Share className="h-5 w-5 md:h-3.5 md:w-3.5" />
+                        </button>
                     </div>
-                )}
+
+                    {/* Comments Section */}
+                    {showComments && (
+                        <div className="mt-3 pt-3 border-t border-white/[0.04] space-y-3">
+                            {/* Existing comments */}
+                            {social.comments.length > 0 && (
+                                <div className="space-y-2.5 max-h-48 overflow-y-auto">
+                                    {social.comments.map((c) => (
+                                        <div key={c.id} className="flex gap-2">
+                                            <div className="h-6 w-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-zinc-500 shrink-0">
+                                                {c.wallet.slice(2, 4).toUpperCase()}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[11px] font-mono text-zinc-400">{shortWallet(c.wallet)}</span>
+                                                    <span className="text-zinc-700 text-[10px]">·</span>
+                                                    <span className="text-zinc-700 text-[10px]">{timeAgo(c.createdAt)}</span>
+                                                </div>
+                                                <p className="text-[12px] text-zinc-300 leading-relaxed">{c.content}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Comment input */}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    ref={commentInputRef}
+                                    type="text"
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleComment()}
+                                    placeholder={wallet ? "Post your reply..." : "Connect wallet to comment"}
+                                    disabled={!wallet || submitting}
+                                    className="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-lg h-8 px-3 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-orange-500/30 disabled:opacity-50 transition-all"
+                                />
+                                <button
+                                    onClick={handleComment}
+                                    disabled={!wallet || !commentText.trim() || submitting}
+                                    className="h-8 w-8 rounded-lg bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center text-white disabled:opacity-30 hover:opacity-90 transition-all shrink-0"
+                                >
+                                    <Send className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
         </article >
     );
 }
@@ -530,7 +529,7 @@ function RightSidebar({ agents }: { agents: AgentInfo[] }) {
 /* ───────────────────────── MAIN PAGE ───────────────────────── */
 
 export default function FeedPage() {
-    const [signals, setSignals] = useState<FeedSignal[]>([]);
+    const [signals, setSignals] = useState<LocalFeedSignal[]>([]);
     const [agents, setAgents] = useState<AgentInfo[]>([]);
     const [tab, setTab] = useState<"all" | "buys" | "sells">("all");
     const [loading, setLoading] = useState(true);
