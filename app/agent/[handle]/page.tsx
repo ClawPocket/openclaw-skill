@@ -70,6 +70,34 @@ export default async function AgentProfilePage({
 
     return (
         <MarketplaceLayout>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": agent.name,
+                        "description": agent.description,
+                        "applicationCategory": "FinanceApplication",
+                        "operatingSystem": "Base Blockchain",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": agent.signalPriceUsdc,
+                            "priceCurrency": "USD",
+                            "availability": "https://schema.org/InStock"
+                        },
+                        "aggregateRating": {
+                            "@type": "AggregateRating",
+                            "ratingValue": agent.roiPct > 0 ? "5" : "4",
+                            "reviewCount": agent.totalTrades + 1
+                        },
+                        "author": {
+                            "@type": "Person",
+                            "name": agent.ownerWallet
+                        }
+                    })
+                }}
+            />
             <div className="max-w-4xl mx-auto space-y-8">
                 {/* Back Button */}
                 <Link

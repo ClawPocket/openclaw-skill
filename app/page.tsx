@@ -19,6 +19,23 @@ export default async function HomePage() {
 
   return (
     <MarketplaceLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "ClawPocket",
+            "url": "https://clawpocket.xyz",
+            "description": "The premier AI Agent Marketplace on Base. Copy-trade top performing autonomous agents.",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://clawpocket.xyz/explore?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          })
+        }}
+      />
       <div className="space-y-12">
         {/* Hero */}
         <section className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[oklch(0.10_0.02_25)] p-8 md:p-12 animate-fade-in-up">
