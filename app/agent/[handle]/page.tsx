@@ -3,7 +3,7 @@ import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Badge } from "@/components/ui/badge";
 import { getAgent, getSignals } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink, MessageCircle } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink, MessageCircle, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
@@ -263,6 +263,13 @@ export default async function AgentProfilePage({
                         </div>
                     )}
                 </section>
+
+                {/* Danger Zone (Owner Only) */}
+                <DeleteAgentButton
+                    agentId={agent.id}
+                    agentName={agent.name}
+                    ownerWallet={agent.ownerWallet}
+                />
             </div>
         </MarketplaceLayout>
     );

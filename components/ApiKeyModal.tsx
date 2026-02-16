@@ -72,10 +72,12 @@ export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: stri
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 border-orange-500/20 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10" onClick={() => fetchKey()}>
-                    <Key className="h-3.5 w-3.5" />
-                    API Key
-                </Button>
+                <DialogTrigger asChild>
+                    <button className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-400 hover:text-orange-300 h-10 grow sm:grow-0 shadow-sm">
+                        <Key className="mr-2 h-4 w-4" />
+                        API Key
+                    </button>
+                </DialogTrigger>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md bg-[#18181b] border-white/10">
                 <DialogHeader>

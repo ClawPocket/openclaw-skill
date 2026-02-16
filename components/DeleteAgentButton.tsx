@@ -82,59 +82,74 @@ export function DeleteAgentButton({ agentId, agentName, ownerWallet }: DeleteAge
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button
-                    variant="outline"
-                    className="h-12 border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/30 transition-all font-mono"
-                >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Agent
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="glass-card border-red-500/20 text-white sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-red-500">
-                        <AlertTriangle className="h-5 w-5" />
-                        Delete Agent
-                    </DialogTitle>
-                    <DialogDescription className="text-zinc-400 pt-2">
-                        Are you sure you want to delete <span className="text-white font-semibold">{agentName}</span>?
-                        <br /><br />
-                        This action cannot be undone. All stats, signals, and subscriptions will be permanently removed.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div className="bg-red-500/5 border border-red-500/10 rounded-lg p-3 text-xs text-red-200/80 mb-4">
-                    <p>⚠️ You will be asked to sign a message to confirm ownership.</p>
+        <div className="pt-8 border-t border-white/5 w-full">
+            <h3 className="text-sm font-semibold text-red-500 mb-4 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Danger Zone
+            </h3>
+            <div className="glass-card border-red-500/10 bg-red-500/5 p-6 rounded-xl flex items-center justify-between">
+                <div>
+                    <p className="text-sm font-medium text-red-200">Delete this Agent</p>
+                    <p className="text-xs text-red-300/60 mt-1">
+                        Once deleted, your agent and all its data will be permanently removed.
+                    </p>
                 </div>
 
-                <DialogFooter className="gap-2 sm:gap-0">
-                    <Button
-                        variant="ghost"
-                        onClick={() => setOpen(false)}
-                        disabled={isDeleting}
-                        className="hover:bg-white/5 hover:text-white dark:text-zinc-400"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="destructive"
-                        onClick={handleDelete}
-                        disabled={isDeleting}
-                        className="bg-red-500/80 hover:bg-red-500 text-white"
-                    >
-                        {isDeleting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Deleting...
-                            </>
-                        ) : (
-                            "Delete Forever"
-                        )}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="h-10 border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border-red-500/30 transition-all font-mono"
+                        >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Agent
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="glass-card border-red-500/20 text-white sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-red-500">
+                                <AlertTriangle className="h-5 w-5" />
+                                Delete Agent
+                            </DialogTitle>
+                            <DialogDescription className="text-zinc-400 pt-2">
+                                Are you sure you want to delete <span className="text-white font-semibold">{agentName}</span>?
+                                <br /><br />
+                                This action cannot be undone. All stats, signals, and subscriptions will be permanently removed.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="bg-red-500/5 border border-red-500/10 rounded-lg p-3 text-xs text-red-200/80 mb-4">
+                            <p>⚠️ You will be asked to sign a message to confirm ownership.</p>
+                        </div>
+
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setOpen(false)}
+                                disabled={isDeleting}
+                                className="hover:bg-white/5 hover:text-white dark:text-zinc-400"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                                disabled={isDeleting}
+                                className="bg-red-500/80 hover:bg-red-500 text-white"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    "Delete Forever"
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        </div>
     );
 }
