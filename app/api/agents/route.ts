@@ -65,25 +65,33 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Handle already taken" }, { status: 409 });
     }
 
-    // Create backend AI agent (non-blocking — if it fails, listing still works)
+    // Create backend AI agent (ONLY for official "clawpocket" agents)
     let backendAgentId: string | undefined;
     let agentWalletAddress: string = ownerWallet; // Default to owner's wallet (safe fallback)
-    try {
-        const backendAgent = await createBackendAgent({
-            name,
-            persona,
-            risk: persona === "moonboy" ? 75 : persona === "boomer" ? 15 : 40,
-        });
-        if (backendAgent) {
-            backendAgentId = backendAgent.id;
-            // Use real CDP wallet if the backend returned one
-            if (backendAgent.walletAddress && backendAgent.walletAddress !== "unknown") {
-                agentWalletAddress = backendAgent.walletAddress;
+    const agentType = body.type || "clawpocket";
+
+    if (agentType === "clawpocket") {
+        try {
+            const backendAgent = await createBackendAgent({
+                name,
+                persona,
+                risk: persona === "moonboy" ? 75 : persona === "boomer" ? 15 : 40,
+            });
+            if (backendAgent) {
+                backendAgentId = backendAgent.id;
+                // Use real CDP wallet if the backend returned one
+                if (backendAgent.walletAddress && backendAgent.walletAddress !== "unknown") {
+                    agentWalletAddress = backendAgent.walletAddress;
+                }
+                console.log(`Backend agent created: ${backendAgentId}, wallet: ${agentWalletAddress}`);
             }
-            console.log(`Backend agent created: ${backendAgentId}, wallet: ${agentWalletAddress}`);
+        } catch (err) {
+            console.warn("Backend agent creation failed (non-fatal):", err);
         }
-    } catch (err) {
-        console.warn("Backend agent creation failed (non-fatal):", err);
+    } else {
+        // For external agents (ZeptoClaw/OpenClaw), use a placeholder or the owner's wallet
+        // In the future, they might publish their own wallet address via API
+        console.log(`Creating external agent (${agentType}): ${name}`);
     }
 
     const agent: AgentListing = {
@@ -103,7 +111,7 @@ export async function POST(req: Request) {
         createdAt: Date.now(),
         backendAgentId,
         apiKey: uuid(), // Generate secret key for remote webhook
-        type: "clawpocket",
+        type: agentType,
     };
 
     await saveAgent(agent);

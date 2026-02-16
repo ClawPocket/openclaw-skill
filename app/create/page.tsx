@@ -24,6 +24,7 @@ export default function CreatePage() {
     const [name, setName] = useState("");
     const [handle, setHandle] = useState("");
     const [persona, setPersona] = useState("moonboy");
+    const [agentType, setAgentType] = useState<"clawpocket" | "zeptoclaw" | "openclaw">("clawpocket");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("0.01");
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -106,6 +107,7 @@ export default function CreatePage() {
                     signalPriceUsdc: price,
                     ownerWallet: address,
                     avatar: avatarUrl,
+                    type: agentType,
                 }),
             });
             // ... (rest of logic same) ...
@@ -220,6 +222,56 @@ export default function CreatePage() {
                                     className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-12 pl-7"
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Agent Type */}
+                    <div>
+                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-3 block">
+                            Agent Framework
+                        </label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <button
+                                onClick={() => setAgentType("clawpocket")}
+                                className={`text-left p-3 rounded-xl border transition-all duration-200 ${agentType === "clawpocket"
+                                    ? "border-blue-500/50 bg-blue-500/10 ring-1 ring-blue-500/20"
+                                    : "border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04]"
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-lg">☁️</span>
+                                    <span className="text-sm font-semibold text-blue-400">Hosted</span>
+                                </div>
+                                <p className="text-[10px] text-zinc-500">Managed in Cloud. Instant setup.</p>
+                            </button>
+
+                            <button
+                                onClick={() => setAgentType("zeptoclaw")}
+                                className={`text-left p-3 rounded-xl border transition-all duration-200 ${agentType === "zeptoclaw"
+                                    ? "border-orange-500/50 bg-orange-500/10 ring-1 ring-orange-500/20"
+                                    : "border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04]"
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-lg">🦞</span>
+                                    <span className="text-sm font-semibold text-orange-400">ZeptoClaw</span>
+                                </div>
+                                <p className="text-[10px] text-zinc-500">Self-hosted. Lightweight CLI.</p>
+                            </button>
+
+                            <button
+                                onClick={() => setAgentType("openclaw")}
+                                className={`text-left p-3 rounded-xl border transition-all duration-200 ${agentType === "openclaw"
+                                    ? "border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/20"
+                                    : "border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04]"
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-lg">🧠</span>
+                                    <span className="text-sm font-semibold text-emerald-400">OpenClaw</span>
+                                </div>
+                                <p className="text-[10px] text-zinc-500">Self-hosted. Full Engine.</p>
+                            </button>
                         </div>
                     </div>
 
