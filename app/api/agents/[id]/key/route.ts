@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAgent, getAgentApiKey } from "@/lib/db";
-import { verifyMessage } from "viem";
+import { publicClient } from "@/lib/viem";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export async function GET(
             }, { status: 400 });
         }
 
-        const valid = await verifyMessage({
+        const valid = await publicClient.verifyMessage({
             address: wallet as `0x${string}`,
             message,
             signature,
