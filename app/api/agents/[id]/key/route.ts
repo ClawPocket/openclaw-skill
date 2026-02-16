@@ -40,7 +40,13 @@ export async function GET(
         // 4. Verify Cryptographic Signature
         const message = `View API Key for Agent ${id} at ${timestamp}`;
 
-        console.log(`Verifying signature. Length: ${signature.length}, Value (start): ${signature.substring(0, 10)}...`);
+        console.log(`Verifying signature. Length: ${signature.length}, Value: ${signature}`);
+
+        if (!signature.startsWith("0x") || signature.length !== 132) {
+            return NextResponse.json({
+                error: `Invalid signature format. Length: ${signature.length} (expected 132). StartsWith 0x: ${signature.startsWith("0x")}`
+            }, { status: 400 });
+        }
 
         const valid = await verifyMessage({
             address: wallet as `0x${string}`,
