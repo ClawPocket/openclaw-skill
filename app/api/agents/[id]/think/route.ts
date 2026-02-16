@@ -18,7 +18,26 @@ export async function POST(
 
     // Use the agent's backendId if stored, otherwise use the local id
     const backendId = (agent as any).backendAgentId || id;
-    const thought = await triggerAgentThink(backendId, message);
+    let thought = await triggerAgentThink(backendId, message);
+
+    // If agent not found on backend (likely due to server restart/wipe), try to restore it
+    if (thought.includes("404") || thought.includes("Agent not found")) {
+        console.log(`⚠️ Agent ${backendId} not found on backend. Attempting to restore...`);
+        const { createBackendAgent } = await import("@/lib/backendClient");
+        const restored = await createBackendAgent({
+            name: agent.name,
+            persona: agent.persona,
+            risk: agent.persona === "moonboy" ? 75 : agent.persona === "boomer" ? 15 : 40,
+            id: backendId, // Restore with SAME ID
+        });
+
+        if (restored) {
+            console.log(`✅ Agent ${backendId} restored. Retrying think...`);
+            thought = await triggerAgentThink(backendId, message);
+        } else {
+            thought = "Error: Agent could not be restored on backend.";
+        }
+    }
 
     return NextResponse.json({ thought, agentId: id });
 }

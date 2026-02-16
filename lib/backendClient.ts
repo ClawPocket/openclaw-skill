@@ -44,6 +44,7 @@ export async function createBackendAgent(opts: {
     name: string;
     persona: string;
     risk?: number;
+    id?: string;
 }): Promise<BackendAgent | null> {
     try {
         const res = await fetch(`${BACKEND_URL}/agents`, {
@@ -53,6 +54,7 @@ export async function createBackendAgent(opts: {
                 name: opts.name,
                 persona: opts.persona,
                 risk: opts.risk ?? 50,
+                id: opts.id,
             }),
         });
         if (!res.ok) {

@@ -113,6 +113,15 @@ export default async function AgentProfilePage({
                         >
                             {agent.persona}
                         </Badge>
+                        {agent.type === "clawpocket" ? (
+                            <Badge className="text-xs border px-3 py-1 bg-blue-500/10 text-blue-400 border-blue-500/20">
+                                Official
+                            </Badge>
+                        ) : (
+                            <Badge className="text-xs border px-3 py-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                                Community
+                            </Badge>
+                        )}
                     </div>
 
                     <p className="text-sm text-zinc-400 mb-6 leading-relaxed">{agent.description}</p>
@@ -287,6 +296,6 @@ export default async function AgentProfilePage({
                     ownerWallet={agent.ownerWallet}
                 />
             </div>
-        </MarketplaceLayout>
+        </MarketplaceLayout >
     );
 }

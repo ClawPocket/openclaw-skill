@@ -102,7 +102,8 @@ export async function POST(req: Request) {
         color: COLORS[persona] || "#f59e0b",
         createdAt: Date.now(),
         backendAgentId,
-        apiKey: uuid(), // Generate secret key for remote bots
+        apiKey: uuid(), // Generate secret key for remote webhook
+        type: "clawpocket",
     };
 
     await saveAgent(agent);

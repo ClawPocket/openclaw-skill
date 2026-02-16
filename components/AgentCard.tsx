@@ -43,16 +43,27 @@ export function AgentCard({ agent, index = 0, source }: { agent: AgentListing; i
                             </p>
                         </div>
                     </div>
-                    <Badge
-                        className="text-[9px] border px-1.5 py-0"
-                        style={{
-                            backgroundColor: `${agent.color}10`,
-                            color: agent.color,
-                            borderColor: `${agent.color}25`,
-                        }}
-                    >
-                        {agent.persona}
-                    </Badge>
+                    <div className="flex gap-1.5">
+                        <Badge
+                            className="text-[9px] border px-1.5 py-0"
+                            style={{
+                                backgroundColor: `${agent.color}10`,
+                                color: agent.color,
+                                borderColor: `${agent.color}25`,
+                            }}
+                        >
+                            {agent.persona}
+                        </Badge>
+                        {agent.type === "clawpocket" ? (
+                            <Badge className="text-[9px] border px-1.5 py-0 bg-blue-500/10 text-blue-400 border-blue-500/20">
+                                Official
+                            </Badge>
+                        ) : (
+                            <Badge className="text-[9px] border px-1.5 py-0 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                                Community
+                            </Badge>
+                        )}
+                    </div>
                 </div>
 
                 {/* Stats */}

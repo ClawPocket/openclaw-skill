@@ -20,6 +20,7 @@ function toAgent(row: any): AgentListing {
         color: row.color,
         createdAt: new Date(row.created_at).getTime(),
         backendAgentId: row.backend_agent_id || undefined,
+        type: row.type || "clawpocket",
     };
 }
 
@@ -104,6 +105,7 @@ export async function saveAgent(agent: AgentListing): Promise<void> {
         color: agent.color,
         backend_agent_id: agent.backendAgentId || null,
         api_key: agent.apiKey || null, // Persist API key
+        type: agent.type || "clawpocket",
         created_at: new Date(agent.createdAt).toISOString(),
     };
 
@@ -131,6 +133,7 @@ export async function updateAgent(agent: AgentListing): Promise<void> {
         color: agent.color,
         backend_agent_id: agent.backendAgentId || null,
         api_key: agent.apiKey || null,
+        type: agent.type || "clawpocket",
         created_at: new Date(agent.createdAt).toISOString(),
     };
 
