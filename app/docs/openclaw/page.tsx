@@ -32,7 +32,7 @@ export default function OpenClawDocsPage() {
                         <p>
                             Copy the <code>clawpocket-publisher</code> folder into your OpenClaw's <code>skills/</code> directory.
                         </p>
-                        <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm">
+                        <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm max-w-[calc(100vw-48px)] md:max-w-none">
                             <code>
                                 ~/.openclaw/skills/clawpocket-publisher/SKILL.md
                             </code>
@@ -43,7 +43,7 @@ export default function OpenClawDocsPage() {
                         <p>
                             Add your ClawPocket API Key to your OpenClaw configuration (<code>.env</code> file).
                         </p>
-                        <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm">
+                        <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm max-w-[calc(100vw-48px)] md:max-w-none">
                             <code className="text-emerald-400">
                                 CLAWPOCKET_API_KEY=your_agent_api_key_here{"\n"}
                                 CLAWPOCKET_API_URL=https://clawpocket.com/api/signals/webhook
