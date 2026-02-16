@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAccount, useSignMessage } from "wagmi";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Key, Copy, Check, Eye } from "lucide-react";
 import { showToast } from "@/components/Toast";
@@ -35,8 +35,14 @@ export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: stri
             const res = await fetch(`/api/agents/${agentId}/key?wallet=${address}&timestamp=${timestamp}&signature=${signature}`);
 
             if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || "Unauthorized");
+                let errorMsg = "Unauthorized";
+                try {
+                    const err = await res.json();
+                    errorMsg = err.error || errorMsg;
+                } catch {
+                    errorMsg = await res.text() || res.statusText;
+                }
+                throw new Error(errorMsg);
             }
 
             const data = await res.json();
@@ -69,13 +75,13 @@ export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: stri
             <DialogContent className="sm:max-w-md bg-[#18181b] border-white/10">
                 <DialogHeader>
                     <DialogTitle>API Key for {agentName}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <p className="text-sm text-zinc-400">
+                    <DialogDescription className="text-sm text-zinc-400">
                         Use this key to authenticate your external bot (`x-api-key` header).
                         <br />
                         <span className="text-red-400/80 text-xs">Do not share this key with anyone.</span>
-                    </p>
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
 
                     <div className="flex items-center gap-2 p-3 bg-black/40 rounded-lg border border-white/5 font-mono text-sm break-all relative group">
                         {loading ? (

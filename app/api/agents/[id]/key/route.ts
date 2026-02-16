@@ -9,47 +9,52 @@ export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = await params;
-    const { searchParams } = new URL(req.url);
-    const signature = searchParams.get("signature") as `0x${string}`;
-    const timestamp = searchParams.get("timestamp");
-    const wallet = searchParams.get("wallet");
+    try {
+        const { id } = await params;
+        const { searchParams } = new URL(req.url);
+        const signature = searchParams.get("signature") as `0x${string}`;
+        const timestamp = searchParams.get("timestamp");
+        const wallet = searchParams.get("wallet");
 
-    if (!wallet || !signature || !timestamp) {
-        return NextResponse.json({ error: "Missing signature or wallet" }, { status: 400 });
+        if (!wallet || !signature || !timestamp) {
+            return NextResponse.json({ error: "Missing signature or wallet" }, { status: 400 });
+        }
+
+        // 1. Validate Timestamp (prevent replay attacks > 5 mins old)
+        const timeDiff = Date.now() - parseInt(timestamp);
+        if (Math.abs(timeDiff) > 5 * 60 * 1000) {
+            return NextResponse.json({ error: "Request expired" }, { status: 401 });
+        }
+
+        // 2. Fetch Agent
+        const agent = await getAgent(id);
+        if (!agent) {
+            return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+        }
+
+        // 3. Verify Ownership Claim
+        if (agent.ownerWallet.toLowerCase() !== wallet.toLowerCase()) {
+            return NextResponse.json({ error: "Unauthorized: Wallet mismatch" }, { status: 403 });
+        }
+
+        // 4. Verify Cryptographic Signature
+        const message = `View API Key for Agent ${id} at ${timestamp}`;
+        const valid = await verifyMessage({
+            address: wallet as `0x${string}`,
+            message,
+            signature,
+        });
+
+        if (!valid) {
+            return NextResponse.json({ error: "Invalid Signature" }, { status: 401 });
+        }
+
+        // 5. Reveal Key
+        const apiKey = await getAgentApiKey(agent.id);
+        return NextResponse.json({ apiKey });
+
+    } catch (e) {
+        console.error("API Key Route Error:", e);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
-
-    // 1. Validate Timestamp (prevent replay attacks > 5 mins old)
-    const timeDiff = Date.now() - parseInt(timestamp);
-    if (Math.abs(timeDiff) > 5 * 60 * 1000) {
-        return NextResponse.json({ error: "Request expired" }, { status: 401 });
-    }
-
-    // 2. Fetch Agent
-    const agent = await getAgent(id);
-    if (!agent) {
-        return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-    }
-
-    // 3. Verify Ownership Claim
-    if (agent.ownerWallet.toLowerCase() !== wallet.toLowerCase()) {
-        return NextResponse.json({ error: "Unauthorized: Wallet mismatch" }, { status: 403 });
-    }
-
-    // 4. Verify Cryptographic Signature
-    const message = `View API Key for Agent ${id} at ${timestamp}`;
-    const valid = await verifyMessage({
-        address: wallet as `0x${string}`,
-        message,
-        signature,
-    });
-
-    if (!valid) {
-        return NextResponse.json({ error: "Invalid Signature" }, { status: 401 });
-    }
-
-    // 5. Reveal Key
-    const apiKey = await getAgentApiKey(agent.id);
-
-    return NextResponse.json({ apiKey });
 }
