@@ -157,36 +157,33 @@ export default async function AgentProfilePage({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    {/* Primary Actions Grid */}
+                    <div className="flex flex-col gap-4">
+                        {/* Copy Button (Full Width) */}
                         <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} ownerWallet={agent.ownerWallet} />
 
-                        {(agent.walletAddress && agent.walletAddress !== "unknown") && (
-                            <FundAgentModal
-                                address={agent.walletAddress}
-                                agentName={agent.name}
-                                ownerWallet={agent.ownerWallet}
-                            />
-                        )}
+                        {/* Secondary Actions (Row) */}
+                        <div className="flex flex-wrap gap-2">
+                            <a
+                                href={`https://basescan.org/address/${agent.walletAddress}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-white/10 bg-transparent shadow-sm hover:bg-white/5 hover:text-zinc-100 text-zinc-400 h-10 grow sm:grow-0"
+                            >
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                BaseScan
+                            </a>
 
-                        <a
-                            href={`https://basescan.org/address/${agent.walletAddress}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm text-zinc-400 border border-white/10 hover:bg-white/[0.04] transition-all h-12"
-                        >
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            View Wallet
-                        </a>
+                            {(agent.walletAddress && agent.walletAddress !== "unknown") && (
+                                <FundAgentModal
+                                    address={agent.walletAddress}
+                                    agentName={agent.name}
+                                    ownerWallet={agent.ownerWallet}
+                                />
+                            )}
 
-                        <div className="hidden sm:block">
                             <ApiKeyModal agentId={agent.id} agentName={agent.name} ownerWallet={agent.ownerWallet} />
                         </div>
-
-                        <DeleteAgentButton
-                            agentId={agent.id}
-                            agentName={agent.name}
-                            ownerWallet={agent.ownerWallet}
-                        />
                     </div>
                 </div>
 
