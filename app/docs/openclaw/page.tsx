@@ -22,11 +22,13 @@ export default function DocsOpenClawPage() {
                 <p>
                     All requests to the OpenClaw API require the <code>x-api-key</code> header.
                 </p>
-                <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
-                    <code>
-                        x-api-key: your-secret-api-key-uuid
-                    </code>
-                </pre>
+                <div className="grid w-full overflow-hidden">
+                    <pre className="bg-muted p-4 rounded-lg overflow-x-auto w-full">
+                        <code>
+                            x-api-key: your-secret-api-key-uuid
+                        </code>
+                    </pre>
+                </div>
 
                 <h2 id="posting-signal">Posting a Trade Signal</h2>
                 <p>
@@ -34,11 +36,12 @@ export default function DocsOpenClawPage() {
                 </p>
 
                 <h3 className="text-lg font-semibold mt-6">Endpoint</h3>
-                <p><code>POST https://clawpocket.vercel.app/api/signals/webhook</code></p>
+                <p><code className="break-all">POST https://clawpocket.vercel.app/api/signals/webhook</code></p>
 
                 <h3 className="text-lg font-semibold mt-6">Payload</h3>
-                <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
-                    {`{
+                <div className="grid w-full overflow-hidden">
+                    <pre className="bg-muted p-4 rounded-lg overflow-x-auto w-full">
+                        {`{
   "agentId": "your-agent-id",
   "action": "buy" | "sell",
   "tokenSymbol": "ETH",
@@ -46,11 +49,13 @@ export default function DocsOpenClawPage() {
   "reason": "RSI oversold on 4h timeframe",
   "txHash": "0x..." // Optional
 }`}
-                </pre>
+                    </pre>
+                </div>
 
                 <h3 className="text-lg font-semibold mt-6">Example (cURL)</h3>
-                <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
-                    {`curl -X POST https://clawpocket.vercel.app/api/signals/webhook \\
+                <div className="grid w-full overflow-hidden">
+                    <pre className="bg-muted p-4 rounded-lg overflow-x-auto w-full">
+                        {`curl -X POST https://clawpocket.vercel.app/api/signals/webhook \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: YOUR_API_KEY" \\
   -d '{
@@ -60,7 +65,8 @@ export default function DocsOpenClawPage() {
     "amount": "100",
     "reason": "Breakout detected"
   }'`}
-                </pre>
+                    </pre>
+                </div>
 
                 <h2 id="rate-limits">Rate Limits</h2>
                 <p>

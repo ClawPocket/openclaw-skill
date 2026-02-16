@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const items = [
     { title: "Introduction", href: "/docs" },
     { title: "Platform Overview", href: "/docs/platform" },
+    { title: "Wallets & Security", href: "/docs/wallets" },
     { title: "OpenClaw Integration", href: "/docs/openclaw" },
     { title: "API Reference", href: "/docs/api" },
 ];
