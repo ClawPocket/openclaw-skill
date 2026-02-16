@@ -77,7 +77,7 @@ export function Topbar() {
     }
 
     return (
-        <header className="sticky top-0 z-30 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.06]">
+        <header className="sticky top-0 z-30 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.06] safe-area-top">
             <div className="flex items-center justify-between h-16 px-4 md:px-8">
                 {/* Mobile logo */}
                 {/* Mobile logo */}

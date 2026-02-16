@@ -10,7 +10,7 @@ export function MarketplaceLayout({ children }: { children: React.ReactNode }) {
             <MobileNav />
             <main className="md:ml-[240px] min-h-screen pb-20 md:pb-0">
                 <Topbar />
-                <div className="px-4 md:px-8 py-6 md:py-8">
+                <div className="px-4 md:px-8 py-6 md:py-8 safe-p-x">
                     {children}
                 </div>
             </main>
