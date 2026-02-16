@@ -42,9 +42,9 @@ export async function GET(
 
         console.log(`Verifying signature. Length: ${signature.length}, Value: ${signature}`);
 
-        if (!signature.startsWith("0x") || signature.length !== 132) {
+        if (!signature.startsWith("0x")) {
             return NextResponse.json({
-                error: `Invalid signature format. Length: ${signature.length} (expected 132). StartsWith 0x: ${signature.startsWith("0x")}`
+                error: `Invalid signature format. Must start with 0x.`
             }, { status: 400 });
         }
 
