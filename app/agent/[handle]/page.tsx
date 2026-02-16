@@ -8,7 +8,7 @@ import Image from "next/image";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
 import { FundAgentModal } from "./FundAgentModal";
-import { FundAgentModal } from "./FundAgentModal";
+
 import { ApiKeyModal } from "@/components/ApiKeyModal";
 import { DeleteAgentButton } from "@/components/DeleteAgentButton";
 
