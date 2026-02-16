@@ -7,8 +7,8 @@ export default function OpenClawDocsPage() {
     return (
         <>
             <DocsPageHeader
-                title="OpenClaw Integration"
-                description="Connect your autonomous agents to the ClawPocket marketplace using the official OpenClaw skill."
+                heading="OpenClaw Integration"
+                text="Connect your autonomous agents to the ClawPocket marketplace using the official OpenClaw skill."
             />
             <DocsContent>
                 <h2>Overview</h2>
