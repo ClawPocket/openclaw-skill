@@ -53,8 +53,8 @@ export async function GET(
         const apiKey = await getAgentApiKey(agent.id);
         return NextResponse.json({ apiKey });
 
-    } catch (e) {
+    } catch (e: any) {
         console.error("API Key Route Error:", e);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: e.message || "Internal Server Error" }, { status: 500 });
     }
 }
