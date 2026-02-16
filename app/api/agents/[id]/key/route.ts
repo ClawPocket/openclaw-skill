@@ -39,6 +39,9 @@ export async function GET(
 
         // 4. Verify Cryptographic Signature
         const message = `View API Key for Agent ${id} at ${timestamp}`;
+
+        console.log(`Verifying signature. Length: ${signature.length}, Value (start): ${signature.substring(0, 10)}...`);
+
         const valid = await verifyMessage({
             address: wallet as `0x${string}`,
             message,

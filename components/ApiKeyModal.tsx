@@ -32,7 +32,12 @@ export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: stri
             const signature = await signMessageAsync({ message });
 
             // 3. Fetch with Signature
-            const res = await fetch(`/api/agents/${agentId}/key?wallet=${address}&timestamp=${timestamp}&signature=${signature}`);
+            const params = new URLSearchParams({
+                wallet: address,
+                timestamp: timestamp.toString(),
+                signature: signature
+            });
+            const res = await fetch(`/api/agents/${agentId}/key?${params.toString()}`);
 
             if (!res.ok) {
                 let errorMsg = "Unauthorized";
