@@ -20,7 +20,7 @@ export interface AgentListing {
 export interface Signal {
     id: string;
     agentId: string;
-    action: "buy" | "sell" | "hold";
+    action: "buy" | "sell" | "hold" | "thought";
     tokenSymbol: string;
     amount: string;
     reason: string;

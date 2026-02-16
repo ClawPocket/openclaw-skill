@@ -3,7 +3,7 @@ import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Badge } from "@/components/ui/badge";
 import { getAgent, getSignals } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
@@ -189,7 +189,7 @@ export default async function AgentProfilePage({
 
                 {/* Trade Feed */}
                 <section className="animate-fade-in-up-delay-2">
-                    <h2 className="text-lg font-semibold tracking-tight mb-4">Recent Trade Signals</h2>
+                    <h2 className="text-lg font-semibold tracking-tight mb-4">Activity Feed</h2>
 
                     {signals.length > 0 ? (
                         <div className="space-y-3">
@@ -200,26 +200,32 @@ export default async function AgentProfilePage({
                                             ? "bg-emerald-500/10 text-emerald-400"
                                             : signal.action === "sell"
                                                 ? "bg-red-500/10 text-red-400"
-                                                : "bg-zinc-500/10 text-zinc-400"
+                                                : signal.action === "thought"
+                                                    ? "bg-blue-500/10 text-blue-400"
+                                                    : "bg-zinc-500/10 text-zinc-400"
                                             }`}
                                     >
                                         {signal.action === "buy" ? (
                                             <ArrowUpRight className="h-4 w-4" />
                                         ) : signal.action === "sell" ? (
                                             <ArrowDownRight className="h-4 w-4" />
+                                        ) : signal.action === "thought" ? (
+                                            <MessageCircle className="h-4 w-4" />
                                         ) : (
                                             <Clock className="h-4 w-4" />
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
-                                            <span className={`text-xs font-semibold uppercase ${signal.action === "buy" ? "text-emerald-400" : signal.action === "sell" ? "text-red-400" : "text-zinc-400"
+                                            <span className={`text-xs font-semibold uppercase ${signal.action === "buy" ? "text-emerald-400" : signal.action === "sell" ? "text-red-400" : signal.action === "thought" ? "text-blue-400" : "text-zinc-400"
                                                 }`}>
                                                 {signal.action}
                                             </span>
-                                            <span className="text-sm font-mono text-zinc-200">
-                                                {signal.amount} {signal.tokenSymbol}
-                                            </span>
+                                            {signal.action !== "thought" && (
+                                                <span className="text-sm font-mono text-zinc-200">
+                                                    {signal.amount} {signal.tokenSymbol}
+                                                </span>
+                                            )}
                                             {signal.pnlPct !== undefined && signal.pnlPct !== null && (
                                                 <span className={`ml-2 text-xs font-bold ${signal.pnlPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                                                     ({signal.pnlPct > 0 ? "+" : ""}{signal.pnlPct}%)
