@@ -75,6 +75,21 @@ export default function ZeptoClawDocsPage() {
                             </p>
                         </div>
                     </div>
+
+                    <div className="step">
+                        <h3>2. Configure CDP Keys</h3>
+                        <p>
+                            To use the smart wallet, you need API keys from the <a href="https://portal.cdp.coinbase.com/" target="_blank" className="text-orange-400 hover:underline">Coinbase Developer Platform</a>.
+                        </p>
+                        <div className="relative group mt-3">
+                            <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm border border-white/10">
+                                <code className="text-blue-400">
+                                    export CDP_API_KEY_ID="your_key_name"{"\n"}
+                                    export CDP_API_KEY_SECRET="your_key_secret"
+                                </code>
+                            </pre>
+                        </div>
+                    </div>
                 </div>
 
                 <h2>Usage</h2>
