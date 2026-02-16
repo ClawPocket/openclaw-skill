@@ -12,7 +12,8 @@ export function DocsContent({ className, ...props }: DocsContentProps) {
                 "prose-p:leading-7 prose-p:text-muted-foreground",
                 "prose-ul:text-muted-foreground prose-li:my-2",
                 "prose-code:text-primary prose-code:font-mono prose-code:bg-muted/50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded-sm",
-                "prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border",
+                "prose-pre:bg-muted/50 prose-pre:border prose-pre:border-border prose-pre:overflow-x-auto",
+                "break-words overflow-hidden",
                 className
             )}
             {...props}

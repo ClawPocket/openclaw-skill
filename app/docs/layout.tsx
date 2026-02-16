@@ -6,7 +6,7 @@ import { TOC } from "@/components/docs/TOC";
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
     return (
         <MarketplaceLayout>
-            <div className="flex flex-col md:flex-row gap-8 relative items-start">
+            <div className="flex flex-col md:flex-row gap-8 relative items-start min-w-0">
                 <div className="md:hidden w-full sticky top-0 z-30">
                     <MobileDocsNav />
                 </div>
@@ -16,7 +16,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 </aside>
 
                 <main className="flex-1 min-w-0 pb-24 md:pb-12">
-                    <div className="container max-w-4xl mx-auto">
+                    <div className="container max-w-4xl mx-auto overflow-x-hidden">
                         {children}
                     </div>
                 </main>

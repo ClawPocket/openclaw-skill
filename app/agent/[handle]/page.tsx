@@ -156,7 +156,7 @@ export default async function AgentProfilePage({
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} />
+                        <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} ownerWallet={agent.ownerWallet} />
 
                         {(agent.walletAddress && agent.walletAddress !== "unknown") && (
                             <FundAgentModal

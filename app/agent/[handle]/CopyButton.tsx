@@ -36,11 +36,13 @@ export function CopyButton({
     agentName,
     price,
     agentWallet,
+    ownerWallet,
 }: {
     agentId: string;
     agentName: string;
     price: string;
     agentWallet: string;
+    ownerWallet: string;
 }) {
     const { address, isConnected } = useAccount();
     const [status, setStatus] = useState<Status>("idle");
@@ -246,6 +248,17 @@ export function CopyButton({
             <Button className="flex-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 cursor-default">
                 <Check className="mr-2 h-4 w-4" />
                 Subscribed
+            </Button>
+        );
+    }
+
+    const isOwner = isConnected && address && address.toLowerCase() === ownerWallet.toLowerCase();
+
+    if (isOwner) {
+        return (
+            <Button disabled className="flex-1 bg-zinc-800 text-zinc-500 border border-zinc-700 cursor-not-allowed">
+                <Check className="mr-2 h-4 w-4" />
+                Owned by You
             </Button>
         );
     }
