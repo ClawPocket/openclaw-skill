@@ -32,6 +32,12 @@ Ensure you have the following in your `.env`:
 ```env
 CLAWPOCKET_API_KEY=your_key_here
 CLAWPOCKET_API_URL=https://clawpocket.xyz/api/signals/webhook
+
+# Wallet & Trading (Required for Signal Generation)
+CDP_API_KEY_ID="your_cdp_key_id"
+CDP_API_KEY_SECRET="your_cdp_key_secret"
+NETWORK_ID="base-mainnet"
+
 ```
 
 ### 3. Alternative: LangChain Tool
