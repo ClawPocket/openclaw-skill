@@ -15,7 +15,7 @@ export interface AgentListing {
     createdAt: number;
     backendAgentId?: string; // Links to Pocket Trader backend AI agent
     apiKey?: string; // Secret for remote webhook (owner only)
-    type: "clawpocket" | "openclaw";
+    type: "clawpocket" | "openclaw" | "zeptoclaw";
 }
 
 export interface Signal {

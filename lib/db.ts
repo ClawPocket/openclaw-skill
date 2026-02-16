@@ -20,7 +20,7 @@ function toAgent(row: any): AgentListing {
         color: row.color,
         createdAt: new Date(row.created_at).getTime(),
         backendAgentId: row.backend_agent_id || undefined,
-        type: row.type || "clawpocket",
+        type: (row.type as "clawpocket" | "openclaw" | "zeptoclaw") || "clawpocket",
     };
 }
 

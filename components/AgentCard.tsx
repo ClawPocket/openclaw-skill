@@ -58,9 +58,13 @@ export function AgentCard({ agent, index = 0, source }: { agent: AgentListing; i
                             <Badge className="text-[9px] border px-1.5 py-0 bg-blue-500/10 text-blue-400 border-blue-500/20">
                                 Official
                             </Badge>
+                        ) : agent.type === "zeptoclaw" ? (
+                            <Badge className="text-[9px] border px-1.5 py-0 bg-orange-500/10 text-orange-400 border-orange-500/20">
+                                ZeptoClaw
+                            </Badge>
                         ) : (
                             <Badge className="text-[9px] border px-1.5 py-0 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                                Community
+                                OpenClaw
                             </Badge>
                         )}
                     </div>
