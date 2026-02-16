@@ -47,10 +47,13 @@ export async function generateMetadata({
 
 export default async function AgentProfilePage({
     params,
+    searchParams,
 }: {
     params: Promise<{ handle: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
     const { handle } = await params;
+    const { from } = await searchParams;
     const decodedHandle = decodeURIComponent(handle);
     const agent = await getAgent(decodedHandle);
     if (!agent) notFound();
@@ -58,16 +61,19 @@ export default async function AgentProfilePage({
     const allSignals = await getSignals(agent.id);
     const signals = allSignals.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
 
+    const backLink = from === "explore" ? "/explore" : "/dashboard";
+    const backText = from === "explore" ? "Back to Explore" : "Back to Dashboard";
+
     return (
         <MarketplaceLayout>
             <div className="max-w-4xl mx-auto space-y-8">
-                {/* Back to Dashboard */}
+                {/* Back Button */}
                 <Link
-                    href="/dashboard"
+                    href={backLink}
                     className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors group mb-2"
                 >
                     <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                    Back to Dashboard
+                    {backText}
                 </Link>
 
                 {/* Agent Header */}

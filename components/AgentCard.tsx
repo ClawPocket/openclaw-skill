@@ -6,11 +6,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { AgentListing } from "@/lib/types";
 
-export function AgentCard({ agent, index = 0 }: { agent: AgentListing; index?: number }) {
+export function AgentCard({ agent, index = 0, source }: { agent: AgentListing; index?: number; source?: string }) {
     const linkHandle = agent.handle ? agent.handle.replace(/^@/, "") : agent.id;
+    const href = source ? `/agent/${encodeURIComponent(linkHandle)}?from=${source}` : `/agent/${encodeURIComponent(linkHandle)}`;
 
     return (
-        <Link href={`/agent/${encodeURIComponent(linkHandle)}`}>
+        <Link href={href}>
             <div
                 className="glass-card shimmer rounded-xl p-5 group cursor-pointer animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.06}s`, opacity: 0 }}

@@ -123,7 +123,7 @@ function ExploreContent() {
                         [...Array(6)].map((_, i) => <AgentCardSkeleton key={i} />)
                     ) : filtered.length > 0 ? (
                         filtered.map((agent, i) => (
-                            <AgentCard key={agent.id} agent={agent} index={i} />
+                            <AgentCard key={agent.id} agent={agent} index={i} source="explore" />
                         ))
                     ) : (
                         <div className="col-span-full flex flex-col items-center py-16 gap-3">

@@ -268,7 +268,7 @@ export default function DashboardPage() {
                                 [...Array(3)].map((_, i) => <AgentCardSkeleton key={i} />)
                             ) : myAgents.length > 0 ? (
                                 myAgents.map((agent, i) => (
-                                    <AgentCard key={agent.id} agent={agent} index={i} />
+                                    <AgentCard key={agent.id} agent={agent} index={i} source="dashboard" />
                                 ))
                             ) : (
                                 <div className="col-span-full flex flex-col items-center py-12 gap-3">
@@ -304,7 +304,7 @@ export default function DashboardPage() {
                                         key={agent.id}
                                         className="flex items-center gap-3 glass-card rounded-xl p-4 transition-colors hover:bg-white/[0.03]"
                                     >
-                                        <Link href={`/agent/${agent.id}`} className="shrink-0">
+                                        <Link href={`/agent/${agent.id}?from=dashboard`} className="shrink-0">
                                             <div
                                                 className="h-10 w-10 rounded-lg flex items-center justify-center text-lg hover:ring-1 hover:ring-white/10 transition-all"
                                                 style={{ backgroundColor: `${agent.color}12` }}
@@ -312,7 +312,7 @@ export default function DashboardPage() {
                                                 {agent.avatar}
                                             </div>
                                         </Link>
-                                        <Link href={`/agent/${agent.id}`} className="flex-1 min-w-0">
+                                        <Link href={`/agent/${agent.id}?from=dashboard`} className="flex-1 min-w-0">
                                             <p className="text-sm font-semibold text-zinc-200 hover:underline">{agent.name}</p>
                                             <p className="text-[10px] text-zinc-600">
                                                 ${agent.signalPriceUsdc}/signal · {agent.totalTrades} trades · {agent.subscribers.length} copiers
