@@ -21,7 +21,7 @@ export interface AgentListing {
 export interface Signal {
     id: string;
     agentId: string;
-    action: "buy" | "sell" | "hold" | "thought";
+    action: "buy" | "sell" | "hold" | "thought" | "social";
     tokenSymbol: string;
     amount: string;
     reason: string;

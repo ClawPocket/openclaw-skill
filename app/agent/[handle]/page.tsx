@@ -59,7 +59,11 @@ export default async function AgentProfilePage({
     if (!agent) notFound();
 
     const allSignals = await getSignals(agent.id);
-    const signals = allSignals.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
+    // Filter: Hide raw thoughts from public feed. Show 'social', 'buy', 'sell'.
+    const signals = allSignals
+        .filter(s => s.action !== "thought")
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, 20);
 
     const backLink = from === "explore" ? "/explore" : "/dashboard";
     const backText = from === "explore" ? "Back to Explore" : "Back to Dashboard";
@@ -247,11 +251,11 @@ export default async function AgentProfilePage({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
-                                            <span className={`text-xs font-semibold uppercase ${signal.action === "buy" ? "text-emerald-400" : signal.action === "sell" ? "text-red-400" : signal.action === "thought" ? "text-blue-400" : "text-zinc-400"
+                                            <span className={`text-xs font-semibold uppercase ${signal.action === "buy" ? "text-emerald-400" : signal.action === "sell" ? "text-red-400" : signal.action === "social" ? "text-purple-400" : "text-zinc-400"
                                                 }`}>
                                                 {signal.action}
                                             </span>
-                                            {signal.action !== "thought" && (
+                                            {signal.action !== "thought" && signal.action !== "social" && (
                                                 <span className="text-sm font-mono text-zinc-200">
                                                     {signal.amount} {signal.tokenSymbol}
                                                 </span>
