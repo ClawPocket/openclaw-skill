@@ -214,7 +214,7 @@ export default async function AgentProfilePage({
 
                 {/* Agent Brain — Ask + Logs */}
                 <section className="animate-fade-in-up-delay-1">
-                    <AgentBrain agentId={agent.id} />
+                    <AgentBrain agentId={agent.id} ownerWallet={agent.ownerWallet} />
                 </section>
 
                 {/* Trade Feed */}

@@ -4,13 +4,17 @@ import { useState, useEffect } from "react";
 import { Brain, Send, Terminal, AlertCircle, TrendingUp, Info } from "lucide-react";
 import { showToast } from "@/components/Toast";
 
+import { useAccount } from "wagmi";
+
 interface LogEntry {
     timestamp: number;
     log: string;
     type: "info" | "trade" | "error";
 }
 
-export function AgentBrain({ agentId }: { agentId: string }) {
+export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWallet: string }) {
+    const { address } = useAccount();
+    const isOwner = address && ownerWallet && address.toLowerCase() === ownerWallet.toLowerCase();
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [message, setMessage] = useState("");
     const [thinking, setThinking] = useState(false);
@@ -87,24 +91,31 @@ export function AgentBrain({ agentId }: { agentId: string }) {
                     <h3 className="text-sm font-semibold">Ask Agent</h3>
                     <span className="text-[10px] text-zinc-600 ml-auto">Powered by Groq + AgentKit</span>
                 </div>
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleAsk()}
-                        placeholder="Ask about market conditions, strategy, or trigger analysis..."
-                        className="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-xl h-10 px-4 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all"
-                        disabled={thinking}
-                    />
-                    <button
-                        onClick={handleAsk}
-                        disabled={thinking || !message.trim()}
-                        className="h-10 w-10 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center text-white hover:opacity-90 transition-all disabled:opacity-40"
-                    >
-                        <Send className="h-4 w-4" />
-                    </button>
-                </div>
+
+                {isOwner ? (
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleAsk()}
+                            placeholder="Ask about market conditions, strategy, or trigger analysis..."
+                            className="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-xl h-10 px-4 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/30 transition-all"
+                            disabled={thinking}
+                        />
+                        <button
+                            onClick={handleAsk}
+                            disabled={thinking || !message.trim()}
+                            className="h-10 w-10 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center text-white hover:opacity-90 transition-all disabled:opacity-40"
+                        >
+                            <Send className="h-4 w-4" />
+                        </button>
+                    </div>
+                ) : (
+                    <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4 text-center text-sm text-zinc-500">
+                        Only the agent owner can interact with the brain directly.
+                    </div>
+                )}
 
                 {/* Agent Response */}
                 {(thinking || thought) && (
@@ -133,30 +144,41 @@ export function AgentBrain({ agentId }: { agentId: string }) {
                     </span>
                 </div>
 
-                {loadingLogs ? (
-                    <div className="text-sm text-zinc-600 text-center py-6">Loading agent activity...</div>
-                ) : logs.length > 0 ? (
-                    <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
-                        {logs.slice().reverse().map((log, i) => (
-                            <div
-                                key={i}
-                                className={`p-3 rounded-lg border ${logColor(log.type)}`}
-                            >
-                                <div className="flex items-center gap-2 mb-1">
-                                    {logIcon(log.type)}
-                                    <span className="text-[10px] text-zinc-500 font-mono">
-                                        {new Date(log.timestamp).toLocaleString()}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                                    {log.log.length > 300 ? log.log.substring(0, 300) + "..." : log.log}
-                                </p>
+                {/* Activity Logs */}
+                {isOwner ? (
+                    <>
+                        {loadingLogs ? (
+                            <div className="text-sm text-zinc-600 text-center py-6">Loading agent activity...</div>
+                        ) : logs.length > 0 ? (
+                            <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
+                                {logs.slice().reverse().map((log, i) => (
+                                    <div
+                                        key={i}
+                                        className={`p-3 rounded-lg border ${logColor(log.type)}`}
+                                    >
+                                        <div className="flex items-center gap-2 mb-1">
+                                            {logIcon(log.type)}
+                                            <span className="text-[10px] text-zinc-500 font-mono">
+                                                {new Date(log.timestamp).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                                            {log.log.length > 300 ? log.log.substring(0, 300) + "..." : log.log}
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        ) : (
+                            <div className="text-sm text-zinc-600 text-center py-6">
+                                No activity yet. The agent brain will log its autonomous actions here.
+                            </div>
+                        )}
+                    </>
                 ) : (
-                    <div className="text-sm text-zinc-600 text-center py-6">
-                        No activity yet. The agent brain will log its autonomous actions here.
+                    <div className="flex flex-col items-center justify-center py-8 text-center bg-white/[0.02] border border-white/[0.04] rounded-lg border-dashed">
+                        <Terminal className="h-8 w-8 text-zinc-700 mb-3" />
+                        <p className="text-sm text-zinc-500 font-medium">Agent logs are private</p>
+                        <p className="text-xs text-zinc-600 mt-1 max-w-[200px]">Only the owner can view the internal decision logs.</p>
                     </div>
                 )}
             </div>
