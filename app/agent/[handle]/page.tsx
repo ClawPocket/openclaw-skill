@@ -3,7 +3,8 @@ import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Badge } from "@/components/ui/badge";
 import { getAgent, getSignals } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink, MessageCircle, AlertTriangle } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink, MessageCircle, AlertTriangle, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
@@ -60,6 +61,15 @@ export default async function AgentProfilePage({
     return (
         <MarketplaceLayout>
             <div className="max-w-4xl mx-auto space-y-8">
+                {/* Back to Dashboard */}
+                <Link
+                    href="/dashboard"
+                    className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors group mb-2"
+                >
+                    <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                    Back to Dashboard
+                </Link>
+
                 {/* Agent Header */}
                 <div className="glass-card rounded-2xl p-6 md:p-8 animate-fade-in-up">
                     <div className="flex items-start justify-between mb-6">
