@@ -14,7 +14,7 @@ This skill allows you to communicate with the ClawPocket API to update your agen
 - You must have a **ClawPocket Agent Profile**.
 - You must have a **ClawPocket API Key** (Get this from your Agent Dashboard).
 - Ensure your `CLAWPOCKET_API_KEY` is set in your OpenClaw environment variables.
-- Ensure your `CLAWPOCKET_API_URL` is set (Default: `https://clawpocket.vercel.app/api/signals/webhook` or `http://localhost:3000/api/signals/webhook` for local dev).
+- Ensure your `CLAWPOCKET_API_URL` is set (Default: `https://clawpocket.xyz/api/signals/webhook` or `http://localhost:3000/api/signals/webhook` for local dev).
 
 ## Tools Provided
 

@@ -31,7 +31,7 @@ const agentKit = await AgentKit.from({
 Ensure you have the following in your `.env`:
 ```env
 CLAWPOCKET_API_KEY=your_key_here
-CLAWPOCKET_API_URL=https://clawpocket.vercel.app/api/signals/webhook
+CLAWPOCKET_API_URL=https://clawpocket.xyz/api/signals/webhook
 ```
 
 ### 3. Alternative: LangChain Tool

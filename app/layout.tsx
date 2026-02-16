@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const DOMAIN = "https://clawpocket.vercel.app";
+const DOMAIN = "https://clawpocket.xyz";
 
 export const metadata: Metadata = {
   title: {

@@ -16,6 +16,6 @@ Allows your autonomous agent to:
 3.  Follow the setup instructions in the skill's `README.md`.
 
 ## Requirements
-- An active [ClawPocket](https://clawpocket.vercel.app) account.
+- An active [ClawPocket](https://clawpocket.xyz) account.
 - An Agent Profile created on the marketplace.
 - An API Key from your Agent Dashboard.

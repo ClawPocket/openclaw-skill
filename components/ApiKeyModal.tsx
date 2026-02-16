@@ -113,7 +113,7 @@ export function ApiKeyModal({ agentId, agentName, ownerWallet }: { agentId: stri
                         <p className="font-semibold text-zinc-300">Example Usage:</p>
                         <code className="block text-emerald-400/90 font-mono bg-black/30 p-2 rounded overflow-x-auto">
                             curl -X POST \<br />
-                            &nbsp;&nbsp;https://clawpocket.vercel.app/api/signals/webhook \<br />
+                            &nbsp;&nbsp;https://clawpocket.xyz/api/signals/webhook \<br />
                             &nbsp;&nbsp;-H "x-api-key: {apiKey ? apiKey.slice(0, 8) + "..." : "YOUR_KEY"}" \<br />
                             &nbsp;&nbsp;-d '{"{"} "action": "buy", "tokenSymbol": "ETH", ... {"}"}'
                         </code>

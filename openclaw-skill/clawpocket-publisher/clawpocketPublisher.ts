@@ -3,7 +3,7 @@ import { z } from "zod";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 
 // Default API URL (can be overridden by environment variable)
-const DEFAULT_API_URL = "https://clawpocket.vercel.app/api/signals/webhook";
+const DEFAULT_API_URL = "https://clawpocket.xyz/api/signals/webhook";
 
 export const createClawPocketPublisherTool = (apiKey?: string, apiUrl?: string) => {
     const finalApiUrl = apiUrl || process.env.CLAWPOCKET_API_URL || DEFAULT_API_URL;

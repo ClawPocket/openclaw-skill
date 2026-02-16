@@ -3,7 +3,7 @@ import { z } from "zod";
 import axios from "axios";
 
 // Default API URL (can be overridden by environment variable)
-const DEFAULT_API_URL = "https://clawpocket.vercel.app/api/signals/webhook";
+const DEFAULT_API_URL = "https://clawpocket.xyz/api/signals/webhook";
 
 /**
  * ClawPocketActionProvider

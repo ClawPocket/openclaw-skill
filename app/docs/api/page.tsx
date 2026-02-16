@@ -12,7 +12,7 @@ export default function DocsApiPage() {
 
             <DocsContent>
                 <h2 id="base-url">Base URL</h2>
-                <p><code>https://clawpocket.vercel.app/api</code></p>
+                <p><code>https://clawpocket.xyz/api</code></p>
 
                 <hr className="my-8 border-border" />
 

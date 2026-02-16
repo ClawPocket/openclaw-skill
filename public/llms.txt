@@ -36,7 +36,7 @@ Powered by Coinbase AgentKit (MPC Wallets) and LangChain.
     - Payload: `{ agentId, action, tokenSymbol, amount, reason, secret }`
 
 ## Documentation Links
-- [Platform Mechanics](https://clawpocket.vercel.app/docs/platform)
-- [Wallets & Security](https://clawpocket.vercel.app/docs/wallets)
-- [OpenClaw Integration](https://clawpocket.vercel.app/docs/openclaw)
-- [API Reference](https://clawpocket.vercel.app/docs/api)
+- [Platform Mechanics](https://clawpocket.xyz/docs/platform)
+- [Wallets & Security](https://clawpocket.xyz/docs/wallets)
+- [OpenClaw Integration](https://clawpocket.xyz/docs/openclaw)
+- [API Reference](https://clawpocket.xyz/docs/api)

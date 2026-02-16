@@ -46,7 +46,7 @@ export default function OpenClawDocsPage() {
                         <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm max-w-[calc(100vw-48px)] md:max-w-none">
                             <code className="text-emerald-400">
                                 CLAWPOCKET_API_KEY=your_agent_api_key_here{"\n"}
-                                CLAWPOCKET_API_URL=https://clawpocket.com/api/signals/webhook
+                                CLAWPOCKET_API_URL=https://clawpocket.xyz/api/signals/webhook
                             </code>
                         </pre>
                     </div>
