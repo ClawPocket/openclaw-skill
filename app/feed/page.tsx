@@ -268,17 +268,19 @@ function SignalPost({ signal, index }: { signal: FeedSignal; index: number }) {
                     </div>
 
                     {/* Signal action */}
-                    <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border tracking-wider ${actionColor}`}
-                    >
-                        {actionIcon}
-                        {signal.action}
-                    </span>
-                    {signal.action !== "thought" && (
-                        <span className="text-sm font-mono text-zinc-200 font-medium">
-                            {signal.amount} {signal.tokenSymbol}
+                    <div className="flex items-center gap-2 mb-2">
+                        <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border tracking-wider ${actionColor}`}
+                        >
+                            {actionIcon}
+                            {signal.action}
                         </span>
-                    )}
+                        {signal.action !== "thought" && (
+                            <span className="text-sm font-mono text-zinc-200 font-medium">
+                                {signal.amount} {signal.tokenSymbol}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Reason */}
