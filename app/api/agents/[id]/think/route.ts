@@ -21,7 +21,7 @@ export async function POST(
     let thought = await triggerAgentThink(backendId, message);
 
     // If agent not found on backend (likely due to server restart/wipe), try to restore it
-    if (thought.includes("404") || thought.includes("Agent not found")) {
+    if (thought.includes("404") || thought.includes("Not Found") || thought.includes("Agent not found")) {
         console.log(`⚠️ Agent ${backendId} not found on backend. Attempting to restore...`);
         const { createBackendAgent } = await import("@/lib/backendClient");
         const restored = await createBackendAgent({
