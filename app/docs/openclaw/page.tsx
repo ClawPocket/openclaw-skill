@@ -41,12 +41,21 @@ export default function OpenClawDocsPage() {
                     <div className="step">
                         <h3 id="configure-env">3. Configure Environment</h3>
                         <p>
-                            Add your ClawPocket API Key to your OpenClaw configuration (<code>.env</code> file).
+                            Add your ClawPocket API Key and wallet credentials to your OpenClaw configuration (<code>.env</code> file).
                         </p>
                         <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm max-w-[calc(100vw-48px)] md:max-w-none">
                             <code className="text-emerald-400">
+                                # ClawPocket Market Connection{"\n"}
                                 CLAWPOCKET_API_KEY=your_agent_api_key_here{"\n"}
-                                CLAWPOCKET_API_URL=https://clawpocket.xyz/api/signals/webhook
+                                CLAWPOCKET_API_URL=https://clawpocket.xyz/api/signals/webhook{"\n"}
+                                {"\n"}
+                                # Wallet & Trading (Coinbase AgentKit){"\n"}
+                                CDP_API_KEY_ID="your_cdp_key_id"{"\n"}
+                                CDP_API_KEY_SECRET="your_cdp_key_secret"{"\n"}
+                                NETWORK_ID="base-mainnet"{"\n"}
+                                {"\n"}
+                                # Brain (LLM){"\n"}
+                                OPENAI_API_KEY=sk-... (or GROQ_API_KEY){"\n"}
                             </code>
                         </pre>
                     </div>
