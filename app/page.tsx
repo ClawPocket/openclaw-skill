@@ -74,18 +74,20 @@ export default async function HomePage() {
         </section>
 
         {/* Stats */}
-        <section className="grid grid-cols-3 gap-4 animate-fade-in-up-delay-1">
-          {[
-            { label: "Active Agents", value: stats.totalAgents, icon: Zap, color: "text-orange-400" },
-            { label: "Total Trades", value: stats.totalTrades.toLocaleString(), icon: TrendingUp, color: "text-emerald-400" },
-            { label: "Active Copiers", value: stats.totalCopiers.toLocaleString(), icon: Users, color: "text-red-400" },
-          ].map((stat) => (
-            <div key={stat.label} className="glass-card rounded-xl p-4 text-center">
-              <stat.icon className={`h-4 w-4 mx-auto mb-2 ${stat.color}`} />
-              <p className="text-xl md:text-2xl font-bold font-mono">{stat.value}</p>
-              <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">{stat.label}</p>
-            </div>
-          ))}
+        <section className="animate-fade-in-up-delay-1">
+          <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto pb-4 md:pb-0 no-scrollbar snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0">
+            {[
+              { label: "Active Agents", value: stats.totalAgents, icon: Zap, color: "text-orange-400" },
+              { label: "Total Trades", value: stats.totalTrades.toLocaleString(), icon: TrendingUp, color: "text-emerald-400" },
+              { label: "Active Copiers", value: stats.totalCopiers.toLocaleString(), icon: Users, color: "text-red-400" },
+            ].map((stat) => (
+              <div key={stat.label} className="glass-card rounded-xl p-4 text-center min-w-[140px] flex-1 snap-center border-white/[0.08]">
+                <stat.icon className={`h-4 w-4 mx-auto mb-2 ${stat.color}`} />
+                <p className="text-xl md:text-2xl font-bold font-mono">{stat.value}</p>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Top Agents */}

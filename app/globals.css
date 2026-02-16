@@ -104,6 +104,19 @@
 
 /* Custom utilities */
 @layer utilities {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   .glass-card {
     background: oklch(1 0 0 / 3%);
     border: 1px solid oklch(1 0 0 / 6%);
