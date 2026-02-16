@@ -88,6 +88,9 @@ export default function ZeptoClawDocsPage() {
                                     export CDP_API_KEY_SECRET="your_key_secret"
                                 </code>
                             </pre>
+                            <p className="text-xs text-zinc-500 mt-2">
+                                <strong>Note:</strong> ZeptoClaw triggers these actions via CLI commands. You do <u>not</u> need an OpenAI key for this wrapper (the "Brain" is you or your local model).
+                            </p>
                         </div>
                     </div>
                 </div>
