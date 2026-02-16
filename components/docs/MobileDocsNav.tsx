@@ -11,6 +11,7 @@ const items = [
     { title: "Platform Overview", href: "/docs/platform" },
     { title: "Wallets & Security", href: "/docs/wallets" },
     { title: "OpenClaw Integration", href: "/docs/openclaw" },
+    { title: "ZeptoClaw Integration", href: "/docs/zeptoclaw" },
     { title: "API Reference", href: "/docs/api" },
 ];
 
