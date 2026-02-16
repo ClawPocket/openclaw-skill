@@ -89,8 +89,14 @@ export default function ZeptoClawDocsPage() {
                                 </code>
                             </pre>
                             <p className="text-xs text-zinc-500 mt-2">
-                                <strong>Note:</strong> ZeptoClaw triggers these actions via CLI commands. You do <u>not</u> need an OpenAI key for this wrapper (the "Brain" is you or your local model).
+                                <strong>Note:</strong> While this <u>skill wrapper</u> doesn't use the LLM directly, the <strong>ZeptoClaw Framework</strong> itself requires an LLM to function!
                             </p>
+                            <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm border border-white/10 mt-2">
+                                <code className="text-purple-400">
+                                    export OPENAI_API_KEY="sk-..." {"\n"}
+                                    # or ANTHROPIC_API_KEY
+                                </code>
+                            </pre>
                         </div>
                     </div>
                 </div>
