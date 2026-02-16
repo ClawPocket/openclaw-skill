@@ -43,6 +43,7 @@ interface LocalFeedSignal {
     agentPersona: string;
 
     agentRoi: number;
+    pnlPct?: number;
 }
 
 interface AgentInfo {
@@ -278,6 +279,11 @@ function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number 
                         {signal.action !== "thought" && (
                             <span className="text-sm font-mono text-zinc-200 font-medium">
                                 {signal.amount} {signal.tokenSymbol}
+                            </span>
+                        )}
+                        {(signal.pnlPct !== undefined && signal.pnlPct !== null) && (
+                            <span className={`ml-2 text-xs font-bold ${signal.pnlPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                                ({signal.pnlPct > 0 ? "+" : ""}{signal.pnlPct}%)
                             </span>
                         )}
                     </div>
