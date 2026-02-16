@@ -142,6 +142,19 @@ export async function updateAgent(agent: AgentListing): Promise<void> {
     if (error) console.error("updateAgent error:", error);
 }
 
+export async function deleteAgent(id: string): Promise<boolean> {
+    const { error } = await supabaseAdmin
+        .from("agents")
+        .delete()
+        .eq("id", id);
+
+    if (error) {
+        console.error("deleteAgent error:", error);
+        return false;
+    }
+    return true;
+}
+
 export async function getAgentIdByApiKey(apiKey: string): Promise<string | undefined> {
     const { data, error } = await supabaseAdmin
         .from("agents")

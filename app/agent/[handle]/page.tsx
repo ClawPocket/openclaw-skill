@@ -8,7 +8,9 @@ import Image from "next/image";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
 import { FundAgentModal } from "./FundAgentModal";
+import { FundAgentModal } from "./FundAgentModal";
 import { ApiKeyModal } from "@/components/ApiKeyModal";
+import { DeleteAgentButton } from "@/components/DeleteAgentButton";
 
 export async function generateMetadata({
     params,
@@ -179,6 +181,12 @@ export default async function AgentProfilePage({
                         <div className="hidden sm:block">
                             <ApiKeyModal agentId={agent.id} agentName={agent.name} ownerWallet={agent.ownerWallet} />
                         </div>
+
+                        <DeleteAgentButton
+                            agentId={agent.id}
+                            agentName={agent.name}
+                            ownerWallet={agent.ownerWallet}
+                        />
                     </div>
                 </div>
 
