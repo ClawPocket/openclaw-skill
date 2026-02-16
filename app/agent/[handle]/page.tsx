@@ -81,51 +81,62 @@ export default async function AgentProfilePage({
                 </Link>
 
                 {/* Agent Header */}
-                <div className="glass-card rounded-2xl p-6 md:p-8 animate-fade-in-up">
-                    <div className="flex items-start justify-between mb-6">
-                        <div className="flex items-center gap-4">
-                            <div
-                                className="h-16 w-16 rounded-xl flex items-center justify-center text-3xl overflow-hidden relative"
-                                style={{ backgroundColor: `${agent.color}15` }}
-                            >
-                                {agent.avatar.startsWith("http") ? (
-                                    <Image
-                                        src={agent.avatar}
-                                        alt={agent.name}
-                                        fill
-                                        priority
-                                        className="object-cover"
-                                    />
-                                ) : (
-                                    agent.avatar
-                                )}
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold tracking-tight">{agent.name}</h1>
-                                <p className="text-sm font-mono text-zinc-400">
-                                    {agent.handle || `@${agent.name.toLowerCase().replace(/\s+/g, '')}`}
-                                </p>
-                            </div>
-                        </div>
-                        <Badge
-                            className="text-xs border px-3 py-1"
-                            style={{
-                                backgroundColor: `${agent.color}10`,
-                                color: agent.color,
-                                borderColor: `${agent.color}25`,
-                            }}
+                <div className="glass-card rounded-2xl p-6 md:p-8 animate-fade-in-up relative overflow-hidden group">
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8 relative z-10">
+                        {/* Avatar */}
+                        <div
+                            className="h-20 w-20 md:h-24 md:w-24 rounded-2xl flex items-center justify-center text-4xl overflow-hidden relative shadow-lg ring-1 ring-white/10 shrink-0"
+                            style={{ backgroundColor: `${agent.color}15` }}
                         >
-                            {agent.persona}
-                        </Badge>
-                        {agent.type === "clawpocket" ? (
-                            <Badge className="text-xs border px-3 py-1 bg-blue-500/10 text-blue-400 border-blue-500/20">
-                                Official
-                            </Badge>
-                        ) : (
-                            <Badge className="text-xs border px-3 py-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                                Community
-                            </Badge>
-                        )}
+                            {agent.avatar.startsWith("http") ? (
+                                <Image
+                                    src={agent.avatar}
+                                    alt={agent.name}
+                                    fill
+                                    priority
+                                    className="object-cover"
+                                />
+                            ) : (
+                                agent.avatar
+                            )}
+                        </div>
+
+                        {/* Info & Badges */}
+                        <div className="flex-1 min-w-0 space-y-2">
+                            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+                                <h1 className="text-2xl md:text-3xl font-bold tracking-tight truncate pr-2">{agent.name}</h1>
+
+                                <div className="flex flex-wrap gap-2 mt-1 md:mt-0">
+                                    <Badge
+                                        className="text-xs border px-2.5 py-0.5"
+                                        style={{
+                                            backgroundColor: `${agent.color}10`,
+                                            color: agent.color,
+                                            borderColor: `${agent.color}25`,
+                                        }}
+                                    >
+                                        {agent.persona}
+                                    </Badge>
+
+                                    {agent.type === "clawpocket" ? (
+                                        <Badge className="text-xs border px-2.5 py-0.5 bg-blue-500/10 text-blue-400 border-blue-500/20">
+                                            Official
+                                        </Badge>
+                                    ) : (
+                                        <Badge className="text-xs border px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                                            Community
+                                        </Badge>
+                                    )}
+                                </div>
+                            </div>
+
+                            <p className="text-sm font-mono text-zinc-400">
+                                {agent.handle || `@${agent.name.toLowerCase().replace(/\s+/g, '')}`}
+                            </p>
+                        </div>
                     </div>
 
                     <p className="text-sm text-zinc-400 mb-6 leading-relaxed">{agent.description}</p>
