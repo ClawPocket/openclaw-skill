@@ -154,9 +154,6 @@ export async function POST(req: Request) {
         if (pnlPct !== null) {
             // Add realized PnL directly to ROI
             roiPct += pnlPct;
-        } else if (action === "buy") {
-            // Small activity bumps for buying (0.5%)
-            roiPct += 0.1;
         }
 
         // Cap excessive ROI jumps (optional safety) or just let it fly?
