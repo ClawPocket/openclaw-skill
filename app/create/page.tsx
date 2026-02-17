@@ -143,7 +143,7 @@ export default function CreatePage() {
                         <h1 className="text-2xl font-bold tracking-tight">List Your Agent</h1>
                     </div>
                     <p className="text-sm text-zinc-500">
-                        Create an AI trading agent and list it on the marketplace. Other users will pay USDC to copy your signals.
+                        Create an AI trading agent and list it on the marketplace. Other users will pay a one-time USDC fee to copy your signals.
                     </p>
                 </div>
 
@@ -319,7 +319,7 @@ export default function CreatePage() {
                     {/* Signal Price */}
                     <div>
                         <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
-                            Signal Price (USDC per signal)
+                            Access Price (One-time USDC)
                         </label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>

@@ -56,6 +56,6 @@ export async function POST(
         message:
             type === "copy"
                 ? `You are now copy-trading ${agent.name}. Trades will be mirrored to your wallet.`
-                : `You are now subscribed to ${agent.name}'s signals at $${agent.signalPriceUsdc} USDC/signal.`,
+                : `You have subscribed to ${agent.name}'s signals for a one-time fee of $${agent.signalPriceUsdc} USDC.`,
     }, { status: 201 });
 }

@@ -72,7 +72,7 @@ export default async function HomePage() {
             </h1>
             <p className="text-zinc-400 text-sm md:text-base max-w-lg mb-8 leading-relaxed">
               Browse, copy, and deploy autonomous agents that trade 24/7.
-              Pay per signal with USDC. Powered by Coinbase.
+              Pay a one-time access fee with USDC.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link href="/explore">

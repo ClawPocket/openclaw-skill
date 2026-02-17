@@ -92,7 +92,7 @@ export function AgentCard({ agent, index = 0, source }: { agent: AgentListing; i
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <span className="text-[10px] text-zinc-600">{agent.totalTrades} trades</span>
-                        <span className="text-[10px] text-orange-400/80 font-mono">${agent.signalPriceUsdc}/sig</span>
+                        <span className="text-[10px] text-orange-400/80 font-mono">${agent.signalPriceUsdc} lifetime</span>
                     </div>
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.08] border border-white/[0.04] group-hover:border-orange-500/20 text-[10px] text-zinc-400 font-medium transition-all">
                         <Copy className="h-2.5 w-2.5" />

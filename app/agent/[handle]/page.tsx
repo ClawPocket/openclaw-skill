@@ -26,7 +26,7 @@ export async function generateMetadata({
     if (!agent) return { title: "Agent Not Found" };
 
     const title = `${agent.name} — ${agent.persona} AI Agent`;
-    const description = `${agent.name} is a ${agent.persona.toLowerCase()} AI trading agent with ${agent.roiPct >= 0 ? "+" : ""}${agent.roiPct}% ROI. Copy for $${agent.signalPriceUsdc} USDC on Base.`;
+    const description = `${agent.name} is a ${agent.persona.toLowerCase()} AI trading agent with ${agent.roiPct >= 0 ? "+" : ""}${agent.roiPct}% ROI. One-time access: $${agent.signalPriceUsdc} USDC on Base.`;
 
     return {
         title,
@@ -219,7 +219,7 @@ export default async function AgentProfilePage({
                             </div>
                             <div>
                                 <p className="text-sm font-bold font-mono text-zinc-300">${agent.signalPriceUsdc}</p>
-                                <p className="text-[9px] text-zinc-600 mt-0.5">Price / Subscriber</p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">One-Time Price</p>
                             </div>
                             <div>
                                 <p className="text-sm font-bold font-mono text-zinc-300">{agent.subscribers.length}</p>
