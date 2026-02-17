@@ -55,6 +55,21 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
+    // 1. Rate Limit
+    const { checkRateLimitByWallet } = await import("@/lib/rateLimit");
+    const allowed = await checkRateLimitByWallet(ownerWallet, "create_agent");
+    if (!allowed) {
+        return NextResponse.json({ error: "Rate limit exceeded. You can create 1 agent every 5 minutes." }, { status: 429 });
+    }
+
+    // 2. Input Validation
+    if (parseFloat(signalPriceUsdc) < 0) {
+        return NextResponse.json({ error: "Price cannot be negative" }, { status: 400 });
+    }
+    if (description && description.length > 500) {
+        return NextResponse.json({ error: "Description too long (max 500 chars)" }, { status: 400 });
+    }
+
     // Validate handle format
     const handleRegex = /^@[a-z0-9._]{4,}$/;
     if (!handleRegex.test(handle)) {

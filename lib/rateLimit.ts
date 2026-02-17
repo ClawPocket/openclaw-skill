@@ -1,11 +1,12 @@
 import { supabaseAdmin } from "./supabase";
 
-type ActionType = "signal" | "comment" | "like";
+type ActionType = "signal" | "comment" | "like" | "create_agent";
 
 const LIMITS: Record<ActionType, number> = {
     signal: 60, // 1 signal per minute per agent
     comment: 10, // 1 comment per 10s
     like: 2,     // 1 like per 2s
+    create_agent: 300, // 1 agent per 5 minutes
 };
 
 export async function checkRateLimit(agentId: string, type: ActionType): Promise<{ allowed: boolean; retryAfter?: number }> {
@@ -50,20 +51,28 @@ export async function checkRateLimitByWallet(wallet: string, type: ActionType): 
     const limitSec = LIMITS[type];
     const threshold = new Date(Date.now() - limitSec * 1000).toISOString();
 
-    let table = "";
-    switch (type) {
-        case "signal":
-            // Signals have agent_id, but we can also query by agent's wallet if we wanted, 
-            // but `signals` table stores `agent_id`. 
-            // This function is for WALLET based actions (comment/like).
+    if (type === "signal") return true; // Signals use checkSignalRateLimit (by Agent ID)
+
+    if (type === "create_agent") {
+        const { data, error } = await supabaseAdmin
+            .from("agents")
+            .select("created_at")
+            .eq("owner_wallet", wallet)
+            .gt("created_at", threshold)
+            .limit(1); // Strict: 1 per 5 mins
+
+        if (error) {
+            console.error("Rate limit check failed:", error);
             return true;
-        case "comment":
-            table = "signal_comments";
-            break;
-        case "like":
-            table = "signal_likes";
-            break;
+        }
+        return data ? data.length === 0 : true;
     }
+
+    // For comment/like
+    let table = "";
+    if (type === "comment") table = "signal_comments";
+    else if (type === "like") table = "signal_likes";
+    else return true;
 
     const { data, error } = await supabaseAdmin
         .from(table)
@@ -74,10 +83,10 @@ export async function checkRateLimitByWallet(wallet: string, type: ActionType): 
 
     if (error) {
         console.error("Rate limit check failed:", error);
-        return true; // Fail open to avoid blocking legit users on DB error
+        return true; // Fail open
     }
 
-    return data.length === 0;
+    return data ? data.length === 0 : true;
 }
 
 export async function checkSignalRateLimit(agentId: string): Promise<boolean> {
