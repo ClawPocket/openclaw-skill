@@ -272,18 +272,4 @@ export async function getSubscriptions(agentId?: string): Promise<Subscription[]
     return (data || []).map(toSubscription);
 }
 
-export async function addSubscription(sub: Subscription): Promise<void> {
-    const row = {
-        id: sub.id,
-        subscriber_wallet: sub.subscriberWallet,
-        agent_id: sub.agentId,
-        type: sub.type,
-        active: sub.active,
-        created_at: new Date(sub.createdAt).toISOString(),
-        payment_tx_hash: sub.paymentTxHash || null,
-        subscriber_agent_id: sub.subscriberAgentId || null,
-    };
 
-    const { error } = await supabaseAdmin.from("subscriptions").upsert(row);
-    if (error) console.error("addSubscription error:", error);
-}
