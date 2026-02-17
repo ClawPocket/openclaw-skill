@@ -25,7 +25,11 @@ export async function GET(req: Request) {
     const owner = searchParams.get("owner");
     const query = searchParams.get("q");
 
-    let agents = await getAgents();
+    // Pagination (default: 100)
+    const limit = parseInt(searchParams.get("limit") || "100");
+    const offset = parseInt(searchParams.get("offset") || "0");
+
+    let agents = await getAgents(limit, offset);
 
     if (owner) {
         agents = agents.filter(a => a.ownerWallet && a.ownerWallet.toLowerCase() === owner.toLowerCase());

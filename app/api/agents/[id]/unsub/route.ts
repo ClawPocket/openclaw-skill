@@ -9,10 +9,32 @@ export async function DELETE(
 ) {
     const { id } = await params;
     const body = await req.json();
-    const { subscriberWallet } = body;
+    const { subscriberWallet, signature, message } = body;
 
-    if (!subscriberWallet) {
-        return NextResponse.json({ error: "Missing subscriberWallet" }, { status: 400 });
+    if (!subscriberWallet || !signature || !message) {
+        return NextResponse.json({ error: "Missing authentication params" }, { status: 400 });
+    }
+
+    // Verify Message Content
+    if (message !== `Unsubscribe from agent ${id}`) {
+        return NextResponse.json({ error: "Invalid message content" }, { status: 400 });
+    }
+
+    // Verify Signature
+    try {
+        const { publicClient } = await import("@/lib/viem");
+        const valid = await publicClient.verifyMessage({
+            address: subscriberWallet as `0x${string}`,
+            message: message,
+            signature: signature as `0x${string}`,
+        });
+
+        if (!valid) {
+            return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+        }
+    } catch (error) {
+        console.error("Signature verification failed:", error);
+        return NextResponse.json({ error: "Signature verification failed" }, { status: 500 });
     }
 
     // Remove from agent's subscribers array
@@ -30,6 +52,7 @@ export async function DELETE(
         (w: string) => w.toLowerCase() !== subscriberWallet.toLowerCase()
     );
 
+    // ... continue with update ...
     await supabaseAdmin
         .from("agents")
         .update({ subscribers: updatedSubscribers })

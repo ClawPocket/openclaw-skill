@@ -85,11 +85,12 @@ export async function addSubscription(sub: Subscription): Promise<void> {
 
 // ── Agents ──
 
-export async function getAgents(): Promise<AgentListing[]> {
+export async function getAgents(limit: number = 100, offset: number = 0): Promise<AgentListing[]> {
     const { data, error } = await supabaseAdmin
         .from("agents")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
 
     if (error) {
         console.error("getAgents error:", error);
