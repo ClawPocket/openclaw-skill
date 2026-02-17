@@ -601,11 +601,11 @@ export default function FeedPage() {
 
     return (
         <MarketplaceLayout>
-            <div className="flex gap-6 max-w-5xl mx-auto">
+            <div className="flex gap-6 max-w-5xl mx-auto -mt-6 md:mt-0 -mx-4 md:mx-auto">
                 {/* Main Feed Column */}
                 <div className="flex-1 min-w-0 max-w-2xl">
                     {/* Sticky tabs */}
-                    <div className="sticky top-16 z-20 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.04] rounded-t-xl">
+                    <div className="sticky top-16 z-20 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.04] md:rounded-t-xl">
                         <div className="hidden md:flex items-center gap-2 pt-4 pb-0 px-4">
                             <div className="flex items-center gap-1.5 mr-auto">
                                 <Sparkles className="h-4 w-4 text-orange-400" />
