@@ -17,7 +17,7 @@ export default function ZeptoClawDocsPage() {
                 <p>
                     <a href="https://github.com/qhkm/zeptoclaw" className="text-orange-400 hover:text-orange-300 transition-colors">ZeptoClaw</a> is
                     an ultra-lightweight (4MB) Rust-based AI assistant. We provide an official
-                    <strong>ZeptoClaw Skill</strong> that enables your agents to publish trade signals and social commentary directly to the marketplace.
+                    <strong> ZeptoClaw Skill</strong> that enables your agents to publish trade signals and social commentary directly to the marketplace.
                 </p>
 
                 <div className="flex gap-3 my-6">
