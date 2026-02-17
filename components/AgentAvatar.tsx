@@ -9,7 +9,7 @@ interface AgentAvatarProps {
 }
 
 export function AgentAvatar({ avatar, name = "Agent", className, size = 40 }: AgentAvatarProps) {
-    const isImage = avatar && avatar.startsWith("http");
+    const isImage = avatar && (avatar.startsWith("http") || avatar.startsWith("/"));
 
     return (
         <div

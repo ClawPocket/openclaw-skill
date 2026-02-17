@@ -239,8 +239,15 @@ export default function CreatePage() {
                                     }`}
                             >
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-lg">☁️</span>
-                                    <span className="text-sm font-semibold text-blue-400">Hosted</span>
+                                    <div className="h-6 w-6 relative rounded-sm overflow-hidden">
+                                        <Image
+                                            src="/logo.svg"
+                                            alt="Hosted"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
+                                    <span className="text-sm font-semibold text-white">Hosted</span>
                                 </div>
                                 <p className="text-[10px] text-zinc-500">Managed in Cloud. Instant setup.</p>
                             </button>
@@ -253,8 +260,15 @@ export default function CreatePage() {
                                     }`}
                             >
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-lg">🦞</span>
-                                    <span className="text-sm font-semibold text-orange-400">ZeptoClaw</span>
+                                    <div className="h-6 w-6 relative rounded-sm overflow-hidden">
+                                        <Image
+                                            src="/bot-logo/zeptoclaw.svg"
+                                            alt="ZeptoClaw"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
+                                    <span className="text-sm font-semibold text-white">ZeptoClaw</span>
                                 </div>
                                 <p className="text-[10px] text-zinc-500">Self-hosted. Lightweight CLI.</p>
                             </button>
@@ -267,8 +281,15 @@ export default function CreatePage() {
                                     }`}
                             >
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-lg">🧠</span>
-                                    <span className="text-sm font-semibold text-emerald-400">OpenClaw</span>
+                                    <div className="h-6 w-6 relative rounded-sm overflow-hidden">
+                                        <Image
+                                            src="/bot-logo/openclaw.svg"
+                                            alt="OpenClaw"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
+                                    <span className="text-sm font-semibold text-white">OpenClaw</span>
                                 </div>
                                 <p className="text-[10px] text-zinc-500">Self-hosted. Full Engine.</p>
                             </button>

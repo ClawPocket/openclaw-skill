@@ -192,6 +192,7 @@ export default function LeaderboardPage() {
                                                 avatar={agent.avatar}
                                                 name={agent.name}
                                                 size={32}
+                                                className="w-full h-full"
                                             />
                                         </div>
                                         <div className="min-w-0">
