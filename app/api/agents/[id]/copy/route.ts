@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getAgent, saveAgent, addSubscription } from "@/lib/db";
+import { getAgent, saveAgent, addSubscription, getSubscriptionByTxHash } from "@/lib/db";
 import { Subscription } from "@/lib/types";
 import { v4 as uuid } from "uuid";
+import { verifyTransaction } from "@/lib/chain";
 
 // POST /api/agents/[id]/copy
 // Subscribe to copy an agent's trades (requires USDC payment)
@@ -21,6 +22,12 @@ export async function POST(
         return NextResponse.json({ error: "Payment required. Submit USDC payment first." }, { status: 402 });
     }
 
+    // 1. Check for Replay Attack
+    const existingSub = await getSubscriptionByTxHash(paymentTxHash);
+    if (existingSub) {
+        return NextResponse.json({ error: "Payment already used for another subscription" }, { status: 409 });
+    }
+
     const agent = await getAgent(id);
     if (!agent) {
         return NextResponse.json({ error: "Agent not found" }, { status: 404 });
@@ -29,6 +36,20 @@ export async function POST(
     // Check if already subscribed (by wallet)
     if (agent.subscribers.includes(subscriberWallet)) {
         return NextResponse.json({ error: "Already subscribed" }, { status: 409 });
+    }
+
+    // 2. Verify Transaction On-Chain
+    // The exact recipient address (either agent directly or platform) depends on frontend logic.
+    // Assuming CopyButton.tsx sends to Agent Wallet.
+    // TODO: Ideally we also check the amount matches agent.signalPriceUsdc * 0.9 (approx)
+    // For now, we strictly ensure a transfer happened to the agent.
+    const verification = await verifyTransaction(paymentTxHash, agent.walletAddress);
+
+    if (!verification.valid) {
+        console.warn(`Payment verification failed: ${verification.error}`);
+        return NextResponse.json({
+            error: "Payment verification failed. Transaction invalid or did not transfer funds to agent."
+        }, { status: 402 }); // 402 Payment Required
     }
 
     // Add subscriber to agent
@@ -43,11 +64,12 @@ export async function POST(
         type: type as "signal" | "copy",
         active: true,
         createdAt: Date.now(),
+        paymentTxHash, // Save for duplicate checking
         subscriberAgentId,
     };
     await addSubscription(subscription);
 
-    console.log(`💰 New subscription: ${subscriberWallet} → ${agent.name} | Payment: ${paymentTxHash}`);
+    console.log(`💰 New verified subscription: ${subscriberWallet} → ${agent.name} | Payment: ${paymentTxHash} | Verified Amount: ${verification.amount}`);
 
     return NextResponse.json({
         success: true,

@@ -38,5 +38,6 @@ export interface Subscription {
     type: "signal" | "copy";
     active: boolean;
     createdAt: number;
+    paymentTxHash?: string; // Verification reference
     subscriberAgentId?: string; // If copy-trading with an agent
 }

@@ -47,8 +47,40 @@ function toSubscription(row: any): Subscription {
         type: row.type,
         active: row.active,
         createdAt: new Date(row.created_at).getTime(),
+        paymentTxHash: row.payment_tx_hash || undefined,
         subscriberAgentId: row.subscriber_agent_id || undefined,
     };
+}
+
+// ... (getSubscriptionByTxHash) ...
+
+export async function getSubscriptionByTxHash(txHash: string): Promise<Subscription | undefined> {
+    const { data, error } = await supabaseAdmin
+        .from("subscriptions")
+        .select("*")
+        .eq("payment_tx_hash", txHash)
+        .single();
+
+    if (error || !data) return undefined;
+    return toSubscription(data);
+}
+
+// ... (addSubscription) ...
+
+export async function addSubscription(sub: Subscription): Promise<void> {
+    const row = {
+        id: sub.id,
+        subscriber_wallet: sub.subscriberWallet,
+        agent_id: sub.agentId,
+        type: sub.type,
+        active: sub.active,
+        created_at: new Date(sub.createdAt).toISOString(),
+        payment_tx_hash: sub.paymentTxHash || null,
+        subscriber_agent_id: sub.subscriberAgentId || null,
+    };
+
+    const { error } = await supabaseAdmin.from("subscriptions").upsert(row);
+    if (error) console.error("addSubscription error:", error);
 }
 
 // ── Agents ──
@@ -248,6 +280,7 @@ export async function addSubscription(sub: Subscription): Promise<void> {
         type: sub.type,
         active: sub.active,
         created_at: new Date(sub.createdAt).toISOString(),
+        payment_tx_hash: sub.paymentTxHash || null,
         subscriber_agent_id: sub.subscriberAgentId || null,
     };
 
