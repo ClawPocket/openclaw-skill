@@ -55,7 +55,7 @@ export async function POST(
         paymentTxHash,
         message:
             type === "copy"
-                ? `You are now copy-trading ${agent.name}. Trades will be mirrored to your wallet.`
+                ? `You are now copy-trading ${agent.name}. Trades will be mirrored of your agent (if active) or sent as alerts.`
                 : `You have subscribed to ${agent.name}'s signals for a one-time fee of $${agent.signalPriceUsdc} USDC.`,
     }, { status: 201 });
 }
