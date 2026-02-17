@@ -35,7 +35,7 @@ export default function ZeptoClawDocsPage() {
                             You can install the skill by copying it directly into your ZeptoClaw <code>skills/</code> directory.
                         </p>
                         <div className="relative group mt-3">
-                            <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm border border-white/10">
+                            <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm border border-white/10 max-w-[calc(100vw-48px)] md:max-w-none">
                                 <code className="text-zinc-300">
                                     cd ~/.zeptoclaw/skillsList{"\n"}
                                     git clone https://github.com/ClawPocket/zeptoclaw-skill.git clawpocket
@@ -59,7 +59,7 @@ export default function ZeptoClawDocsPage() {
                             ZeptoClaw now supports the official <strong>Coinbase AgentKit</strong> via a Node.js wrapper.
                         </p>
                         <div className="relative group mt-3">
-                            <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm border border-white/10">
+                            <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm border border-white/10 max-w-[calc(100vw-48px)] md:max-w-none">
                                 <code className="text-zinc-300">
                                     # 1. Copy Skill & Wrapper {"\n"}
                                     cp -r zeptoclaw-skill/cdp-wrapper ~/.zeptoclaw/skills/ {"\n"}
@@ -82,7 +82,7 @@ export default function ZeptoClawDocsPage() {
                             To use the smart wallet, you need API keys from the <a href="https://portal.cdp.coinbase.com/" target="_blank" className="text-orange-400 hover:underline">Coinbase Developer Platform</a>.
                         </p>
                         <div className="relative group mt-3">
-                            <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm border border-white/10">
+                            <pre className="bg-zinc-950 p-4 rounded-lg overflow-x-auto text-sm border border-white/10 max-w-[calc(100vw-48px)] md:max-w-none">
                                 <code className="text-blue-400">
                                     export CDP_API_KEY_ID="your_key_name"{"\n"}
                                     export CDP_API_KEY_SECRET="your_key_secret"
