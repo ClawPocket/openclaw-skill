@@ -26,6 +26,7 @@ export default function CreatePage() {
     const [persona, setPersona] = useState("moonboy");
     const [agentType, setAgentType] = useState<"clawpocket" | "zeptoclaw" | "openclaw">("clawpocket");
     const [description, setDescription] = useState("");
+    const [customPrompt, setCustomPrompt] = useState("");
     const [price, setPrice] = useState("0.01");
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -108,6 +109,7 @@ export default function CreatePage() {
                     ownerWallet: address,
                     avatar: avatarUrl,
                     type: agentType,
+                    customPrompt: persona === "custom" ? customPrompt : undefined,
                 }),
             });
             // ... (rest of logic same) ...
@@ -322,60 +324,79 @@ export default function CreatePage() {
                             ))}
                         </div>
                     </div>
+                </div>
 
-                    {/* Description */}
-                    <div>
-                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
-                            Description
+                {/* Custom Prompt (Only if Custom Persona is selected) */}
+                {persona === "custom" && (
+                    <div className="animate-fade-in-up">
+                        <label className="text-xs text-orange-400 uppercase tracking-wider mb-2 block font-bold">
+                            Custom Strategy Instructions
                         </label>
                         <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Describe your agent's strategy..."
-                            rows={3}
-                            className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-orange-500/30 transition-colors resize-none"
+                            value={customPrompt}
+                            onChange={(e) => setCustomPrompt(e.target.value)}
+                            placeholder="E.g. Only buy memes with >$1M volume and <$10M market cap. Avoid utility tokens. Max 5% per trade."
+                            rows={4}
+                            className="w-full bg-orange-500/[0.05] border border-orange-500/20 rounded-xl px-4 py-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-orange-500/50 transition-colors resize-none"
+                        />
+                        <p className="text-[10px] text-zinc-500 mt-2">
+                            These instructions will be injected into the agent's core system prompt.
+                        </p>
+                    </div>
+                )}
+
+                {/* Description */}
+                <div>
+                    <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
+                        Description
+                    </label>
+                    <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Describe your agent's strategy..."
+                        rows={3}
+                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-orange-500/30 transition-colors resize-none"
+                    />
+                </div>
+
+                {/* Signal Price */}
+                <div>
+                    <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
+                        Access Price (One-time USDC)
+                    </label>
+                    <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>
+                        <Input
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-12 pl-8"
                         />
                     </div>
-
-                    {/* Signal Price */}
-                    <div>
-                        <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
-                            Access Price (One-time USDC)
-                        </label>
-                        <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>
-                            <Input
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-12 pl-8"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Error Message */}
-                    {error && (
-                        <p className="text-xs text-red-400 text-center animate-pulse">{error}</p>
-                    )}
-
-                    {/* Submit */}
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={!name.trim() || !handle.trim() || !isConnected || loading}
-                        className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20 disabled:opacity-50"
-                    >
-                        {loading ? (
-                            <span className="animate-pulse">Creating...</span>
-                        ) : (
-                            <>
-                                <Rocket className="mr-2 h-4 w-4" />
-                                Create & List Agent
-                            </>
-                        )}
-                    </Button>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <p className="text-xs text-red-400 text-center animate-pulse">{error}</p>
+                )}
+
+                {/* Submit */}
+                <Button
+                    onClick={handleSubmit}
+                    disabled={!name.trim() || !handle.trim() || !isConnected || loading}
+                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20 disabled:opacity-50"
+                >
+                    {loading ? (
+                        <span className="animate-pulse">Creating...</span>
+                    ) : (
+                        <>
+                            <Rocket className="mr-2 h-4 w-4" />
+                            Create & List Agent
+                        </>
+                    )}
+                </Button>
             </div>
         </MarketplaceLayout>
     );

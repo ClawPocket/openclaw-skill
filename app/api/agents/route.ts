@@ -45,7 +45,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     const body = await req.json();
-    const { name, handle, persona, description, signalPriceUsdc, ownerWallet, avatar } = body;
+    const { name, handle, persona, description, signalPriceUsdc, ownerWallet, avatar, customPrompt } = body;
 
     if (!name || !handle || !persona || !ownerWallet) {
         return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -76,6 +76,7 @@ export async function POST(req: Request) {
                 name,
                 persona,
                 risk: persona === "moonboy" ? 75 : persona === "boomer" ? 15 : 40,
+                customPrompt: persona === "custom" ? customPrompt : undefined,
             });
             if (backendAgent) {
                 backendAgentId = backendAgent.id;
