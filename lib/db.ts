@@ -117,7 +117,7 @@ export async function saveAgent(agent: AgentListing): Promise<void> {
 }
 
 export async function updateAgent(agent: AgentListing): Promise<void> {
-    const row = {
+    const row: any = {
         id: agent.id,
         owner_wallet: agent.ownerWallet,
         name: agent.name,
@@ -132,10 +132,14 @@ export async function updateAgent(agent: AgentListing): Promise<void> {
         avatar: agent.avatar,
         color: agent.color,
         backend_agent_id: agent.backendAgentId || null,
-        api_key: agent.apiKey || null,
         type: agent.type || "clawpocket",
         created_at: new Date(agent.createdAt).toISOString(),
     };
+
+    // Only update API key if explicitly provided (prevents wiping it since getAgents() doesn't return it)
+    if (agent.apiKey !== undefined) {
+        row.api_key = agent.apiKey;
+    }
 
     const { error } = await supabaseAdmin
         .from("agents")
