@@ -14,7 +14,22 @@ export async function POST(
     }
 
     const body = await req.json();
-    const { message } = body;
+    const { message, wallet } = body;
+
+    if (!wallet) {
+        return NextResponse.json({ error: "Missing wallet address" }, { status: 400 });
+    }
+
+    // Check access (Owner or Rental/Sub)
+    const isOwner = agent.ownerWallet.toLowerCase() === wallet.toLowerCase();
+    if (!isOwner) {
+        const { hasActiveAccess } = await import("@/lib/db");
+        const access = await hasActiveAccess(id, wallet);
+        if (!access.hasAccess) {
+            return NextResponse.json({ error: "Access denied. Rent this agent to use its brain." }, { status: 403 });
+        }
+    }
+
 
     // Use the agent's backendId if stored, otherwise use the local id
     const backendId = (agent as any).backendAgentId || id;

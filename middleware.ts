@@ -38,6 +38,6 @@ export const middleware = paymentProxy(
 export const config = {
     matcher: [
         "/api/agents/:path*/signals/premium",
-        "/api/signals/:path*/content", // New Pay-per-Signal outcome
+
     ],
 };

@@ -39,7 +39,7 @@ type Tier = "day" | "week" | "month";
 const TIER_LABELS: Record<Tier, { label: string; duration: string; discount?: string }> = {
     day: { label: "Daily", duration: "24 hours" },
     week: { label: "Weekly", duration: "7 days", discount: "29% off" },
-    month: { label: "Monthly", duration: "30 days", discount: "67% off" },
+    month: { label: "Monthly", duration: "30 days", discount: "33% off" },
 };
 
 export function HireAgentModal({
@@ -67,7 +67,7 @@ export function HireAgentModal({
     const pricing: Pricing = {
         day: basePrice * 1,
         week: basePrice * 5,
-        month: basePrice * 10,
+        month: basePrice * 20,
     };
 
     // Check existing rental status
@@ -141,7 +141,7 @@ export function HireAgentModal({
             data: encodeFunctionData({
                 abi: ERC20_ABI,
                 functionName: "transfer",
-                args: [agentWallet as `0x${string}`, amountWei],
+                args: [ownerWallet as `0x${string}`, amountWei],
             }),
         });
     }
@@ -284,7 +284,7 @@ export function HireAgentModal({
                         </button>
 
                         <p className="text-[10px] text-zinc-600 text-center">
-                            Payment is sent directly to the agent&apos;s wallet on Base (USDC). Verified on-chain.
+                            Payment is sent directly to the <strong>Agent Creator&apos;s</strong> wallet on Base (USDC). Verified on-chain.
                         </p>
                     </div>
                 )}

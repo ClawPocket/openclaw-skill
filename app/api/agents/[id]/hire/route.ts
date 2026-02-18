@@ -15,7 +15,7 @@ const TIER_DURATION: Record<string, number> = {
 const TIER_MULTIPLIER: Record<string, number> = {
     day: 1,
     week: 5,   // ~29% discount vs 7 days
-    month: 10, // ~67% discount vs 30 days
+    month: 20, // ~33% discount vs 30 days
 };
 
 // POST /api/agents/[id]/hire
@@ -70,7 +70,7 @@ export async function POST(
     const expectedPrice = basePricePerDay * TIER_MULTIPLIER[tier];
 
     // ── On-chain Payment Verification ──
-    const verification = await verifyTransaction(paymentTxHash, agent.walletAddress);
+    const verification = await verifyTransaction(paymentTxHash, agent.ownerWallet);
     if (!verification.valid) {
         console.warn(`Rental payment verification failed: ${verification.error}`);
         return NextResponse.json({

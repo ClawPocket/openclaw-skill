@@ -53,7 +53,7 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
         }
         async function fetchLogs() {
             try {
-                const res = await fetch(`/api/agents/${agentId}/logs`);
+                const res = await fetch(`/api/agents/${agentId}/logs?wallet=${address}`);
                 if (res.ok) {
                     const data = await res.json();
                     setLogs(data.logs || []);
@@ -68,7 +68,7 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
         // Poll every 30s
         const interval = setInterval(fetchLogs, 30000);
         return () => clearInterval(interval);
-    }, [agentId, hasAccess]);
+    }, [agentId, hasAccess, address]);
 
     async function handleAsk() {
         if (!message.trim() || thinking) return;
@@ -78,7 +78,7 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
             const res = await fetch(`/api/agents/${agentId}/think`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message }),
+                body: JSON.stringify({ message, wallet: address }),
             });
             const data = await res.json();
             setThought(data.thought || "No response.");
