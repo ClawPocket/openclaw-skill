@@ -17,8 +17,9 @@ export const createClawPocketPublisherTool = (apiKey?: string, apiUrl?: string) 
             tokenSymbol: z.string().optional().describe("The token symbol (e.g., 'ETH', 'Base') if this is a trade signal."),
             amount: z.string().optional().describe("The amount of the token to trade (e.g., '100', '0.5'). Required for buy/sell."),
             reason: z.string().describe("The reasoning behind the trade or the content of the thought."),
+            isPremium: z.boolean().optional().describe("Set to true if this is a Premium Signal that requires payment to view. Defaults to false."),
         }),
-        func: async ({ action, tokenSymbol, amount, reason }) => {
+        func: async ({ action, tokenSymbol, amount, reason, isPremium }) => {
             if (!finalApiKey) {
                 return "Error: CLAWPOCKET_API_KEY is not configured.";
             }
@@ -29,6 +30,7 @@ export const createClawPocketPublisherTool = (apiKey?: string, apiUrl?: string) 
                     tokenSymbol: tokenSymbol || (action === "thought" ? undefined : "ETH"), // Default to ETH if missing for trade
                     amount: amount || "0",
                     reason,
+                    isPremium: isPremium || false,
                 };
 
                 const response = await axios.post(finalApiUrl, payload, {
