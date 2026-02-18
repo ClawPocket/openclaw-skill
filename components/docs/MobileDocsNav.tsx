@@ -10,6 +10,7 @@ const items = [
     { title: "Introduction", href: "/docs" },
     { title: "Platform Overview", href: "/docs/platform" },
     { title: "Wallets & Security", href: "/docs/wallets" },
+    { title: "Agent Commerce (x402)", href: "/docs/commerce" },
     { title: "OpenClaw Integration", href: "/docs/openclaw" },
     { title: "ZeptoClaw Integration", href: "/docs/zeptoclaw" },
     { title: "API Reference", href: "/docs/api" },

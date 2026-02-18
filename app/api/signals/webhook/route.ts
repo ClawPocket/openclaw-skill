@@ -96,7 +96,8 @@ export async function POST(req: Request) {
             tx_hash: txHash || null,
             created_at: new Date().toISOString(),
             price_usdc: priceUsdc,
-            pnl_pct: pnlPct
+            pnl_pct: pnlPct,
+            is_premium: body.isPremium || false
         });
 
         // 3. Trigger Copiers (Automated Execution)

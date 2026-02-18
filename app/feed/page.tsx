@@ -21,12 +21,14 @@ import {
     Sparkles,
     Send,
     X,
+    Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAccount } from "wagmi";
 import { showToast as addToast } from "@/components/Toast";
+import { useX402 } from "@/hooks/useX402";
 
 interface LocalFeedSignal {
     id: string;
@@ -44,6 +46,7 @@ interface LocalFeedSignal {
 
     agentRoi: number;
     pnlPct?: number;
+    isPremium?: boolean;
 }
 
 interface AgentInfo {
@@ -86,7 +89,9 @@ function shortWallet(wallet: string): string {
 function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number }) {
     const { address } = useAccount();
     const wallet = address?.toLowerCase() || "";
+    const { fetchWithX402, isPaying } = useX402();
 
+    const [data, setData] = useState<LocalFeedSignal>(signal);
     const [social, setSocial] = useState<SocialData>({ likes: 0, likedBy: [], comments: [], reposts: 0, repostedBy: [] });
     const [liked, setLiked] = useState(false);
     const [reposted, setReposted] = useState(false);
@@ -97,17 +102,44 @@ function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number 
 
     // Fetch social data on mount
     useEffect(() => {
-        fetch(`/api/signals/${signal.id}/social`)
+        fetch(`/api/signals/${data.id}/social`)
             .then((r) => r.json())
-            .then((data: SocialData) => {
-                setSocial(data);
+            .then((socialData: SocialData) => {
+                setSocial(socialData);
                 if (wallet) {
-                    setLiked(data.likedBy.includes(wallet));
-                    setReposted(data.repostedBy.includes(wallet));
+                    setLiked(socialData.likedBy.includes(wallet));
+                    setReposted(socialData.repostedBy.includes(wallet));
                 }
             })
             .catch(() => { });
-    }, [signal.id, wallet]);
+    }, [data.id, wallet]);
+
+    const handleUnlock = async () => {
+        if (!wallet) {
+            addToast("Connect wallet to unlock", "info");
+            return;
+        }
+        try {
+            const res = await fetchWithX402(`/api/signals/${data.id}/content`);
+            if (res.ok) {
+                const unlocked = await res.json();
+                // Update local state with revealed data (no longer premium/redacted)
+                setData({
+                    ...data,
+                    ...unlocked,
+                    isPremium: false,
+                    // Restore original fields that were redacted
+                    tokenSymbol: unlocked.token_symbol || unlocked.tokenSymbol,
+                    amount: unlocked.amount,
+                    action: unlocked.action,
+                    reason: unlocked.reason,
+                    txHash: unlocked.tx_hash || unlocked.txHash
+                });
+            }
+        } catch (error) {
+            console.error("Unlock failed", error);
+        }
+    };
 
     const handleLike = useCallback(async () => {
         if (!wallet) {
@@ -199,24 +231,26 @@ function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number 
     }, [signal.agentId]);
 
     const actionIcon =
-        signal.action === "buy" ? (
+        data.action === "buy" ? (
             <ArrowUpRight className="h-3 w-3" />
-        ) : signal.action === "sell" ? (
+        ) : data.action === "sell" ? (
             <ArrowDownRight className="h-3 w-3" />
-        ) : signal.action === "thought" ? (
+        ) : data.action === "thought" ? (
             <MessageCircle className="h-3 w-3" />
         ) : (
             <Clock className="h-3 w-3" />
         );
 
     const actionColor =
-        signal.action === "buy"
-            ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-            : signal.action === "sell"
-                ? "text-red-400 bg-red-500/10 border-red-500/20"
-                : signal.action === "thought"
-                    ? "text-blue-400 bg-blue-500/10 border-blue-500/20"
-                    : "text-zinc-400 bg-zinc-500/10 border-zinc-500/20";
+        data.isPremium
+            ? "text-zinc-400 bg-zinc-500/10 border-zinc-500/20"
+            : data.action === "buy"
+                ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                : data.action === "sell"
+                    ? "text-red-400 bg-red-500/10 border-red-500/20"
+                    : data.action === "thought"
+                        ? "text-blue-400 bg-blue-500/10 border-blue-500/20"
+                        : "text-zinc-400 bg-zinc-500/10 border-zinc-500/20";
 
     return (
         <article
@@ -228,11 +262,11 @@ function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number 
                 <Link href={`/agent/${signal.agentId}`} className="shrink-0">
                     <div
                         className="h-10 w-10 rounded-full flex items-center justify-center text-lg ring-1 ring-white/[0.06] group-hover:ring-white/10 transition-all overflow-hidden relative"
-                        style={{ backgroundColor: `${signal.agentColor}12` }}
+                        style={{ backgroundColor: `${data.agentColor}12` }}
                     >
                         <AgentAvatar
-                            avatar={signal.agentAvatar}
-                            name={signal.agentName}
+                            avatar={data.agentAvatar}
+                            name={data.agentName}
                             size={40}
                         />
                     </div>
@@ -246,26 +280,26 @@ function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number 
                             href={`/agent/${signal.agentId}`}
                             className="font-semibold text-[13px] text-zinc-100 hover:underline"
                         >
-                            {signal.agentName}
+                            {data.agentName}
                         </Link>
                         <Badge
                             className="text-[9px] border px-1.5 py-0 leading-tight"
                             style={{
-                                backgroundColor: `${signal.agentColor}10`,
-                                color: signal.agentColor,
-                                borderColor: `${signal.agentColor}25`,
+                                backgroundColor: `${data.agentColor}10`,
+                                color: data.agentColor,
+                                borderColor: `${data.agentColor}25`,
                             }}
                         >
-                            {signal.agentPersona}
+                            {data.agentPersona}
                         </Badge>
-                        {signal.agentRoi > 50 && (
+                        {data.agentRoi > 50 && (
                             <span className="flex items-center text-[10px] text-emerald-400 font-mono">
                                 <TrendingUp className="h-2.5 w-2.5 mr-0.5" />
-                                +{signal.agentRoi}%
+                                +{data.agentRoi}%
                             </span>
                         )}
                         <span className="text-zinc-700 text-[11px]">·</span>
-                        <span className="text-zinc-600 text-[11px]">{timeAgo(signal.createdAt)}</span>
+                        <span className="text-zinc-600 text-[11px]">{timeAgo(data.createdAt)}</span>
                     </div>
 
                     {/* Signal action */}
@@ -274,27 +308,56 @@ function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number 
                             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border tracking-wider ${actionColor}`}
                         >
                             {actionIcon}
-                            {signal.action}
+                            {data.action}
                         </span>
-                        {signal.action !== "thought" && (
+                        {data.action !== "thought" && !data.isPremium && (
                             <span className="text-sm font-mono text-zinc-200 font-medium">
-                                {signal.amount} {signal.tokenSymbol}
+                                {data.amount} {data.tokenSymbol}
                             </span>
                         )}
-                        {(signal.pnlPct !== undefined && signal.pnlPct !== null) && (
-                            <span className={`ml-2 text-xs font-bold ${signal.pnlPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                                ({signal.pnlPct > 0 ? "+" : ""}{signal.pnlPct}%)
+                        {(data.pnlPct !== undefined && data.pnlPct !== null) && (
+                            <span className={`ml-2 text-xs font-bold ${data.pnlPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                                ({data.pnlPct > 0 ? "+" : ""}{data.pnlPct}%)
                             </span>
                         )}
                     </div>
 
-                    {/* Reason */}
-                    <p className="text-[13px] text-zinc-400 leading-relaxed mb-2.5">
-                        {signal.reason}
-                    </p>
+                    {/* Reason / Content */}
+                    <div className="mb-2.5">
+                        <p className={`text-[13px] leading-relaxed ${data.isPremium ? "text-zinc-500 italic blur-[2px] select-none" : "text-zinc-400"}`}>
+                            {data.reason}
+                        </p>
+
+                        {/* Premium Unlock Button */}
+                        {data.isPremium && (
+                            <div className="mt-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleUnlock();
+                                    }}
+                                    disabled={isPaying}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-xs font-medium text-orange-400 transition-all group/btn"
+                                >
+                                    {isPaying ? (
+                                        <>
+                                            <span className="h-3 w-3 rounded-full border-2 border-orange-400 border-t-transparent animate-spin" />
+                                            Unlocking...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Lock className="h-3.5 w-3.5" />
+                                            Unlock Signal (0.01 USDC)
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                     {/* TX */}
-                    {signal.txHash && (
+                    {data.txHash && (
                         <a
                             href={`https://basescan.org/tx/${signal.txHash}`}
                             target="_blank"

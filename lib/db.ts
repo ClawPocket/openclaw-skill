@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "./supabase";
-import { AgentListing, Signal, Subscription } from "./types";
+import { AgentListing, Signal, Subscription, Rental } from "./types";
 
 // ── Helpers: Convert between Supabase snake_case and app camelCase ──
 
@@ -21,6 +21,23 @@ function toAgent(row: any): AgentListing {
         createdAt: new Date(row.created_at).getTime(),
         backendAgentId: row.backend_agent_id || undefined,
         type: (row.type as "clawpocket" | "openclaw" | "zeptoclaw") || "clawpocket",
+        // x402 Agent Commerce
+        rentalPriceUsdc: row.rental_price_usdc || "5.00",
+        x402Enabled: row.x402_enabled || false,
+    };
+}
+
+function toRental(row: any): Rental {
+    return {
+        id: row.id,
+        renterWallet: row.renter_wallet,
+        agentId: row.agent_id,
+        tier: row.tier,
+        paymentTxHash: row.payment_tx_hash,
+        startsAt: new Date(row.starts_at).getTime(),
+        expiresAt: new Date(row.expires_at).getTime(),
+        active: row.active,
+        createdAt: new Date(row.created_at).getTime(),
     };
 }
 
@@ -36,6 +53,7 @@ function toSignal(row: any): Signal {
         createdAt: new Date(row.created_at).getTime(),
         priceUsdc: row.price_usdc ? parseFloat(row.price_usdc) : undefined,
         pnlPct: row.pnl_pct ? parseFloat(row.pnl_pct) : undefined,
+        isPremium: row.is_premium || false,
     };
 }
 
@@ -140,6 +158,9 @@ export async function saveAgent(agent: AgentListing): Promise<void> {
         api_key: agent.apiKey || null, // Persist API key
         type: agent.type || "clawpocket",
         created_at: new Date(agent.createdAt).toISOString(),
+        // x402 Agent Commerce
+        rental_price_usdc: agent.rentalPriceUsdc || "5.00",
+        x402_enabled: agent.x402Enabled || false,
     };
 
     const { error } = await supabaseAdmin
@@ -167,6 +188,9 @@ export async function updateAgent(agent: AgentListing): Promise<void> {
         backend_agent_id: agent.backendAgentId || null,
         type: agent.type || "clawpocket",
         created_at: new Date(agent.createdAt).toISOString(),
+        // x402 Agent Commerce
+        rental_price_usdc: agent.rentalPriceUsdc || "5.00",
+        x402_enabled: agent.x402Enabled || false,
     };
 
     // Only update API key if explicitly provided (prevents wiping it since getAgents() doesn't return it)
@@ -273,4 +297,96 @@ export async function getSubscriptions(agentId?: string): Promise<Subscription[]
     return (data || []).map(toSubscription);
 }
 
+// ── Rentals (x402 Agent Commerce) ──
+
+export async function addRental(rental: Rental): Promise<void> {
+    const row = {
+        id: rental.id,
+        renter_wallet: rental.renterWallet,
+        agent_id: rental.agentId,
+        tier: rental.tier,
+        payment_tx_hash: rental.paymentTxHash,
+        starts_at: new Date(rental.startsAt).toISOString(),
+        expires_at: new Date(rental.expiresAt).toISOString(),
+        active: rental.active,
+        created_at: new Date(rental.createdAt).toISOString(),
+    };
+
+    const { error } = await supabaseAdmin.from("rentals").insert(row);
+    if (error) console.error("addRental error:", error);
+}
+
+export async function getActiveRental(
+    agentId: string,
+    wallet: string
+): Promise<Rental | undefined> {
+    const { data, error } = await supabaseAdmin
+        .from("rentals")
+        .select("*")
+        .eq("agent_id", agentId)
+        .eq("renter_wallet", wallet.toLowerCase())
+        .eq("active", true)
+        .gte("expires_at", new Date().toISOString())
+        .order("expires_at", { ascending: false })
+        .limit(1)
+        .single();
+
+    if (error || !data) return undefined;
+    return toRental(data);
+}
+
+export async function getRentals(agentId: string): Promise<Rental[]> {
+    const { data, error } = await supabaseAdmin
+        .from("rentals")
+        .select("*")
+        .eq("agent_id", agentId)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("getRentals error:", error);
+        return [];
+    }
+    return (data || []).map(toRental);
+}
+
+export async function getRentalByTxHash(txHash: string): Promise<Rental | undefined> {
+    const { data, error } = await supabaseAdmin
+        .from("rentals")
+        .select("*")
+        .eq("payment_tx_hash", txHash)
+        .single();
+
+    if (error || !data) return undefined;
+    return toRental(data);
+}
+
+/**
+ * Check if a wallet has active access to an agent (via subscription OR rental).
+ * Used to gate AgentBrain, premium signals, etc.
+ */
+export async function hasActiveAccess(
+    agentId: string,
+    wallet: string
+): Promise<{ hasAccess: boolean; via: "owner" | "subscription" | "rental" | "none"; expiresAt?: number }> {
+    // 1. Check subscription (permanent access)
+    const { data: subData } = await supabaseAdmin
+        .from("subscriptions")
+        .select("id")
+        .eq("agent_id", agentId)
+        .eq("subscriber_wallet", wallet.toLowerCase())
+        .eq("active", true)
+        .limit(1);
+
+    if (subData && subData.length > 0) {
+        return { hasAccess: true, via: "subscription" };
+    }
+
+    // 2. Check active rental (time-bound access)
+    const rental = await getActiveRental(agentId, wallet);
+    if (rental) {
+        return { hasAccess: true, via: "rental", expiresAt: rental.expiresAt };
+    }
+
+    return { hasAccess: false, via: "none" };
+}
 

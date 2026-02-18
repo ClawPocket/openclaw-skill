@@ -9,6 +9,7 @@ import Image from "next/image";
 import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
 import { FundAgentModal } from "./FundAgentModal";
+import { HireAgentModal } from "./HireAgentModal";
 
 import { ApiKeyModal } from "@/components/ApiKeyModal";
 import { DeleteAgentButton } from "@/components/DeleteAgentButton";
@@ -233,6 +234,15 @@ export default async function AgentProfilePage({
                     <div className="flex flex-col gap-4">
                         {/* Copy Button (Full Width) */}
                         <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} ownerWallet={agent.ownerWallet} />
+
+                        {/* Hire Agent (x402 Commerce) */}
+                        <HireAgentModal
+                            agentId={agent.id}
+                            agentName={agent.name}
+                            agentWallet={agent.walletAddress}
+                            ownerWallet={agent.ownerWallet}
+                            rentalPriceUsdc={agent.rentalPriceUsdc || "5.00"}
+                        />
 
                         {/* Secondary Actions (Row) */}
                         <div className="flex flex-wrap gap-2">

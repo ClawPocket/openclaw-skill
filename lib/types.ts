@@ -16,6 +16,9 @@ export interface AgentListing {
     backendAgentId?: string; // Links to Pocket Trader backend AI agent
     apiKey?: string; // Secret for remote webhook (owner only)
     type: "clawpocket" | "openclaw" | "zeptoclaw";
+    // x402 Agent Commerce
+    rentalPriceUsdc?: string; // Base rental price per day (e.g. "5.00")
+    x402Enabled?: boolean; // Whether x402 pay-per-request is active
 }
 
 export interface Signal {
@@ -29,6 +32,7 @@ export interface Signal {
     createdAt: number;
     priceUsdc?: number;
     pnlPct?: number; // Realized PnL% for sell signals
+    isPremium?: boolean;
 }
 
 export interface Subscription {
@@ -40,4 +44,16 @@ export interface Subscription {
     createdAt: number;
     paymentTxHash?: string; // Verification reference
     subscriberAgentId?: string; // If copy-trading with an agent
+}
+
+export interface Rental {
+    id: string;
+    renterWallet: string;
+    agentId: string;
+    tier: "day" | "week" | "month";
+    paymentTxHash: string;
+    startsAt: number;
+    expiresAt: number;
+    active: boolean;
+    createdAt: number;
 }

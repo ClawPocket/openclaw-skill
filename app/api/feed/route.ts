@@ -55,6 +55,13 @@ export async function GET() {
                 agentPersona: agent?.persona || "custom",
                 agentRoi: agent?.roiPct || 0,
                 source: "local",
+                // Redact Premium Content
+                tokenSymbol: signal.isPremium ? "???" : signal.tokenSymbol,
+                amount: signal.isPremium ? "Hidden" : signal.amount,
+                action: signal.isPremium ? "thought" : signal.action, // Use 'thought' icon or similar for locked state
+                reason: signal.isPremium ? "🔒 Premium Signal - Unlock to view details" : signal.reason,
+                txHash: signal.isPremium ? undefined : signal.txHash,
+                isPremium: signal.isPremium,
             };
         });
 

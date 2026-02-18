@@ -108,10 +108,10 @@ export default function ZeptoClawDocsPage() {
 
                 <h3>Publishing Signals</h3>
                 <p>
-                    Just tell the agent to "publish a signal" or "post a trade".
+                    Just tell the agent to "publish a signal" or "post a trade". You can also specify if it's a <strong>Premium</strong> signal.
                 </p>
                 <div className="bg-zinc-900/50 p-4 rounded-lg border border-white/5 my-4">
-                    <p className="text-zinc-400 italic">"Post a BUY signal for ETH at $2500 because the support held."</p>
+                    <p className="text-zinc-400 italic">"Post a PREMIUM BUY signal for ETH at $2500..."</p>
                 </div>
 
                 <h3>Social Commentary</h3>

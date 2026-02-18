@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Brain, Send, Terminal, AlertCircle, TrendingUp, Info } from "lucide-react";
+import { Brain, Send, Terminal, AlertCircle, TrendingUp, Info, Lock, Key } from "lucide-react";
 import { showToast } from "@/components/Toast";
 
 import { useAccount } from "wagmi";
@@ -20,9 +20,37 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
     const [thinking, setThinking] = useState(false);
     const [thought, setThought] = useState("");
     const [loadingLogs, setLoadingLogs] = useState(true);
+    const [hasAccess, setHasAccess] = useState<boolean | null>(null); // null = loading
+    const [accessVia, setAccessVia] = useState<string>("none");
+    const [expiresAt, setExpiresAt] = useState<number | null>(null);
 
-    // Fetch logs on mount
+    // Check access on mount
     useEffect(() => {
+        if (isOwner) {
+            setHasAccess(true);
+            setAccessVia("owner");
+            return;
+        }
+        if (!address) {
+            setHasAccess(false);
+            return;
+        } ["select"];
+        fetch(`/api/agents/${agentId}/hire?wallet=${address}`)
+            .then(r => r.json())
+            .then(data => {
+                setHasAccess(data.hasAccess);
+                setAccessVia(data.via || "none");
+                setExpiresAt(data.rental?.expiresAt || null);
+            })
+            .catch(() => setHasAccess(false));
+    }, [address, agentId, isOwner]);
+
+    // Fetch logs on mount (only if has access)
+    useEffect(() => {
+        if (hasAccess === false || hasAccess === null) {
+            setLoadingLogs(false);
+            return;
+        }
         async function fetchLogs() {
             try {
                 const res = await fetch(`/api/agents/${agentId}/logs`);
@@ -40,7 +68,7 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
         // Poll every 30s
         const interval = setInterval(fetchLogs, 30000);
         return () => clearInterval(interval);
-    }, [agentId]);
+    }, [agentId, hasAccess]);
 
     async function handleAsk() {
         if (!message.trim() || thinking) return;
@@ -92,7 +120,9 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
                     <span className="text-[10px] text-zinc-600 ml-auto">Powered by Groq + AgentKit</span>
                 </div>
 
-                {isOwner ? (
+                {hasAccess === null ? (
+                    <div className="text-sm text-zinc-600 text-center py-4">Checking access...</div>
+                ) : hasAccess ? (
                     <div className="flex gap-2">
                         <input
                             type="text"
@@ -112,8 +142,18 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
                         </button>
                     </div>
                 ) : (
-                    <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4 text-center text-sm text-zinc-500">
-                        Only the agent owner can interact with the brain directly.
+                    <div className="flex flex-col items-center justify-center py-6 text-center bg-white/[0.02] border border-white/[0.04] rounded-xl border-dashed gap-3">
+                        <div className="h-12 w-12 rounded-full bg-purple-500/10 flex items-center justify-center">
+                            <Lock className="h-5 w-5 text-purple-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-zinc-400 font-medium">Premium Access Required</p>
+                            <p className="text-xs text-zinc-600 mt-1">Hire this agent to access its brain and premium signals.</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-purple-400">
+                            <Key className="h-3 w-3" />
+                            Use the &quot;Hire Agent&quot; button above
+                        </div>
                     </div>
                 )}
 
@@ -139,13 +179,17 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
                         <Terminal className="h-3.5 w-3.5 text-zinc-400" />
                     </div>
                     <h3 className="text-sm font-semibold">Agent Activity</h3>
+                    {hasAccess && expiresAt && (
+                        <span className="text-[10px] text-purple-400 ml-2">
+                            Access expires {new Date(expiresAt).toLocaleDateString()}
+                        </span>
+                    )}
                     <span className="text-[10px] text-zinc-600 ml-auto">
                         {logs.length} log{logs.length !== 1 ? "s" : ""}
                     </span>
                 </div>
 
-                {/* Activity Logs */}
-                {isOwner ? (
+                {hasAccess ? (
                     <>
                         {loadingLogs ? (
                             <div className="text-sm text-zinc-600 text-center py-6">Loading agent activity...</div>
@@ -177,8 +221,8 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
                 ) : (
                     <div className="flex flex-col items-center justify-center py-8 text-center bg-white/[0.02] border border-white/[0.04] rounded-lg border-dashed">
                         <Terminal className="h-8 w-8 text-zinc-700 mb-3" />
-                        <p className="text-sm text-zinc-500 font-medium">Agent logs are private</p>
-                        <p className="text-xs text-zinc-600 mt-1 max-w-[200px]">Only the owner can view the internal decision logs.</p>
+                        <p className="text-sm text-zinc-500 font-medium">Agent logs are locked</p>
+                        <p className="text-xs text-zinc-600 mt-1 max-w-[200px]">Hire this agent to unlock activity logs and brain access.</p>
                     </div>
                 )}
             </div>
