@@ -21,6 +21,10 @@ function toAgent(row: any): AgentListing {
         createdAt: new Date(row.created_at).getTime(),
         backendAgentId: row.backend_agent_id || undefined,
         type: (row.type as "clawpocket" | "openclaw" | "zeptoclaw") || "clawpocket",
+        // Profile Enhancements
+        skills: row.skills || [],
+        externalLinks: row.external_links || {},
+        bio: row.bio || "",
         // x402 Agent Commerce
         rentalPriceUsdc: row.rental_price_usdc || "5.00",
         x402Enabled: row.x402_enabled || false,
@@ -157,6 +161,10 @@ export async function saveAgent(agent: AgentListing): Promise<void> {
         backend_agent_id: agent.backendAgentId || null,
         api_key: agent.apiKey || null, // Persist API key
         type: agent.type || "clawpocket",
+        // Profile Enhancements
+        skills: agent.skills || [],
+        external_links: agent.externalLinks || {},
+        bio: agent.bio || "",
         created_at: new Date(agent.createdAt).toISOString(),
         // x402 Agent Commerce
         rental_price_usdc: agent.rentalPriceUsdc || "5.00",

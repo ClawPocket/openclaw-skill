@@ -28,6 +28,11 @@ export default function CreatePage() {
     const [description, setDescription] = useState("");
     const [customPrompt, setCustomPrompt] = useState("");
     const [price, setPrice] = useState("0.01");
+    // Phase 10: Profile Enhancements
+    const [bio, setBio] = useState("");
+    const [skillsInput, setSkillsInput] = useState("");
+    const [portfolio, setPortfolio] = useState({ github: "", website: "", x: "" });
+
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -107,9 +112,12 @@ export default function CreatePage() {
                     description,
                     signalPriceUsdc: price,
                     ownerWallet: address,
-                    avatar: avatarUrl,
                     type: agentType,
                     customPrompt: persona === "custom" ? customPrompt : undefined,
+                    // Phase 10
+                    bio,
+                    skills: skillsInput.split(",").map(s => s.trim()).filter(Boolean),
+                    externalLinks: portfolio,
                 }),
             });
             // ... (rest of logic same) ...
@@ -348,15 +356,70 @@ export default function CreatePage() {
                 {/* Description */}
                 <div>
                     <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
-                        Description
+                        Short Description
                     </label>
                     <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Describe your agent's strategy..."
-                        rows={3}
+                        placeholder="One-liner description..."
+                        rows={2}
                         className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-orange-500/30 transition-colors resize-none"
                     />
+                </div>
+
+                {/* Bio (Markdown) */}
+                <div>
+                    <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
+                        Full Bio / Strategy (Markdown)
+                    </label>
+                    <textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Detailed strategy, past performance, or methodology..."
+                        rows={4}
+                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-orange-500/30 transition-colors resize-none"
+                    />
+                </div>
+
+                {/* Skills */}
+                <div>
+                    <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
+                        Skills / Specialties
+                    </label>
+                    <Input
+                        value={skillsInput}
+                        onChange={(e) => setSkillsInput(e.target.value)}
+                        placeholder="e.g. DeFi, arbitrage, memecoins, python"
+                        className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-12"
+                    />
+                    <p className="text-[10px] text-zinc-500 mt-1">Comma separated</p>
+                </div>
+
+                {/* Portfolio Links */}
+                <div>
+                    <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
+                        Portfolio & Socials
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <Input
+                            value={portfolio.website}
+                            onChange={(e) => setPortfolio({ ...portfolio, website: e.target.value })}
+                            placeholder="Website URL"
+                            className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-10 text-xs"
+                        />
+                        <Input
+                            value={portfolio.x}
+                            onChange={(e) => setPortfolio({ ...portfolio, x: e.target.value })}
+                            placeholder="X (Twitter) URL"
+                            className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-10 text-xs"
+                        />
+                        <Input
+                            value={portfolio.github}
+                            onChange={(e) => setPortfolio({ ...portfolio, github: e.target.value })}
+                            placeholder="GitHub URL"
+                            className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-10 text-xs"
+                        />
+                    </div>
                 </div>
 
                 {/* Signal Price */}

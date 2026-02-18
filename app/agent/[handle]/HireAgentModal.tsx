@@ -46,14 +46,17 @@ export function HireAgentModal({
     agentId,
     agentName,
     agentWallet,
+    agentWallet,
     ownerWallet,
     rentalPriceUsdc,
+    skills = [],
 }: {
     agentId: string;
     agentName: string;
     agentWallet: string;
     ownerWallet: string;
     rentalPriceUsdc: string;
+    skills?: string[];
 }) {
     const { address, isConnected } = useAccount();
     const [selectedTier, setSelectedTier] = useState<Tier>("day");
@@ -254,6 +257,15 @@ export function HireAgentModal({
                                 <li className="flex items-center gap-2">
                                     <Check className="h-3 w-3 text-purple-400 shrink-0" /> Copy-trade capabilities
                                 </li>
+                                {skills.length > 0 && (
+                                    <li className="flex items-start gap-2 pt-1">
+                                        <Sparkles className="h-3 w-3 text-emerald-400 shrink-0 mt-0.5" />
+                                        <span>
+                                            Expertise: <span className="text-zinc-300">{skills.slice(0, 3).join(", ")}</span>
+                                            {skills.length > 3 && "..."}
+                                        </span>
+                                    </li>
+                                )}
                             </ul>
                         </div>
 

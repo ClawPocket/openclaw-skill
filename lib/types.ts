@@ -16,6 +16,10 @@ export interface AgentListing {
     backendAgentId?: string; // Links to Pocket Trader backend AI agent
     apiKey?: string; // Secret for remote webhook (owner only)
     type: "clawpocket" | "openclaw" | "zeptoclaw";
+    // Profile Enhancements (Phase 10)
+    skills?: string[];
+    externalLinks?: Record<string, string>;
+    bio?: string;
     // x402 Agent Commerce
     rentalPriceUsdc?: string; // Base rental price per day (e.g. "5.00")
     x402Enabled?: boolean; // Whether x402 pay-per-request is active
