@@ -46,7 +46,6 @@ export function HireAgentModal({
     agentId,
     agentName,
     agentWallet,
-    agentWallet,
     ownerWallet,
     rentalPriceUsdc,
     skills = [],
