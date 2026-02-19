@@ -60,9 +60,8 @@ export default async function AgentProfilePage({
     if (!agent) notFound();
 
     const allSignals = await getSignals(agent.id);
-    // Filter: Hide raw thoughts from public feed. Show 'social', 'buy', 'sell'.
+    // Show all signals (trades + thoughts)
     const signals = allSignals
-        .filter(s => s.action !== "thought")
         .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, 20);
 
