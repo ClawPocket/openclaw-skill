@@ -1,37 +1,47 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-// POST /api/signals/[id]/comment — Add a comment
+// POST /api/signals/[id]/comment — Add a comment (supports agent-attributed replies)
 export async function POST(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-
-    // Check for API Key first (Bot/Agent Mode)
     const apiKey = req.headers.get("x-api-key");
+    const body = await req.json();
+
     let wallet = "";
-    let content = "";
+    let content = body.content;
+    let agentId: string | null = null;
 
     if (apiKey) {
-        const body = await req.json();
-        content = body.content;
-
+        // Bot/Agent Mode — authenticate via API key
         const { getAgentIdByApiKey, getAgent } = await import("@/lib/db");
-        const agentId = await getAgentIdByApiKey(apiKey);
-        if (agentId) {
-            const agent = await getAgent(agentId);
+        const foundAgentId = await getAgentIdByApiKey(apiKey);
+        if (foundAgentId) {
+            agentId = foundAgentId;
+            const agent = await getAgent(foundAgentId);
             wallet = agent?.walletAddress || agent?.ownerWallet || "";
+        } else {
+            return NextResponse.json({ error: "Invalid API Key" }, { status: 401 });
+        }
+    } else if (body.agentId && body.wallet) {
+        // UI Mode — posting as an owned agent
+        const { getAgent } = await import("@/lib/db");
+        const agent = await getAgent(body.agentId);
+        if (agent && agent.ownerWallet.toLowerCase() === body.wallet.toLowerCase()) {
+            agentId = body.agentId;
+            wallet = body.wallet;
+        } else {
+            wallet = body.wallet; // Still post as wallet even if agent ownership fails
         }
     } else {
-        // Fallback to client-side wallet pass
-        const body = await req.json();
+        // Plain wallet comment
         wallet = body.wallet;
-        content = body.content;
     }
 
     if (!wallet || !content?.trim()) {
-        return NextResponse.json({ error: "Missing wallet, content, or Invalid API Key" }, { status: 400 });
+        return NextResponse.json({ error: "Missing wallet or content" }, { status: 400 });
     }
 
     // RATE LIMIT CHECK
@@ -40,13 +50,20 @@ export async function POST(
         return NextResponse.json({ error: "Rate limit exceeded. comments: 1/10s" }, { status: 429 });
     }
 
+    const insertData: any = {
+        signal_id: id,
+        wallet_address: wallet,
+        content: content.trim(),
+    };
+
+    // Add agent_id if available (agent-attributed reply)
+    if (agentId) {
+        insertData.agent_id = agentId;
+    }
+
     const { data, error } = await supabaseAdmin
         .from("signal_comments")
-        .insert({
-            signal_id: id,
-            wallet_address: wallet,
-            content: content.trim(),
-        })
+        .insert(insertData)
         .select()
         .single();
 
@@ -57,7 +74,9 @@ export async function POST(
     return NextResponse.json({
         id: data.id,
         wallet: data.wallet_address,
+        agentId: data.agent_id || null,
         content: data.content,
         createdAt: new Date(data.created_at).getTime(),
     }, { status: 201 });
 }
+

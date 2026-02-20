@@ -64,7 +64,15 @@ interface AgentInfo {
 interface SocialData {
     likes: number;
     likedBy: string[];
-    comments: { id: string; wallet: string; content: string; createdAt: number }[];
+    comments: {
+        id: string;
+        wallet: string;
+        agentId?: string | null;
+        agentName?: string | null;
+        agentAvatar?: string | null;
+        content: string;
+        createdAt: number;
+    }[];
     reposts: number;
     repostedBy: string[];
 }
@@ -82,6 +90,122 @@ function timeAgo(timestamp: number): string {
 
 function shortWallet(wallet: string): string {
     return `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
+}
+
+/* ───────────────────────── COMPOSE POST ───────────────────────── */
+
+function ComposePost({
+    agents,
+    wallet,
+    onPosted,
+}: {
+    agents: AgentInfo[];
+    wallet: string;
+    onPosted: () => void;
+}) {
+    const [content, setContent] = useState("");
+    const [selectedAgent, setSelectedAgent] = useState<string>("");
+    const [posting, setPosting] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Filter to agents owned by the connected wallet
+    const ownedAgents = agents.filter((a) =>
+        a.id && wallet
+    ); // All agents shown; ownership is verified server-side
+
+    if (!wallet) return null;
+
+    const handlePost = async () => {
+        if (!content.trim() || !selectedAgent) return;
+        setPosting(true);
+        try {
+            const res = await fetch("/api/signals/post", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: content.trim(),
+                    agentId: selectedAgent,
+                    wallet,
+                }),
+            });
+            if (res.ok) {
+                setContent("");
+                addToast("Thought posted!", "success");
+                onPosted();
+            } else {
+                const err = await res.json();
+                addToast(err.error || "Failed to post", "error");
+            }
+        } catch {
+            addToast("Failed to post", "error");
+        } finally {
+            setPosting(false);
+        }
+    };
+
+    return (
+        <div className="border-b border-white/[0.04] px-4 py-3">
+            <div className="flex gap-3">
+                {/* Agent selector avatar */}
+                <div className="shrink-0">
+                    {selectedAgent ? (
+                        <div className="h-10 w-10 rounded-full overflow-hidden ring-1 ring-white/[0.06]">
+                            <AgentAvatar
+                                avatar={agents.find((a) => a.id === selectedAgent)?.avatar || "🤖"}
+                                name={agents.find((a) => a.id === selectedAgent)?.name || ""}
+                                size={40}
+                            />
+                        </div>
+                    ) : (
+                        <div className="h-10 w-10 rounded-full bg-white/[0.04] ring-1 ring-white/[0.06] flex items-center justify-center">
+                            <Sparkles className="h-4 w-4 text-zinc-600" />
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                    {/* Agent picker */}
+                    <select
+                        value={selectedAgent}
+                        onChange={(e) => setSelectedAgent(e.target.value)}
+                        className="mb-2 bg-transparent border border-white/[0.06] rounded-lg px-2 py-1 text-xs text-zinc-300 focus:outline-none focus:ring-1 focus:ring-orange-500/30 w-full max-w-[200px]"
+                    >
+                        <option value="" className="bg-zinc-900">Post as agent...</option>
+                        {ownedAgents.map((a) => (
+                            <option key={a.id} value={a.id} className="bg-zinc-900">
+                                {a.avatar} {a.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Text input */}
+                    <textarea
+                        ref={textareaRef}
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder="What's on your agent's mind?"
+                        rows={2}
+                        maxLength={500}
+                        className="w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-600 resize-none focus:outline-none leading-relaxed"
+                    />
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between mt-1">
+                        <span className="text-[10px] text-zinc-700">
+                            {content.length}/500
+                        </span>
+                        <button
+                            onClick={handlePost}
+                            disabled={!content.trim() || !selectedAgent || posting}
+                            className="px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500 to-red-600 text-xs font-semibold text-white disabled:opacity-30 hover:opacity-90 transition-all"
+                        >
+                            {posting ? "Posting..." : "Post"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 /* ───────────────────────── SIGNAL POST ───────────────────────── */
@@ -443,12 +567,22 @@ function SignalPost({
                                 <div className="space-y-2.5 max-h-48 overflow-y-auto">
                                     {social.comments.map((c) => (
                                         <div key={c.id} className="flex gap-2">
-                                            <div className="h-6 w-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-zinc-500 shrink-0">
-                                                {c.wallet.slice(2, 4).toUpperCase()}
-                                            </div>
+                                            {c.agentAvatar ? (
+                                                <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
+                                                    <AgentAvatar avatar={c.agentAvatar} name={c.agentName || ""} size={24} />
+                                                </div>
+                                            ) : (
+                                                <div className="h-6 w-6 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] text-zinc-500 shrink-0">
+                                                    {c.wallet.slice(2, 4).toUpperCase()}
+                                                </div>
+                                            )}
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-[11px] font-mono text-zinc-400">{shortWallet(c.wallet)}</span>
+                                                    {c.agentName ? (
+                                                        <span className="text-[11px] font-semibold text-orange-400">{c.agentName}</span>
+                                                    ) : (
+                                                        <span className="text-[11px] font-mono text-zinc-400">{shortWallet(c.wallet)}</span>
+                                                    )}
                                                     <span className="text-zinc-700 text-[10px]">·</span>
                                                     <span className="text-zinc-700 text-[10px]">{timeAgo(c.createdAt)}</span>
                                                 </div>
@@ -728,8 +862,8 @@ export default function FeedPage() {
                                     key={t}
                                     onClick={() => setActiveTab(t)}
                                     className={`flex-1 py-3.5 text-[13px] font-medium transition-all relative ${activeTab === t
-                                            ? "text-white"
-                                            : "text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.02]"
+                                        ? "text-white"
+                                        : "text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.02]"
                                         }`}
                                 >
                                     <span className="flex items-center justify-center gap-1.5">
@@ -748,6 +882,21 @@ export default function FeedPage() {
                             ))}
                         </div>
                     </div>
+
+                    {/* Compose box — only for connected wallets */}
+                    {!loading && wallet && activeTab !== "trades" && (
+                        <ComposePost
+                            agents={agents}
+                            wallet={wallet}
+                            onPosted={() => {
+                                // Re-fetch feed after posting
+                                fetch(`/api/feed?sort=${sort}`)
+                                    .then((r) => r.json())
+                                    .then(setSignals)
+                                    .catch(console.error);
+                            }}
+                        />
+                    )}
 
                     {/* Signal posts */}
                     <div>
