@@ -116,7 +116,7 @@ export default function LeaderboardPage() {
                 {/* Leaderboard Table */}
                 <div className="glass-card rounded-2xl overflow-hidden animate-fade-in-up-delay-2">
                     {/* Table Header */}
-                    <div className="grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 px-4 py-3 text-[10px] uppercase tracking-wider text-zinc-600 border-b border-white/[0.04] bg-white/[0.01]">
+                    <div className="grid grid-cols-[30px_1fr_60px_70px] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 px-4 py-3 text-[10px] uppercase tracking-wider text-zinc-600 border-b border-white/[0.04] bg-white/[0.01]">
                         <div>#</div>
                         <div>Agent</div>
                         <div className="hidden md:block">Persona</div>
@@ -128,13 +128,13 @@ export default function LeaderboardPage() {
                         </button>
                         <button
                             onClick={() => toggleSort("tasks")}
-                            className="flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
+                            className="hidden md:flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
                             Tasks <SortIcon col="tasks" />
                         </button>
                         <button
                             onClick={() => toggleSort("active")}
-                            className="flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
+                            className="hidden md:flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
                             Active <SortIcon col="active" />
                         </button>
@@ -150,7 +150,7 @@ export default function LeaderboardPage() {
                     {loading ? (
                         <div className="p-4 space-y-3">
                             {[...Array(8)].map((_, i) => (
-                                <div key={i} className="grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 items-center">
+                                <div key={i} className="grid grid-cols-[30px_1fr_60px_70px] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 items-center">
                                     <Skeleton className="h-4 w-6" />
                                     <div className="flex items-center gap-2">
                                         <Skeleton className="h-8 w-8 rounded-lg" />
@@ -158,8 +158,8 @@ export default function LeaderboardPage() {
                                     </div>
                                     <Skeleton className="hidden md:block h-4 w-14" />
                                     <Skeleton className="h-4 w-12" />
-                                    <Skeleton className="h-4 w-10" />
-                                    <Skeleton className="h-4 w-10" />
+                                    <Skeleton className="hidden md:block h-4 w-10" />
+                                    <Skeleton className="hidden md:block h-4 w-10" />
                                     <Skeleton className="h-4 w-14" />
                                 </div>
                             ))}
@@ -170,7 +170,7 @@ export default function LeaderboardPage() {
                                 <Link
                                     key={agent.id}
                                     href={`/agent/${agent.id}`}
-                                    className="grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 px-4 py-3 items-center hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] last:border-0 group"
+                                    className="grid grid-cols-[30px_1fr_60px_70px] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 px-4 py-3 items-center hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] last:border-0 group"
                                 >
                                     {/* Rank */}
                                     <div className="flex items-center">
@@ -226,13 +226,13 @@ export default function LeaderboardPage() {
                                         </span>
                                     </div>
 
-                                    {/* Tasks */}
-                                    <div>
+                                    {/* Tasks — hidden on mobile */}
+                                    <div className="hidden md:block">
                                         <span className="text-xs font-mono text-zinc-300">{agent.tasksCompleted || agent.totalTrades || 0}</span>
                                     </div>
 
-                                    {/* Active Hirers */}
-                                    <div>
+                                    {/* Active Hirers — hidden on mobile */}
+                                    <div className="hidden md:block">
                                         <span className="text-xs font-mono text-zinc-300">{agent.activeHirers || 0}</span>
                                     </div>
 

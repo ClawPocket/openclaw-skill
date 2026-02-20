@@ -10,7 +10,13 @@ export const contentType = "image/png";
 
 export default async function Image({ params }: { params: Promise<{ handle: string }> }) {
     const { handle } = await params;
-    const agent = await getAgent(decodeURIComponent(handle));
+
+    let agent;
+    try {
+        agent = await getAgent(decodeURIComponent(handle));
+    } catch {
+        agent = null;
+    }
 
     if (!agent) {
         return new ImageResponse(
@@ -34,27 +40,55 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
         );
     }
 
+    const roiColor = agent.roiPct >= 0 ? "#34d399" : "#f87171";
+    const roiSign = agent.roiPct >= 0 ? "+" : "";
+
     return new ImageResponse(
         (
             <div
                 style={{
-                    background: "linear-gradient(to bottom right, #09090b, #18181b)",
+                    background: "#09090b",
                     width: "100%",
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontFamily: "sans-serif",
                     color: "white",
                     position: "relative",
                 }}
             >
-                {/* Background Accents */}
-                <div style={{ position: "absolute", top: -100, right: -100, width: 400, height: 400, background: agent.color, filter: "blur(150px)", opacity: 0.2 }} />
-                <div style={{ position: "absolute", bottom: -100, left: -100, width: 400, height: 400, background: "#f97316", filter: "blur(150px)", opacity: 0.1 }} />
+                {/* Colored accent — top right */}
+                <div
+                    style={{
+                        position: "absolute",
+                        top: -100,
+                        right: -100,
+                        width: 500,
+                        height: 500,
+                        borderRadius: "50%",
+                        background: agent.color,
+                        opacity: 0.08,
+                        display: "flex",
+                    }}
+                />
 
-                {/* Card Content */}
+                {/* Orange accent — bottom left */}
+                <div
+                    style={{
+                        position: "absolute",
+                        bottom: -100,
+                        left: -100,
+                        width: 400,
+                        height: 400,
+                        borderRadius: "50%",
+                        background: "#f97316",
+                        opacity: 0.06,
+                        display: "flex",
+                    }}
+                />
+
+                {/* Card */}
                 <div
                     style={{
                         display: "flex",
@@ -63,49 +97,55 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                         background: "rgba(255,255,255,0.03)",
                         border: "1px solid rgba(255,255,255,0.08)",
                         borderRadius: 24,
-                        padding: "60px 80px",
-                        boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+                        padding: "50px 80px",
                     }}
                 >
-                    <div style={{ fontSize: 24, color: agent.color, textTransform: "uppercase", letterSpacing: 2, marginBottom: 10 }}>
-                        {agent.persona} Agent
+                    {/* Persona label */}
+                    <div style={{ fontSize: 22, color: agent.color, letterSpacing: 3, marginBottom: 12, display: "flex" }}>
+                        {agent.persona.toUpperCase()} AGENT
                     </div>
 
-                    <div style={{ fontSize: 70, fontWeight: 900, marginBottom: 10, textAlign: "center" }}>
+                    {/* Name */}
+                    <div style={{ fontSize: 64, fontWeight: 900, marginBottom: 8, display: "flex", textAlign: "center" }}>
                         {agent.name}
                     </div>
 
-                    <div style={{ fontSize: 30, color: "#a1a1aa", marginBottom: 40 }}>
-                        {agent.handle}
+                    {/* Handle */}
+                    <div style={{ fontSize: 28, color: "#a1a1aa", marginBottom: 36, display: "flex" }}>
+                        {agent.handle || `@${agent.name.toLowerCase().replace(/\s+/g, "")}`}
                     </div>
 
-                    {/* Stats */}
-                    <div style={{ display: "flex", gap: 60, marginTop: 20 }}>
+                    {/* Stats row */}
+                    <div style={{ display: "flex", gap: 80 }}>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                            <div style={{ fontSize: 50, fontWeight: 800, color: agent.roiPct >= 0 ? "#34d399" : "#f87171" }}>
-                                {agent.roiPct >= 0 ? "+" : ""}{agent.roiPct}%
+                            <div style={{ fontSize: 48, fontWeight: 800, color: roiColor, display: "flex" }}>
+                                {roiSign}{agent.roiPct}%
                             </div>
-                            <div style={{ fontSize: 18, color: "#71717a", textTransform: "uppercase", letterSpacing: 1 }}>ROI</div>
+                            <div style={{ fontSize: 16, color: "#71717a", letterSpacing: 2, display: "flex" }}>ROI</div>
                         </div>
 
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                            <div style={{ fontSize: 50, fontWeight: 800, color: "white" }}>
-                                {agent.totalTrades}
+                            <div style={{ fontSize: 48, fontWeight: 800, color: "white", display: "flex" }}>
+                                {agent.totalHires || 0}
                             </div>
-                            <div style={{ fontSize: 18, color: "#71717a", textTransform: "uppercase", letterSpacing: 1 }}>Trades</div>
+                            <div style={{ fontSize: 16, color: "#71717a", letterSpacing: 2, display: "flex" }}>HIRED</div>
+                        </div>
+
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ fontSize: 48, fontWeight: 800, color: "#34d399", display: "flex" }}>
+                                ${agent.rentalPriceUsdc || "5.00"}
+                            </div>
+                            <div style={{ fontSize: 16, color: "#71717a", letterSpacing: 2, display: "flex" }}>/ DAY</div>
                         </div>
                     </div>
                 </div>
 
-                {/* Footer Brand */}
-                <div style={{ position: "absolute", bottom: 40, display: "flex", alignItems: "center", gap: 10, opacity: 0.6 }}>
-                    <div style={{ fontSize: 24 }}>🦞</div>
-                    <div style={{ fontSize: 20, fontWeight: 600 }}>ClawPocket Marketplace</div>
+                {/* Footer */}
+                <div style={{ position: "absolute", bottom: 36, display: "flex", alignItems: "center", gap: 10, opacity: 0.5 }}>
+                    <div style={{ fontSize: 20, fontWeight: 600, display: "flex" }}>ClawPocket — AI Agent Marketplace on Base</div>
                 </div>
             </div>
         ),
-        {
-            ...size,
-        }
+        { ...size }
     );
 }
