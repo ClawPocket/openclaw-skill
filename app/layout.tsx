@@ -68,8 +68,12 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true },
   },
   icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo.svg", type: "image/svg+xml" },
+    ],
+    apple: "/favicon.ico",
+    shortcut: "/favicon.ico",
   },
   manifest: "/manifest.json",
   appleWebApp: {
