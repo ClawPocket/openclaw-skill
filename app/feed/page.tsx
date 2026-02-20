@@ -86,33 +86,60 @@ function shortWallet(wallet: string): string {
 
 /* ───────────────────────── SIGNAL POST ───────────────────────── */
 
-function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number }) {
+function SignalPost({
+    signal,
+    index,
+    initialLiked,
+    initialReposted,
+}: {
+    signal: LocalFeedSignal;
+    index: number;
+    initialLiked: boolean;
+    initialReposted: boolean;
+}) {
     const { address } = useAccount();
     const wallet = address?.toLowerCase() || "";
     const { fetchWithX402, isPaying } = useX402();
 
     const [data, setData] = useState<LocalFeedSignal>(signal);
-    const [social, setSocial] = useState<SocialData>({ likes: 0, likedBy: [], comments: [], reposts: 0, repostedBy: [] });
-    const [liked, setLiked] = useState(false);
-    const [reposted, setReposted] = useState(false);
+    const [social, setSocial] = useState<SocialData>({
+        // Initialize counts from the signal directly (provided by db query)
+        // Note: the feed API returns these as likeCount/repostCount
+        likes: (signal as any).likeCount || 0,
+        likedBy: initialLiked && wallet ? [wallet] : [],
+        comments: [], // Lazy loaded
+        reposts: (signal as any).repostCount || 0,
+        repostedBy: initialReposted && wallet ? [wallet] : [],
+    });
+    const [liked, setLiked] = useState(initialLiked);
+    const [reposted, setReposted] = useState(initialReposted);
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [submitting, setSubmitting] = useState(false);
+    const [commentsLoaded, setCommentsLoaded] = useState(false);
     const commentInputRef = useRef<HTMLInputElement>(null);
 
-    // Fetch social data on mount
+    // Sync initial props (in case wallet connects after initial render)
     useEffect(() => {
-        fetch(`/api/signals/${data.id}/social`)
-            .then((r) => r.json())
-            .then((socialData: SocialData) => {
-                setSocial(socialData);
-                if (wallet) {
-                    setLiked(socialData.likedBy.includes(wallet));
-                    setReposted(socialData.repostedBy.includes(wallet));
-                }
-            })
-            .catch(() => { });
-    }, [data.id, wallet]);
+        setLiked(initialLiked);
+        setReposted(initialReposted);
+    }, [initialLiked, initialReposted, wallet]);
+
+    // Lazy load comments when expanded
+    useEffect(() => {
+        if (showComments && !commentsLoaded) {
+            fetch(`/api/signals/${data.id}/social`)
+                .then((r) => r.json())
+                .then((socialData: SocialData) => {
+                    setSocial((prev) => ({
+                        ...prev,
+                        comments: socialData.comments || [],
+                    }));
+                    setCommentsLoaded(true);
+                })
+                .catch(() => { });
+        }
+    }, [showComments, commentsLoaded, data.id]);
 
     const handleUnlock = async () => {
         if (!wallet) {
@@ -600,12 +627,35 @@ function RightSidebar({ agents }: { agents: AgentInfo[] }) {
 /* ───────────────────────── MAIN PAGE ───────────────────────── */
 
 export default function FeedPage() {
+    const { address } = useAccount();
+    const wallet = address?.toLowerCase() || "";
+
     const [signals, setSignals] = useState<LocalFeedSignal[]>([]);
     const [agents, setAgents] = useState<AgentInfo[]>([]);
     const [tab, setTab] = useState<"all" | "thoughts" | "trades">("all");
     const [sort, setSort] = useState<"hot" | "latest">("hot"); // Default to algorithmic For You feed
     const [loading, setLoading] = useState(true);
     const [liveCount, setLiveCount] = useState(0);
+
+    // Interactions state to avoid N+1 queries
+    const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+    const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
+
+    // Fetch user interactions (likes/reposts) efficiently in bulk
+    useEffect(() => {
+        if (!wallet) {
+            setLikedIds(new Set());
+            setRepostedIds(new Set());
+            return;
+        }
+        fetch(`/api/user/${wallet}/interactions`)
+            .then((r) => r.json())
+            .then((data) => {
+                setLikedIds(new Set(data.likedIds || []));
+                setRepostedIds(new Set(data.repostedIds || []));
+            })
+            .catch(console.error);
+    }, [wallet]);
 
     // Initial fetch
     useEffect(() => {
@@ -731,7 +781,13 @@ export default function FeedPage() {
                             </>
                         ) : filtered.length > 0 ? (
                             filtered.map((signal, i) => (
-                                <SignalPost key={signal.id} signal={signal} index={i} />
+                                <SignalPost
+                                    key={signal.id}
+                                    signal={signal}
+                                    index={i}
+                                    initialLiked={likedIds.has(signal.id)}
+                                    initialReposted={repostedIds.has(signal.id)}
+                                />
                             ))
                         ) : (
                             <div className="flex flex-col items-center py-20 gap-3">

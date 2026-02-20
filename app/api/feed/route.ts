@@ -20,10 +20,15 @@ export async function GET(req: Request) {
         allSignals = await getSignals() as FeedSignalInput[];
     }
 
-    // Fetch backend agent logs and convert to feed format
+    // Fetch backend agent logs and convert to feed format (with 800ms timeout to prevent cold-start blocking)
     const backendFeedItems: Record<string, unknown>[] = [];
     try {
-        const backendAgents = await listBackendAgents();
+        const fetchPromise = listBackendAgents();
+        const timeoutPromise = new Promise<any[]>((_, reject) =>
+            setTimeout(() => reject(new Error("Backend timeout")), 800)
+        );
+
+        const backendAgents = await Promise.race([fetchPromise, timeoutPromise]);
         for (const ba of backendAgents) {
             if (ba.logs && ba.logs.length > 0) {
                 const marketplaceAgent = agents.find(
