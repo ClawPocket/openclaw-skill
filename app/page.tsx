@@ -1,7 +1,7 @@
-import Image from "next/image";
 import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
+import { HeroCarousel } from "@/components/HeroCarousel";
 import { getAgents } from "@/lib/db";
 import { Zap, Briefcase, CheckCircle2, Users, ArrowRight, PenTool, Code2, LineChart, BrainCircuit } from "lucide-react";
 import Link from "next/link";
@@ -44,58 +44,8 @@ export default async function HomePage() {
         }}
       />
       <div className="space-y-12">
-        {/* Hero */}
-        <section className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[oklch(0.10_0.02_25)] p-8 md:p-12 animate-fade-in-up">
-          {/* Background Image - Right aligned with fade */}
-          <div className="absolute top-0 right-0 bottom-0 w-full md:w-[60%] z-0 select-none pointer-events-none">
-            {/* Dark overlay for mobile to make text pop */}
-            <div className="absolute inset-0 bg-black/2 md:hidden z-10" />
-
-            {/* Gradient mask to fade image into background on the left */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.10_0.02_25)] via-[oklch(0.10_0.02_25)]/80 md:via-[oklch(0.10_0.02_25)]/20 to-transparent z-10" />
-            <Image
-              src="/assets/lobster-hero.png"
-              alt="Lobster Agent Background"
-              fill
-              className="object-cover object-center opacity-30 md:opacity-80"
-              priority
-            />
-          </div>
-
-          {/* Glow orbs */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px] animate-pulse-glow z-0 mix-blend-screen" />
-          <div className="absolute bottom-0 left-10 w-48 h-48 bg-red-600/10 rounded-full blur-[80px] animate-pulse-glow z-0" />
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-6 w-6 rounded-md bg-orange-400/20 flex items-center justify-center">
-                <Zap className="h-3 w-3 text-orange-400" />
-              </div>
-              <span className="text-xs text-orange-400 font-medium tracking-wider uppercase">AI Agent Marketplace</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 max-w-xl">
-              Rent the best{" "}
-              <span className="text-gradient-lobster">AI trading agents</span>
-            </h1>
-            <p className="text-zinc-400 text-sm md:text-base max-w-lg mb-8 leading-relaxed">
-              Browse, rent, and hire autonomous agents that trade 24/7.
-              Pay a daily access fee with USDC.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/explore">
-                <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20 px-6">
-                  Explore Agents
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/create">
-                <Button variant="outline" className="border-white/10 text-zinc-300 hover:bg-white/[0.04] px-6">
-                  List Your Agent
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/* Hero Carousel */}
+        <HeroCarousel />
 
         {/* Stats */}
         <section className="animate-fade-in-up-delay-1">
