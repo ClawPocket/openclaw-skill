@@ -49,16 +49,16 @@ export default async function HomePage() {
 
         {/* Stats */}
         <section className="animate-fade-in-up-delay-1">
-          <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto pb-4 md:pb-0 no-scrollbar snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 -mx-2 sm:mx-0">
             {[
               { label: "Active Agents", value: stats.totalAgents, icon: Zap, color: "text-orange-400" },
               { label: "Total Hired", value: stats.totalHires.toLocaleString(), icon: Briefcase, color: "text-emerald-400" },
-              { label: "Tasks Delivered", value: stats.totalTasks.toLocaleString(), icon: CheckCircle2, color: "text-red-400" },
+              { label: "Tasks", value: stats.totalTasks.toLocaleString(), icon: CheckCircle2, color: "text-red-400" },
             ].map((stat) => (
-              <div key={stat.label} className="glass-card rounded-xl p-4 text-center min-w-[140px] flex-1 snap-center border-white/[0.08]">
-                <stat.icon className={`h-4 w-4 mx-auto mb-2 ${stat.color}`} />
-                <p className="text-xl md:text-2xl font-bold font-mono">{stat.value}</p>
-                <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">{stat.label}</p>
+              <div key={stat.label} className="glass-card rounded-xl p-2 sm:p-6 text-center border-white/[0.08] flex flex-col items-center justify-center">
+                <stat.icon className={`h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2 ${stat.color}`} />
+                <p className="text-sm sm:text-2xl font-bold font-mono text-zinc-200 leading-none mb-1">{stat.value}</p>
+                <p className="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-tighter leading-tight">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -84,10 +84,10 @@ export default async function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold tracking-tight">Browse by Persona</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {personas.map((p) => (
               <Link key={p.id} href={`/explore?persona=${p.id}`}>
-                <div className={`group relative overflow-hidden glass-card rounded-xl p-6 border transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${p.border} bg-black/40`}>
+                <div className={`group relative overflow-hidden glass-card rounded-xl p-4 sm:p-6 border transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${p.border} bg-black/40 h-full flex flex-col`}>
 
                   {/* Base Background Gradient */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${p.bg} opacity-50 group-hover:opacity-100 transition-opacity duration-300`} />
@@ -96,12 +96,12 @@ export default async function HomePage() {
                   <div className={`absolute -right-8 -top-8 h-32 w-32 rounded-full blur-[40px] ${p.glow} opacity-0 group-hover:opacity-100 transition-all duration-500 scale-50 group-hover:scale-150`} />
 
                   {/* Content */}
-                  <div className="relative z-10">
-                    <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${p.color} flex items-center justify-center text-2xl mb-4 shadow-lg shadow-black/20 border ${p.border.split(' ')[0]} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-                      {p.icon}
+                  <div className="relative z-10 flex-1 flex flex-col">
+                    <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br ${p.color} flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4 shadow-lg shadow-black/20 border ${p.border.split(' ')[0]} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shrink-0`}>
+                      <p.icon.type {...p.icon.props} className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="text-lg font-bold text-zinc-100 mb-2">{p.name}</h3>
-                    <p className="text-sm text-zinc-400 leading-relaxed font-medium">{p.desc}</p>
+                    <h3 className="text-sm sm:text-lg font-bold text-zinc-100 mb-1 sm:mb-2">{p.name}</h3>
+                    <p className="text-[11px] sm:text-sm text-zinc-400 leading-relaxed font-medium">{p.desc}</p>
                   </div>
                 </div>
               </Link>
@@ -151,7 +151,6 @@ export default async function HomePage() {
             </div>
           </section>
         </div>
-
       </div>
     </MarketplaceLayout>
   );

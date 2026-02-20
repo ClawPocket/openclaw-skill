@@ -76,7 +76,7 @@ export function HeroCarousel() {
 
     return (
         <section
-            className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[oklch(0.10_0.02_25)] p-8 md:p-12 animate-fade-in-up h-[320px] md:h-[360px]"
+            className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[oklch(0.10_0.02_25)] p-6 sm:p-8 md:p-12 min-h-[340px] md:min-h-[360px] flex flex-col justify-center"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
         >
@@ -87,7 +87,7 @@ export function HeroCarousel() {
                     className="absolute top-0 right-0 bottom-0 w-full md:w-[60%] z-0 select-none pointer-events-none transition-opacity duration-700"
                     style={{ opacity: i === current ? 1 : 0 }}
                 >
-                    <div className="absolute inset-0 bg-black/2 md:hidden z-10" />
+                    <div className="absolute inset-0 bg-black/40 md:hidden z-10" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.10_0.02_25)] via-[oklch(0.10_0.02_25)]/80 md:via-[oklch(0.10_0.02_25)]/20 to-transparent z-10" />
                     <Image
                         src={s.image}
@@ -104,9 +104,9 @@ export function HeroCarousel() {
             <div className="absolute bottom-0 left-10 w-48 h-48 bg-red-600/10 rounded-full blur-[80px] animate-pulse-glow z-0" />
 
             {/* Content — slide transition */}
-            <div className="relative z-10" key={current}>
+            <div className="relative z-10 pb-8 md:pb-0" key={current}>
                 <div className="animate-fade-in-up" style={{ animationDuration: "0.5s" }}>
-                    <div className="flex items-center gap-2 mb-4">
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
                         <div className="h-6 w-6 rounded-md bg-white/[0.06] flex items-center justify-center">
                             {slide.badgeIcon}
                         </div>
@@ -114,15 +114,15 @@ export function HeroCarousel() {
                             {slide.badge}
                         </span>
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 max-w-xl">
+                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-3 md:mb-4 max-w-xl leading-tight">
                         {slide.title}
                     </h2>
-                    <p className="text-zinc-400 text-sm md:text-base max-w-lg mb-8 leading-relaxed">
+                    <p className="text-zinc-300 text-sm md:text-base max-w-lg mb-6 md:mb-8 leading-relaxed">
                         {slide.description}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3">
                         <Link href={slide.cta.href}>
-                            <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20 px-6">
+                            <Button className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 text-white border-0 shadow-lg shadow-orange-500/20 px-6">
                                 {slide.cta.label}
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -130,7 +130,7 @@ export function HeroCarousel() {
                         <Link href={slide.secondary.href}>
                             <Button
                                 variant="outline"
-                                className="border-white/10 text-zinc-300 hover:bg-white/[0.04] px-6"
+                                className="w-full sm:w-auto border-white/10 text-zinc-300 hover:bg-white/[0.04] px-6"
                             >
                                 {slide.secondary.label}
                             </Button>

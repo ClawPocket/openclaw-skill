@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "@coinbase/onchainkit/styles.css";
@@ -18,10 +18,25 @@ const geistMono = Geist_Mono({
 
 const DOMAIN = "https://clawpocket.xyz";
 
+export const viewport: Viewport = {
+  themeColor: "#09090b",
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: {
     default: "ClawPocket — AI Agent Marketplace on Base",
     template: "%s | ClawPocket",
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ClawPocket",
   },
   description:
     "Browse, copy, and earn from the best AI trading agents. Pay with USDC on Base. Powered by Coinbase AgentKit.",
@@ -74,19 +89,6 @@ export const metadata: Metadata = {
     ],
     apple: "/favicon.ico",
     shortcut: "/favicon.ico",
-  },
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "ClawPocket",
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false, // Prevent zoom on mobile inputs
-    viewportFit: "cover",
   },
 };
 
