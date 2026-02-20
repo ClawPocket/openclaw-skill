@@ -12,7 +12,7 @@ import { useState, useEffect, useMemo } from "react";
 import { AgentListing } from "@/lib/types";
 import { AgentAvatar } from "@/components/AgentAvatar";
 
-type SortKey = "hires" | "tasks" | "active" | "price";
+type SortKey = "hires" | "tasks" | "active" | "revenue";
 
 const rankIcons = [
     <Crown key="1" className="h-4 w-4 text-amber-400" />,
@@ -53,10 +53,10 @@ export default function LeaderboardPage() {
                 case "hires": return ((a.totalHires || 0) - (b.totalHires || 0)) * dir;
                 case "tasks": return ((a.tasksCompleted || a.totalTrades || 0) - (b.tasksCompleted || b.totalTrades || 0)) * dir;
                 case "active": return ((a.activeHirers || 0) - (b.activeHirers || 0)) * dir;
-                case "price":
+                case "revenue":
                     return (
-                        (parseFloat(a.rentalPriceUsdc || a.signalPriceUsdc) -
-                            parseFloat(b.rentalPriceUsdc || b.signalPriceUsdc)) * dir
+                        ((a.totalHires || 0) * parseFloat(a.rentalPriceUsdc || a.signalPriceUsdc || "0") -
+                            (b.totalHires || 0) * parseFloat(b.rentalPriceUsdc || b.signalPriceUsdc || "0")) * dir
                     );
                 default: return 0;
             }
@@ -116,33 +116,33 @@ export default function LeaderboardPage() {
                 {/* Leaderboard Table */}
                 <div className="glass-card rounded-2xl overflow-hidden animate-fade-in-up-delay-2">
                     {/* Table Header */}
-                    <div className="grid grid-cols-12 gap-2 px-4 py-3 text-[10px] uppercase tracking-wider text-zinc-600 border-b border-white/[0.04] bg-white/[0.01]">
-                        <div className="col-span-1">#</div>
-                        <div className="col-span-4 md:col-span-3">Agent</div>
-                        <div className="col-span-2 hidden md:block">Persona</div>
+                    <div className="grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 px-4 py-3 text-[10px] uppercase tracking-wider text-zinc-600 border-b border-white/[0.04] bg-white/[0.01]">
+                        <div>#</div>
+                        <div>Agent</div>
+                        <div className="hidden md:block">Persona</div>
                         <button
                             onClick={() => toggleSort("hires")}
-                            className="col-span-2 flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
+                            className="flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
                             Hired <SortIcon col="hires" />
                         </button>
                         <button
                             onClick={() => toggleSort("tasks")}
-                            className="col-span-2 hidden md:flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
+                            className="flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
                             Tasks <SortIcon col="tasks" />
                         </button>
                         <button
                             onClick={() => toggleSort("active")}
-                            className="col-span-2 flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
+                            className="flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
                             Active <SortIcon col="active" />
                         </button>
                         <button
-                            onClick={() => toggleSort("price")}
-                            className="col-span-3 md:col-span-2 flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
+                            onClick={() => toggleSort("revenue")}
+                            className="flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
-                            $/Day <SortIcon col="price" />
+                            Revenue <SortIcon col="revenue" />
                         </button>
                     </div>
 
@@ -150,17 +150,17 @@ export default function LeaderboardPage() {
                     {loading ? (
                         <div className="p-4 space-y-3">
                             {[...Array(8)].map((_, i) => (
-                                <div key={i} className="grid grid-cols-12 gap-2 items-center">
-                                    <Skeleton className="col-span-1 h-4 w-6" />
-                                    <div className="col-span-4 md:col-span-3 flex items-center gap-2">
+                                <div key={i} className="grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 items-center">
+                                    <Skeleton className="h-4 w-6" />
+                                    <div className="flex items-center gap-2">
                                         <Skeleton className="h-8 w-8 rounded-lg" />
                                         <Skeleton className="h-4 w-20" />
                                     </div>
-                                    <Skeleton className="col-span-2 hidden md:block h-4 w-14" />
-                                    <Skeleton className="col-span-2 h-4 w-12" />
-                                    <Skeleton className="col-span-2 hidden md:block h-4 w-10" />
-                                    <Skeleton className="col-span-2 h-4 w-10" />
-                                    <Skeleton className="col-span-3 md:col-span-2 h-4 w-14" />
+                                    <Skeleton className="hidden md:block h-4 w-14" />
+                                    <Skeleton className="h-4 w-12" />
+                                    <Skeleton className="h-4 w-10" />
+                                    <Skeleton className="h-4 w-10" />
+                                    <Skeleton className="h-4 w-14" />
                                 </div>
                             ))}
                         </div>
@@ -170,10 +170,10 @@ export default function LeaderboardPage() {
                                 <Link
                                     key={agent.id}
                                     href={`/agent/${agent.id}`}
-                                    className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] last:border-0 group"
+                                    className="grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[40px_2fr_1fr_80px_80px_80px_90px] gap-2 px-4 py-3 items-center hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] last:border-0 group"
                                 >
                                     {/* Rank */}
-                                    <div className="col-span-1 flex items-center">
+                                    <div className="flex items-center">
                                         {i < 3 ? (
                                             rankIcons[i]
                                         ) : (
@@ -182,7 +182,7 @@ export default function LeaderboardPage() {
                                     </div>
 
                                     {/* Agent */}
-                                    <div className="col-span-4 md:col-span-3 flex items-center gap-2.5 min-w-0">
+                                    <div className="flex items-center gap-2.5 min-w-0">
                                         <div
                                             className="h-8 w-8 rounded-lg flex items-center justify-center text-sm shrink-0 ring-1 ring-white/[0.06] group-hover:ring-white/10 transition-all overflow-hidden relative"
                                             style={{ backgroundColor: `${agent.color}12` }}
@@ -205,7 +205,7 @@ export default function LeaderboardPage() {
                                     </div>
 
                                     {/* Persona */}
-                                    <div className="col-span-2 hidden md:block">
+                                    <div className="hidden md:block">
                                         <Badge
                                             className="text-[9px] border px-1.5 py-0"
                                             style={{
@@ -219,7 +219,7 @@ export default function LeaderboardPage() {
                                     </div>
 
                                     {/* Hired */}
-                                    <div className="col-span-2">
+                                    <div>
                                         <span className="text-xs font-mono font-semibold text-orange-400 flex items-center">
                                             <Briefcase className="h-3 w-3 mr-1" />
                                             {agent.totalHires || 0}
@@ -227,19 +227,19 @@ export default function LeaderboardPage() {
                                     </div>
 
                                     {/* Tasks */}
-                                    <div className="col-span-2 hidden md:block">
+                                    <div>
                                         <span className="text-xs font-mono text-zinc-300">{agent.tasksCompleted || agent.totalTrades || 0}</span>
                                     </div>
 
                                     {/* Active Hirers */}
-                                    <div className="col-span-2">
+                                    <div>
                                         <span className="text-xs font-mono text-zinc-300">{agent.activeHirers || 0}</span>
                                     </div>
 
-                                    {/* Daily Rate */}
-                                    <div className="col-span-3 md:col-span-2">
+                                    {/* Revenue */}
+                                    <div>
                                         <span className="text-xs font-mono text-emerald-400 font-semibold">
-                                            ${agent.rentalPriceUsdc || agent.signalPriceUsdc}/day
+                                            ${((agent.totalHires || 0) * parseFloat(agent.rentalPriceUsdc || agent.signalPriceUsdc || "0")).toFixed(0)}
                                         </span>
                                     </div>
                                 </Link>
