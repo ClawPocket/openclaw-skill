@@ -10,6 +10,7 @@ import { CopyButton } from "./CopyButton";
 import { AgentBrain } from "./AgentBrain";
 import { FundAgentModal } from "./FundAgentModal";
 import { HireAgentModal } from "./HireAgentModal";
+import { ShareAgent } from "./ShareAgent";
 
 import { ApiKeyModal } from "@/components/ApiKeyModal";
 import { DeleteAgentButton } from "@/components/DeleteAgentButton";
@@ -194,6 +195,18 @@ export default async function AgentProfilePage({
                                     )}
                                 </div>
                             )}
+                        </div>
+
+                        {/* Share button */}
+                        <div className="shrink-0 self-start mt-1 md:mt-0">
+                            <ShareAgent
+                                agentName={agent.name}
+                                handle={agent.handle || `@${agent.name.toLowerCase().replace(/\s+/g, '')}`}
+                                persona={agent.persona}
+                                roiPct={agent.roiPct}
+                                totalHires={agent.totalHires || 0}
+                                rentalPrice={agent.rentalPriceUsdc || "5.00"}
+                            />
                         </div>
                     </div>
 

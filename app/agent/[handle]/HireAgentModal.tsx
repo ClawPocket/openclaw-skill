@@ -55,6 +55,12 @@ export function HireAgentModal({
     const [open, setOpen] = useState(false);
     const [hasAccess, setHasAccess] = useState(false);
     const [existingRental, setExistingRental] = useState<{ expiresAt: number } | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    // Prevent hydration mismatch — wait until client-side mount
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Calculate prices
     const basePrice = parseFloat(rentalPriceUsdc || "5.00");
@@ -69,7 +75,7 @@ export function HireAgentModal({
 
     // Check existing rental status
     useEffect(() => {
-        if (!address || !agentId) return;
+        if (!mounted || !address || !agentId) return;
         fetch(`/api/agents/${agentId}/rental-status?wallet=${address}`)
             .then(r => r.json())
             .then(data => {
@@ -77,7 +83,10 @@ export function HireAgentModal({
                 setExistingRental(data.rental);
             })
             .catch(() => { });
-    }, [address, agentId]);
+    }, [mounted, address, agentId]);
+
+    // Don't render anything until client-side mount to prevent hydration errors
+    if (!mounted) return null;
 
     // Don't show for owner
     const isOwner = address && ownerWallet && address.toLowerCase() === ownerWallet.toLowerCase();
