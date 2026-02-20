@@ -58,183 +58,177 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                     flexDirection: "column",
                     color: "white",
                     position: "relative",
-                    padding: "50px 60px",
+                    padding: "44px 56px",
                 }}
             >
-                {/* Background accents */}
+                {/* Background accent circles */}
                 <div
                     style={{
                         position: "absolute",
-                        top: -150,
-                        right: -150,
+                        top: -200,
+                        right: -100,
+                        width: 600,
+                        height: 600,
+                        borderRadius: "50%",
+                        background: agent.color,
+                        opacity: 0.08,
+                        display: "flex",
+                    }}
+                />
+                <div
+                    style={{
+                        position: "absolute",
+                        bottom: -150,
+                        left: -150,
                         width: 500,
                         height: 500,
                         borderRadius: "50%",
-                        background: agent.color,
-                        opacity: 0.1,
-                        display: "flex",
-                    }}
-                />
-                <div
-                    style={{
-                        position: "absolute",
-                        bottom: -100,
-                        left: -100,
-                        width: 400,
-                        height: 400,
-                        borderRadius: "50%",
                         background: "#f97316",
-                        opacity: 0.06,
+                        opacity: 0.05,
                         display: "flex",
                     }}
                 />
 
-                {/* Top row: Agent avatar + info */}
-                <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-                    {/* Agent avatar */}
-                    {hasImageAvatar ? (
-                        <img
-                            src={agent.avatar}
-                            width={120}
-                            height={120}
-                            style={{
-                                borderRadius: 24,
-                                border: `3px solid ${agent.color}40`,
-                                objectFit: "cover",
-                            }}
-                        />
-                    ) : (
-                        <div
-                            style={{
-                                width: 120,
-                                height: 120,
-                                borderRadius: 24,
-                                border: `3px solid ${agent.color}40`,
-                                background: `${agent.color}15`,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 56,
-                            }}
-                        >
-                            {agent.avatar}
-                        </div>
-                    )}
+                {/* ─── TOP ROW: Agent info (left) + ClawPocket branding (right) ─── */}
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", width: "100%" }}>
+                    {/* Left: Agent avatar + name */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
+                        {hasImageAvatar ? (
+                            <img
+                                src={agent.avatar}
+                                width={140}
+                                height={140}
+                                style={{
+                                    borderRadius: 28,
+                                    border: `4px solid ${agent.color}50`,
+                                    objectFit: "cover",
+                                }}
+                            />
+                        ) : (
+                            <div
+                                style={{
+                                    width: 140,
+                                    height: 140,
+                                    borderRadius: 28,
+                                    border: `4px solid ${agent.color}50`,
+                                    background: `${agent.color}18`,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: 64,
+                                }}
+                            >
+                                {agent.avatar}
+                            </div>
+                        )}
 
-                    {/* Agent name + handle + persona */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <div style={{ fontSize: 52, fontWeight: 900, display: "flex", lineHeight: 1.1 }}>
-                            {agent.name}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <div style={{ fontSize: 56, fontWeight: 900, display: "flex", lineHeight: 1.1 }}>
+                                {agent.name}
+                            </div>
+                            <div style={{ fontSize: 26, color: "#71717a", display: "flex" }}>
+                                {agent.handle || `@${agent.name.toLowerCase().replace(/\s+/g, "")}`}
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: 18,
+                                    color: agent.color,
+                                    letterSpacing: 3,
+                                    display: "flex",
+                                    marginTop: 6,
+                                    fontWeight: 700,
+                                }}
+                            >
+                                {agent.persona.toUpperCase()} AI AGENT
+                            </div>
                         </div>
-                        <div style={{ fontSize: 24, color: "#a1a1aa", display: "flex" }}>
-                            {agent.handle || `@${agent.name.toLowerCase().replace(/\s+/g, "")}`}
-                        </div>
-                        <div
-                            style={{
-                                fontSize: 16,
-                                color: agent.color,
-                                letterSpacing: 2,
-                                display: "flex",
-                                marginTop: 4,
-                            }}
-                        >
-                            {agent.persona.toUpperCase()} AI AGENT
+                    </div>
+
+                    {/* Right: ClawPocket logo + branding */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        <img
+                            src={logoUrl}
+                            width={52}
+                            height={52}
+                            style={{ borderRadius: 12 }}
+                        />
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                            <div style={{ fontSize: 24, fontWeight: 800, color: "white", display: "flex" }}>
+                                ClawPocket
+                            </div>
+                            <div style={{ fontSize: 13, color: "#71717a", display: "flex", letterSpacing: 1 }}>
+                                AI AGENT MARKETPLACE
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Description */}
-                {agent.description && (
-                    <div
-                        style={{
-                            fontSize: 20,
-                            color: "#a1a1aa",
-                            marginTop: 28,
-                            lineHeight: 1.5,
-                            display: "flex",
-                            maxWidth: 900,
-                        }}
-                    >
-                        {agent.description.length > 120
-                            ? agent.description.slice(0, 120) + "..."
-                            : agent.description}
-                    </div>
-                )}
-
-                {/* Stats bar */}
+                {/* ─── STATS BAR (fills remaining space) ─── */}
                 <div
                     style={{
                         display: "flex",
-                        gap: 50,
+                        gap: 0,
                         marginTop: "auto",
-                        marginBottom: 20,
                         background: "rgba(255,255,255,0.03)",
                         border: "1px solid rgba(255,255,255,0.06)",
-                        borderRadius: 16,
-                        padding: "24px 40px",
-                    }}
-                >
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <div style={{ fontSize: 36, fontWeight: 800, color: roiColor, display: "flex" }}>
-                            {roiSign}{agent.roiPct}%
-                        </div>
-                        <div style={{ fontSize: 13, color: "#71717a", letterSpacing: 2, display: "flex" }}>ROI</div>
-                    </div>
-
-                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex" }} />
-
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <div style={{ fontSize: 36, fontWeight: 800, color: "#f97316", display: "flex" }}>
-                            {agent.totalHires || 0}
-                        </div>
-                        <div style={{ fontSize: 13, color: "#71717a", letterSpacing: 2, display: "flex" }}>HIRED</div>
-                    </div>
-
-                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex" }} />
-
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <div style={{ fontSize: 36, fontWeight: 800, color: "white", display: "flex" }}>
-                            {agent.tasksCompleted || agent.totalTrades || 0}
-                        </div>
-                        <div style={{ fontSize: 13, color: "#71717a", letterSpacing: 2, display: "flex" }}>TASKS</div>
-                    </div>
-
-                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex" }} />
-
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <div style={{ fontSize: 36, fontWeight: 800, color: "#34d399", display: "flex" }}>
-                            ${agent.rentalPriceUsdc || "5.00"}
-                        </div>
-                        <div style={{ fontSize: 13, color: "#71717a", letterSpacing: 2, display: "flex" }}>/ DAY</div>
-                    </div>
-                </div>
-
-                {/* Footer: ClawPocket branding */}
-                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        borderRadius: 20,
+                        padding: "36px 0",
                         width: "100%",
                     }}
                 >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <img
-                            src={logoUrl}
-                            width={36}
-                            height={36}
-                            style={{ borderRadius: 8 }}
-                        />
-                        <div style={{ display: "flex", flexDirection: "column" }}>
-                            <div style={{ fontSize: 18, fontWeight: 700, color: "white", display: "flex" }}>
-                                ClawPocket
-                            </div>
-                            <div style={{ fontSize: 12, color: "#71717a", display: "flex" }}>
-                                AI Agent Marketplace on Base
-                            </div>
+                    {/* ROI */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                        <div style={{ fontSize: 52, fontWeight: 800, color: roiColor, display: "flex" }}>
+                            {roiSign}{agent.roiPct}%
+                        </div>
+                        <div style={{ fontSize: 16, color: "#52525b", letterSpacing: 3, display: "flex", marginTop: 4 }}>
+                            ROI
                         </div>
                     </div>
-                    <div style={{ fontSize: 14, color: "#52525b", display: "flex" }}>
+
+                    {/* Divider */}
+                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex", alignSelf: "stretch" }} />
+
+                    {/* Hired */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                        <div style={{ fontSize: 52, fontWeight: 800, color: "#f97316", display: "flex" }}>
+                            {agent.totalHires || 0}
+                        </div>
+                        <div style={{ fontSize: 16, color: "#52525b", letterSpacing: 3, display: "flex", marginTop: 4 }}>
+                            HIRED
+                        </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex", alignSelf: "stretch" }} />
+
+                    {/* Tasks */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                        <div style={{ fontSize: 52, fontWeight: 800, color: "white", display: "flex" }}>
+                            {agent.tasksCompleted || agent.totalTrades || 0}
+                        </div>
+                        <div style={{ fontSize: 16, color: "#52525b", letterSpacing: 3, display: "flex", marginTop: 4 }}>
+                            TASKS
+                        </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex", alignSelf: "stretch" }} />
+
+                    {/* Price */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                        <div style={{ fontSize: 52, fontWeight: 800, color: "#34d399", display: "flex" }}>
+                            ${agent.rentalPriceUsdc || "5.00"}
+                        </div>
+                        <div style={{ fontSize: 16, color: "#52525b", letterSpacing: 3, display: "flex", marginTop: 4 }}>
+                            / DAY
+                        </div>
+                    </div>
+                </div>
+
+                {/* ─── BOTTOM: URL ─── */}
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                    <div style={{ fontSize: 16, color: "#3f3f46", display: "flex", letterSpacing: 1 }}>
                         clawpocket.xyz
                     </div>
                 </div>
