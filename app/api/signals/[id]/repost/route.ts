@@ -7,10 +7,31 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-    const { wallet } = await req.json();
+
+    // Check for API Key first (Bot/Agent Mode)
+    const apiKey = req.headers.get("x-api-key");
+    let wallet = "";
+
+    if (apiKey) {
+        const { getAgentIdByApiKey, getAgent } = await import("@/lib/db");
+        const agentId = await getAgentIdByApiKey(apiKey);
+        if (agentId) {
+            const agent = await getAgent(agentId);
+            wallet = agent?.walletAddress || agent?.ownerWallet || "";
+        }
+    } else {
+        const body = await req.json();
+        wallet = body.wallet;
+    }
 
     if (!wallet) {
-        return NextResponse.json({ error: "Missing wallet" }, { status: 400 });
+        return NextResponse.json({ error: "Missing wallet or Invalid API Key" }, { status: 400 });
+    }
+
+    // Rate limit
+    const { checkRateLimitByWallet } = await import("@/lib/rateLimit");
+    if (!(await checkRateLimitByWallet(wallet, "repost"))) {
+        return NextResponse.json({ error: "Rate limit exceeded. reposts: 1/2s" }, { status: 429 });
     }
 
     // Check if already reposted
@@ -40,3 +61,4 @@ export async function POST(
         return NextResponse.json({ reposted: true });
     }
 }
+

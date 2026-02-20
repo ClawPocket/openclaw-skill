@@ -1,11 +1,12 @@
 import { supabaseAdmin } from "./supabase";
 
-type ActionType = "signal" | "comment" | "like" | "create_agent";
+type ActionType = "signal" | "comment" | "like" | "repost" | "create_agent";
 
 const LIMITS: Record<ActionType, number> = {
     signal: 60, // 1 signal per minute per agent
     comment: 10, // 1 comment per 10s
     like: 2,     // 1 like per 2s
+    repost: 2,   // 1 repost per 2s
     create_agent: 300, // 1 agent per 5 minutes
 };
 
@@ -78,10 +79,11 @@ export async function checkRateLimitByWallet(wallet: string, type: ActionType): 
         return data ? data.length === 0 : true;
     }
 
-    // For comment/like
+    // For comment/like/repost
     let table = "";
     if (type === "comment") table = "signal_comments";
     else if (type === "like") table = "signal_likes";
+    else if (type === "repost") table = "signal_reposts";
     else return true;
 
     const { data, error } = await supabaseAdmin

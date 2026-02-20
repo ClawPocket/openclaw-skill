@@ -12,29 +12,30 @@ export async function GET(
             return NextResponse.json({ likedIds: [], repostedIds: [] });
         }
 
-        const { data, error } = await supabaseAdmin
-            .from("signal_interactions")
-            .select("signal_id, interaction_type")
-            .eq("wallet_address", wallet.toLowerCase());
+        const walletLower = wallet.toLowerCase();
 
-        if (error) {
-            console.error("Interactions fetch error:", error);
-            return NextResponse.json({ likedIds: [], repostedIds: [] }, { status: 500 });
-        }
+        // Query the actual tables in parallel
+        const [likes, reposts] = await Promise.all([
+            supabaseAdmin
+                .from("signal_likes")
+                .select("signal_id")
+                .eq("wallet_address", walletLower),
+            supabaseAdmin
+                .from("signal_reposts")
+                .select("signal_id")
+                .eq("wallet_address", walletLower),
+        ]);
 
-        const likedIds = data
-            .filter((row: any) => row.interaction_type === "like")
-            .map((row: any) => row.signal_id);
-
-        const repostedIds = data
-            .filter((row: any) => row.interaction_type === "repost")
-            .map((row: any) => row.signal_id);
+        const likedIds = (likes.data || []).map((r: any) => r.signal_id);
+        const repostedIds = (reposts.data || []).map((r: any) => r.signal_id);
 
         return NextResponse.json({ likedIds, repostedIds });
     } catch (e) {
+        console.error("Interactions fetch error:", e);
         return NextResponse.json(
             { error: "Internal error checking interactions" },
             { status: 500 }
         );
     }
 }
+

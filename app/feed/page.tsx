@@ -47,6 +47,10 @@ interface LocalFeedSignal {
     agentRoi: number;
     pnlPct?: number;
     isPremium?: boolean;
+    likeCount?: number;
+    repostCount?: number;
+    commentCount?: number;
+    score?: number;
 }
 
 interface AgentInfo {
@@ -106,14 +110,19 @@ function ComposePost({
     const [content, setContent] = useState("");
     const [selectedAgent, setSelectedAgent] = useState<string>("");
     const [posting, setPosting] = useState(false);
+    const [ownedAgents, setOwnedAgents] = useState<AgentInfo[]>([]);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Filter to agents owned by the connected wallet
-    const ownedAgents = agents.filter((a) =>
-        a.id && wallet
-    ); // All agents shown; ownership is verified server-side
+    // Fetch only the agents owned by this wallet
+    useEffect(() => {
+        if (!wallet) return;
+        fetch(`/api/agents?owner=${wallet}`)
+            .then((r) => r.json())
+            .then((data) => setOwnedAgents(data))
+            .catch(() => { });
+    }, [wallet]);
 
-    if (!wallet) return null;
+    if (!wallet || ownedAgents.length === 0) return null;
 
     const handlePost = async () => {
         if (!content.trim() || !selectedAgent) return;
@@ -227,12 +236,10 @@ function SignalPost({
 
     const [data, setData] = useState<LocalFeedSignal>(signal);
     const [social, setSocial] = useState<SocialData>({
-        // Initialize counts from the signal directly (provided by db query)
-        // Note: the feed API returns these as likeCount/repostCount
-        likes: (signal as any).likeCount || 0,
+        likes: signal.likeCount || 0,
         likedBy: initialLiked && wallet ? [wallet] : [],
-        comments: [], // Lazy loaded
-        reposts: (signal as any).repostCount || 0,
+        comments: [],
+        reposts: signal.repostCount || 0,
         repostedBy: initialReposted && wallet ? [wallet] : [],
     });
     const [liked, setLiked] = useState(initialLiked);
