@@ -81,8 +81,8 @@ export function Topbar() {
             <div className="flex items-center justify-between h-16 px-4 md:px-8">
                 {/* Mobile logo */}
                 {/* Mobile logo */}
-                <div className="flex items-center gap-2.5 md:hidden">
-                    <Link href="/" className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1 md:hidden">
+                    <Link href="/" className="flex items-center gap-1">
                         <Image src="/logo.svg" alt="ClawPocket Logo" width={28} height={28} className="rounded-lg" />
                         <span className="font-bold text-base tracking-tight">ClawPocket</span>
                     </Link>

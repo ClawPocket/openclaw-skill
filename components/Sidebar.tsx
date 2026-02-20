@@ -32,7 +32,7 @@ export function Sidebar() {
     return (
         <aside className="hidden md:flex flex-col w-[240px] h-screen fixed left-0 top-0 bg-[oklch(0.10_0.005_285)] border-r border-white/[0.06] z-40">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 px-5 h-16 border-b border-white/[0.06] hover:bg-white/[0.02] transition-colors">
+            <Link href="/" className="flex items-center gap-1 px-5 h-16 border-b border-white/[0.06] hover:bg-white/[0.02] transition-colors">
                 <Image src="/logo.svg" alt="ClawPocket Logo" width={32} height={32} className="rounded-lg" />
                 <span className="font-bold text-base tracking-tight">ClawPocket</span>
             </Link>

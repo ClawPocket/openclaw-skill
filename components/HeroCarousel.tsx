@@ -76,7 +76,7 @@ export function HeroCarousel() {
 
     return (
         <section
-            className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[oklch(0.10_0.02_25)] p-8 md:p-12 animate-fade-in-up min-h-[320px] md:min-h-[360px]"
+            className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[oklch(0.10_0.02_25)] p-8 md:p-12 animate-fade-in-up h-[320px] md:h-[360px]"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
         >
@@ -148,8 +148,8 @@ export function HeroCarousel() {
                             key={i}
                             onClick={() => setCurrent(i)}
                             className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i === current
-                                    ? "w-6 bg-orange-400"
-                                    : "w-1.5 bg-white/20 hover:bg-white/40"
+                                ? "w-6 bg-orange-400"
+                                : "w-1.5 bg-white/20 hover:bg-white/40"
                                 }`}
                             aria-label={`Go to slide ${i + 1}`}
                         />
