@@ -632,14 +632,16 @@ export default function FeedPage() {
 
     const [signals, setSignals] = useState<LocalFeedSignal[]>([]);
     const [agents, setAgents] = useState<AgentInfo[]>([]);
-    const [tab, setTab] = useState<"all" | "thoughts" | "trades">("all");
-    const [sort, setSort] = useState<"hot" | "latest">("hot"); // Default to algorithmic For You feed
+    const [activeTab, setActiveTab] = useState<"foryou" | "latest" | "trades">("foryou");
     const [loading, setLoading] = useState(true);
     const [liveCount, setLiveCount] = useState(0);
 
     // Interactions state to avoid N+1 queries
     const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
     const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
+
+    // Derive sort from activeTab
+    const sort = activeTab === "foryou" ? "hot" : "latest";
 
     // Fetch user interactions (likes/reposts) efficiently in bulk
     useEffect(() => {
@@ -709,61 +711,37 @@ export default function FeedPage() {
         };
     }, [loading]);
 
-    const filtered = tab === "all"
-        ? signals
-        : signals.filter((s) =>
-            tab === "thoughts"
-                ? (s.action === "thought" || s.action === "social")
-                : (s.action === "buy" || s.action === "sell" || s.action === "hold")
-        );
+    const filtered = activeTab === "trades"
+        ? signals.filter((s) => s.action === "buy" || s.action === "sell" || s.action === "hold")
+        : signals;
 
     return (
         <MarketplaceLayout>
             <div className="flex gap-6 max-w-5xl mx-auto -mt-6 md:mt-0 -mx-4 md:mx-auto">
                 {/* Main Feed Column */}
                 <div className="flex-1 min-w-0 max-w-2xl">
-                    {/* Sticky tabs */}
+                    {/* Sticky tabs — Twitter-style 3-tab bar */}
                     <div className="sticky top-16 z-20 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.04] md:rounded-t-xl">
-                        <div className="hidden md:flex items-center gap-6 pt-4 pb-0 px-4">
-                            <div className="flex items-center gap-1.5">
-                                <Sparkles className="h-4 w-4 text-orange-400" />
-                                <h1 className="text-base font-bold tracking-tight">Feed</h1>
-                                {liveCount > 0 && sort === "latest" && (
-                                    <span className="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-full animate-pulse">
-                                        LIVE
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Hot vs Latest Switcher */}
-                            <div className="flex items-center gap-4 text-[13px] font-medium ml-auto">
-                                <button
-                                    onClick={() => setSort("hot")}
-                                    className={`relative px-2 py-1 transition-colors ${sort === "hot" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
-                                >
-                                    For You
-                                    {sort === "hot" && <span className="absolute -bottom-[9px] left-0 right-0 h-[2px] bg-orange-500 rounded-t-full" />}
-                                </button>
-                                <button
-                                    onClick={() => setSort("latest")}
-                                    className={`relative px-2 py-1 transition-colors ${sort === "latest" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
-                                >
-                                    Latest
-                                    {sort === "latest" && <span className="absolute -bottom-[9px] left-0 right-0 h-[2px] bg-orange-500 rounded-t-full" />}
-                                </button>
-                            </div>
-                        </div>
-                        {/* Tabs */}
-                        <div className="flex md:mt-2 px-2">
-                            {(["all", "thoughts", "trades"] as const).map((t) => (
+                        <div className="flex">
+                            {(["foryou", "latest", "trades"] as const).map((t) => (
                                 <button
                                     key={t}
-                                    onClick={() => setTab(t)}
-                                    className={`flex-1 py-3 text-[13px] font-medium transition-all relative ${tab === t ? "text-white" : "text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.02]"
+                                    onClick={() => setActiveTab(t)}
+                                    className={`flex-1 py-3.5 text-[13px] font-medium transition-all relative ${activeTab === t
+                                            ? "text-white"
+                                            : "text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.02]"
                                         }`}
                                 >
-                                    {t === "all" ? "All Updates" : t === "thoughts" ? "Thoughts" : "Trades"}
-                                    {tab === t && (
+                                    <span className="flex items-center justify-center gap-1.5">
+                                        {t === "foryou" && <Sparkles className="h-3.5 w-3.5" />}
+                                        {t === "foryou" ? "For You" : t === "latest" ? "Latest" : "Trades"}
+                                        {t === "latest" && liveCount > 0 && (
+                                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-full animate-pulse">
+                                                LIVE
+                                            </span>
+                                        )}
+                                    </span>
+                                    {activeTab === t && (
                                         <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] rounded-full bg-gradient-to-r from-orange-500 to-red-600" />
                                     )}
                                 </button>
