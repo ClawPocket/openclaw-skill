@@ -11,26 +11,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits, encodeFunctionData } from "viem";
-
-// Base Mainnet USDC
-const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-
-// Platform treasury — receives 10% fee
-const PLATFORM_WALLET = "0x1D8FC785C126064cA0E2de2273C278B4215560b2" as const;
-const PLATFORM_FEE_BPS = 1000; // 10% in basis points (1000 / 10000)
-const ERC20_ABI = [
-    {
-        name: "transfer",
-        type: "function",
-        inputs: [
-            { name: "to", type: "address" },
-            { name: "amount", type: "uint256" },
-        ],
-        outputs: [{ name: "", type: "bool" }],
-    },
-] as const;
+import { useAccount } from "wagmi";
+import { useX402 } from "@/hooks/useX402";
 
 interface Pricing {
     day: number;
@@ -39,7 +21,7 @@ interface Pricing {
 }
 
 type Tier = "day" | "week" | "month";
-type Status = "select" | "paying_agent" | "confirming_agent" | "paying_platform" | "confirming_platform" | "registering" | "done" | "error";
+type Status = "select" | "paying" | "registering" | "done" | "error";
 
 const TIER_LABELS: Record<Tier, { label: string; duration: string; discount?: string }> = {
     day: { label: "Daily", duration: "24 hours" },
@@ -67,10 +49,9 @@ export function HireAgentModal({
     skills?: string[];
 }) {
     const { address, isConnected } = useAccount();
+    const { fetchWithX402, isPaying, isReady } = useX402();
     const [selectedTier, setSelectedTier] = useState<Tier>("day");
     const [status, setStatus] = useState<Status>("select");
-    const [message, setMessage] = useState("");
-    const [agentTxHash, setAgentTxHash] = useState<`0x${string}` | undefined>();
     const [open, setOpen] = useState(false);
     const [hasAccess, setHasAccess] = useState(false);
     const [existingRental, setExistingRental] = useState<{ expiresAt: number } | null>(null);
@@ -89,7 +70,7 @@ export function HireAgentModal({
     // Check existing rental status
     useEffect(() => {
         if (!address || !agentId) return;
-        fetch(`/api/agents/${agentId}/hire?wallet=${address}`)
+        fetch(`/api/agents/${agentId}/rental-status?wallet=${address}`)
             .then(r => r.json())
             .then(data => {
                 setHasAccess(data.hasAccess);
@@ -102,142 +83,55 @@ export function HireAgentModal({
     const isOwner = address && ownerWallet && address.toLowerCase() === ownerWallet.toLowerCase();
     if (isOwner) return null;
 
-    // ── Transfer hook ──
-    const {
-        writeContract,
-        data: currentTxHash,
-        isPending: isWriting,
-        error: writeError,
-        reset: resetWrite,
-    } = useWriteContract();
-
-    const {
-        isLoading: isConfirming,
-        isSuccess: isTxConfirmed,
-        error: confirmError,
-    } = useWaitForTransactionReceipt({ hash: currentTxHash });
-
-    // Handle write errors
-    useEffect(() => {
-        if (writeError) {
-            const msg = writeError.message?.includes("User rejected")
-                ? "Transaction cancelled"
-                : "Payment failed";
-            setStatus("error");
-            setMessage(msg);
-            showToast(msg, "error");
-            setTimeout(() => { setStatus("select"); resetWrite(); }, 3000);
-        }
-    }, [writeError, resetWrite]);
-
-    // Handle confirm errors
-    useEffect(() => {
-        if (confirmError) {
-            setStatus("error");
-            setMessage("Transaction failed on-chain");
-            showToast("Transaction failed on-chain", "error");
-            setTimeout(() => { setStatus("select"); resetWrite(); }, 3000);
-        }
-    }, [confirmError, resetWrite]);
-
-    // Track pending state
-    useEffect(() => {
-        if (isWriting && status === "select") setStatus("paying_agent");
-        if (isWriting && status === "confirming_agent") setStatus("paying_platform");
-    }, [isWriting, status]);
-
-    // Track tx hash emission
-    useEffect(() => {
-        if (currentTxHash && status === "paying_agent") {
-            setStatus("confirming_agent");
-        }
-        if (currentTxHash && status === "paying_platform") {
-            setStatus("confirming_platform");
-        }
-    }, [currentTxHash, status]);
-
-    // When agent tx confirms, send platform fee
-    useEffect(() => {
-        if (isTxConfirmed && status === "confirming_agent" && currentTxHash) {
-            setAgentTxHash(currentTxHash);
-
-            const totalUsdc = parseUnits(pricing[selectedTier].toString(), 6);
-            const platformFee = (totalUsdc * BigInt(PLATFORM_FEE_BPS)) / BigInt(10000);
-
-            if (platformFee > BigInt(0)) {
-                // Small delay to let wagmi reset
-                setTimeout(() => {
-                    resetWrite();
-                    setStatus("paying_platform");
-                    writeContract({
-                        address: USDC_ADDRESS,
-                        abi: ERC20_ABI,
-                        functionName: "transfer",
-                        args: [PLATFORM_WALLET, platformFee],
-                    });
-                }, 500);
-            } else {
-                // No platform fee, go straight to registration
-                registerRental(currentTxHash);
-            }
-        }
-    }, [isTxConfirmed, status, currentTxHash, selectedTier, pricing]);
-
-    // When platform tx confirms, register rental
-    useEffect(() => {
-        if (isTxConfirmed && status === "confirming_platform" && agentTxHash) {
-            registerRental(agentTxHash);
-        }
-    }, [isTxConfirmed, status, agentTxHash]);
-
-    const registerRental = (txHash: string) => {
-        setStatus("registering");
-        fetch(`/api/agents/${agentId}/hire`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                renterWallet: address,
-                tier: selectedTier,
-                paymentTxHash: txHash,
-            }),
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    setStatus("done");
-                    setHasAccess(true);
-                    setExistingRental(data.rental);
-                    showToast(`You've hired ${agentName}!`, "success");
-                } else {
-                    showToast(data.error || "Rental failed", "error");
-                    setStatus("select");
-                }
-            })
-            .catch(() => {
-                showToast("Failed to register rental", "error");
-                setStatus("select");
-            });
-    };
-
-    function handleHire() {
+    // ── x402 Payment Flow ──
+    // The entire payment is handled by the x402 protocol:
+    //   1. POST to /api/agents/:id/hire → middleware returns 402 + PAYMENT-REQUIRED
+    //   2. useX402 hook reads requirements, prompts wallet signing
+    //   3. Retries with PAYMENT-SIGNATURE → facilitator settles on-chain
+    //   4. Server creates rental record → returns 201
+    async function handleHire() {
         if (!isConnected || !address) {
             showToast("Connect your wallet first", "error");
             return;
         }
+        if (!isReady) {
+            showToast("Wallet not ready for x402 payments", "error");
+            return;
+        }
 
-        const amount = pricing[selectedTier];
-        const totalUsdc = parseUnits(amount.toString(), 6);
-        const platformFee = (totalUsdc * BigInt(PLATFORM_FEE_BPS)) / BigInt(10000);
-        const agentAmount = totalUsdc - platformFee;
+        setStatus("paying");
+        try {
+            const res = await fetchWithX402(`/api/agents/${agentId}/hire`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    renterWallet: address,
+                    tier: selectedTier,
+                }),
+            });
 
-        setStatus("paying_agent");
+            const data = await res.json();
 
-        writeContract({
-            address: USDC_ADDRESS as `0x${string}`,
-            abi: ERC20_ABI,
-            functionName: "transfer",
-            args: [ownerWallet as `0x${string}`, agentAmount],
-        });
+            if (res.ok && data.success) {
+                setStatus("done");
+                setHasAccess(true);
+                setExistingRental(data.rental);
+                showToast(`You've hired ${agentName}!`, "success");
+            } else {
+                setStatus("error");
+                showToast(data.error || "Hire failed", "error");
+                setTimeout(() => setStatus("select"), 3000);
+            }
+        } catch (error: unknown) {
+            const msg = error instanceof Error
+                ? error.message.includes("User rejected") || error.message.includes("declined")
+                    ? "Payment cancelled"
+                    : error.message
+                : "Payment failed";
+            setStatus("error");
+            showToast(msg, "error");
+            setTimeout(() => setStatus("select"), 3000);
+        }
     }
 
     // Active rental badge
@@ -282,6 +176,7 @@ export function HireAgentModal({
                     </DialogTitle>
                     <DialogDescription className="text-zinc-400">
                         Get exclusive access to this agent&apos;s brain and premium signals.
+                        Payment is secured via the x402 protocol on Base.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -363,34 +258,16 @@ export function HireAgentModal({
                         {/* Pay Button */}
                         <button
                             onClick={handleHire}
-                            disabled={status !== "select" || !isConnected}
+                            disabled={status !== "select" || !isConnected || isPaying}
                             className="w-full h-12 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
                         >
-                            {status === "paying_agent" ? (
+                            {status === "paying" || isPaying ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Confirm Agent Payment (1/2)...
+                                    Confirm in Wallet...
                                 </>
-                            ) : status === "confirming_agent" ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Waiting for Tx (1/2)...
-                                </>
-                            ) : status === "paying_platform" ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Confirm Platform Fee (2/2)...
-                                </>
-                            ) : status === "confirming_platform" ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Waiting for Tx (2/2)...
-                                </>
-                            ) : status === "registering" ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Registering Rental...
-                                </>
+                            ) : status === "error" ? (
+                                "Try Again"
                             ) : !isConnected ? (
                                 "Connect Wallet First"
                             ) : (
@@ -402,7 +279,7 @@ export function HireAgentModal({
                         </button>
 
                         <p className="text-[10px] text-zinc-600 text-center">
-                            Payment is split securely on-chain. 90% goes to the <strong>Agent Creator</strong>, 10% to the protocol.
+                            Secured by <strong>x402 protocol</strong> on Base. Settlement verified by the Coinbase facilitator.
                         </p>
                     </div>
                 )}

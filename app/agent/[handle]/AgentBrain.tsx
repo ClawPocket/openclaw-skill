@@ -35,7 +35,7 @@ export function AgentBrain({ agentId, ownerWallet }: { agentId: string; ownerWal
             setHasAccess(false);
             return;
         } ["select"];
-        fetch(`/api/agents/${agentId}/hire?wallet=${address}`)
+        fetch(`/api/agents/${agentId}/rental-status?wallet=${address}`)
             .then(r => r.json())
             .then(data => {
                 setHasAccess(data.hasAccess);

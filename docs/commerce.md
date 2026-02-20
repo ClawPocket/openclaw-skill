@@ -3,65 +3,60 @@
 ## Overview
 We have integrated the **x402 Protocol** to enable agent-to-agent and human-to-agent commerce.
 - **Protocol:** x402 (HTTP 402 Payment Required)
-- **Facilitator:** Coinbase AgentKit / x402.org (Base Mainnet)
-- **Currency:** USDC on Base
+- **SDK:** `@x402/next`, `@x402/fetch`, `@x402/evm`, `@x402/core`
+- **Facilitator:** Coinbase CDP / x402.org (Base Mainnet)
+- **Currency:** USDC on Base (eip155:8453)
 
 ## Architecture
 
-### 1. Hire Agent (Human-to-Agent)
-- **Flow:** User pays USDC -> Rental record created -> Agent Brain unlocked.
-- **Security:**
-  - **Replay Protection:** `paymentTxHash` is unique constraint in DB.
-  - **Verification:** On-chain verification of `to` address and `amount`.
-  - **Access Control:** `hasActiveAccess` gates `AgentBrain` UI.
+### 1. Hire Agent (Human-to-Agent via x402)
+- **Flow:** Client POSTs → middleware returns 402 → client signs EIP-712 → middleware verifies via facilitator → rental created.
+- **Server:** `middleware.ts` uses `@x402/next` `paymentProxy` to protect `/api/agents/:id/hire`.
+- **Client:** `hooks/useX402.ts` wraps `fetch` using `@x402/fetch` `wrapFetchWithPayment`.
+- **Signer:** Wagmi `walletClient` adapted to `ClientEvmSigner` interface (supports MetaMask, Coinbase Wallet, etc.).
+- **Rental status:** Separate `/api/agents/:id/rental-status` endpoint (not behind paywall).
 
-### 2. Autonomous Agent Access (Agent-to-Agent)
-- **Flow:** Agent A calls Agent B -> 402 Error -> Agent A pays -> Retry with Auth.
-- **Middleware:** `dynamicX402Middleware` in `server.ts`.
-- **Configuration:** Agents enable x402 in their config.
-- **Prompting:** Agents are instructed to use `pay_for_service` tool upon 402 error.
+### 2. Autonomous Agent Access (Agent-to-Agent via AgentKit)
+- **Flow:** Agent calls endpoint → 402 → AgentKit uses `pay-for-service` skill → retry with payment.
+- **Server:** Same `paymentProxy` middleware as human flow — protocol is transparent to both.
+- **Agent:** Uses `npx awal x402 pay <url>` via system prompt instructions.
 
-### 3. Pay-per-Signal (Microtransactions)
-- **Flow:** User/Agent requests signal -> 402 Error -> Micro-payment -> Access.
-- **Middleware:** `middleware.ts` (Edge) protects `/api/agents/:id/signals/premium` and `/api/signals/:id/content`.
-- **Client:** `hooks/useX402.ts` handles the 402 flow on the frontend.
-- **UI:** The default Feed lists premium signals as "Locked". Users can click "Unlock (0.01 USDC)" to pay and reveal content instantly.
+### 3. Pay-per-Signal (Microtransactions via x402)
+- **Flow:** Client requests signal → 402 → micro-payment ($0.01) → access granted.
+- **Server:** `middleware.ts` protects `/api/agents/:id/signals/premium`.
+- **Client:** Same `useX402` hook used for signals and hiring.
 
-## Security Audit
+## Security
 
-### ✅ Wired Correctly
-- **AgentKit:** `x402ActionProvider` is initialized in `agent.ts`.
-- **Backend:** `server.ts` correctly identifies agents and applies payment logic only if `x402Enabled` is true.
-- **Frontend:** `middleware.ts` enforces x402 on premium routes.
-- **Prompt:** System prompt now includes instructions to handle 402 errors.
-- **UI:** `feed/page.tsx` now correctly identifies premium signals and uses `useX402` to handle payment and unlocking.
+### ✅ Verified
+- **Payment settlement:** Coinbase facilitator verifies and settles on-chain.
+- **No client-side trust:** Server never trusts client claims about payment — facilitator is the source of truth.
+- **EIP-712 signing:** Typed data prevents signature reuse across domains/chains.
+- **Replay protection:** Facilitator tracks used nonces.
+- **Data separation:** Rental status (GET) is on a separate endpoint from hire (POST) — status checks don't require payment.
 
-### 🔒 Security Checks
-- **Spoofing:** x402 uses cryptographic signatures/hashes. Our `exact` scheme implementation verifies the transaction hash on-chain (via facilitator).
-- **Bypass:** `middleware.ts` matcher covers all signal subpaths.
-- **Data Leaks:** Agent wallet keys are never exposed; payments go TO the agent's public address. Premium signal content is redacted at the API level (`feed/route.ts`) until unlocked via `/api/signals/:id/content` (which requires payment).
-
-### ⚠️ Known Limitations / Next Steps
-1.  **Platform Treasury:** Currently, `middleware.ts` routes pay-per-signal revenue to a single `PLATFORM_WALLET`. For agent-specific revenue, we need a way to look up agent wallets on the Edge (e.g., via KV store or cached config), as direct DB access is slower/complex in Edge middleware.
+### ⚠️ Known Limitations
+1. **Platform treasury:** All x402 payments go to `PLATFORM_WALLET`. Revenue splitting (90% to agent creator) needs server-side implementation post-settlement (e.g., via a cron job or webhook that forwards funds).
+2. **Fixed price in middleware:** The middleware declares a static `$5.00` price for hiring. Dynamic per-agent, per-tier pricing would require a custom middleware or route-level x402 handling.
 
 ## Usage
 
-### Client-side (Frontend)
+### Browser (Human)
 ```typescript
 import { useX402 } from "@/hooks/useX402";
 
-const { fetchWithX402, isPaying } = useX402();
+const { fetchWithX402, isPaying, isReady } = useX402();
 
-async function loadPremiumSignal() {
-  // Automatically handles 402 -> Sign/Pay -> Retry
-  const res = await fetchWithX402("/api/agents/123/signals/premium");
-  const data = await res.json();
-}
+// Automatically handles 402 → sign → retry
+const res = await fetchWithX402("/api/agents/123/hire", {
+  method: "POST",
+  body: JSON.stringify({ renterWallet: address, tier: "day" }),
+});
 ```
 
-### Agent-side (Autonomous)
-Agents serve as both *buyers* and *sellers*.
-- **Selling:** Handled by `server.ts` middleware (passive).
-- **Buying:** Handled by `AgentKit` + System Prompt (active).
-  - We explicitly instruct the agent: *"If you encounter a '402 Payment Required' error... use the 'pay_for_service' tool..."*
-  - This ensures the agent knows how to overcome the paywall autonomously.
+### Agent (Autonomous)
+```bash
+# Via AgentKit pay-for-service skill
+npx awal x402 pay https://clawpocket.xyz/api/agents/123/hire \
+  -X POST -d '{"renterWallet":"0x...","tier":"day"}'
+```
