@@ -3,7 +3,7 @@ import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Badge } from "@/components/ui/badge";
 import { getAgent, getSignals } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, Users, ExternalLink, MessageCircle, AlertTriangle, ArrowLeft } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Briefcase, CheckCircle2, Clock, Users, ExternalLink, MessageCircle, AlertTriangle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { CopyButton } from "./CopyButton";
@@ -27,7 +27,7 @@ export async function generateMetadata({
     if (!agent) return { title: "Agent Not Found" };
 
     const title = `${agent.name} — ${agent.persona} AI Agent`;
-    const description = `${agent.name} is a ${agent.persona.toLowerCase()} AI trading agent with ${agent.roiPct >= 0 ? "+" : ""}${agent.roiPct}% ROI. One-time access: $${agent.signalPriceUsdc} USDC on Base.`;
+    const description = `Hire ${agent.name}, a ${agent.persona.toLowerCase()} AI agent on ClawPocket. ${agent.totalHires || 0} times hired. Starting from $${agent.rentalPriceUsdc || "5.00"}/day USDC on Base.`;
 
     return {
         title,
@@ -35,13 +35,11 @@ export async function generateMetadata({
         openGraph: {
             title: `${title} | ClawPocket`,
             description,
-            images: [{ url: "/og-image.png", width: 1200, height: 630 }],
         },
         twitter: {
             card: "summary_large_image",
             title: `${title} | ClawPocket`,
             description,
-            images: ["/og-image.png"],
         },
     };
 }
@@ -82,14 +80,9 @@ export default async function AgentProfilePage({
                         "operatingSystem": "Base Blockchain",
                         "offers": {
                             "@type": "Offer",
-                            "price": agent.signalPriceUsdc,
+                            "price": agent.rentalPriceUsdc || agent.signalPriceUsdc,
                             "priceCurrency": "USD",
                             "availability": "https://schema.org/InStock"
-                        },
-                        "aggregateRating": {
-                            "@type": "AggregateRating",
-                            "ratingValue": agent.roiPct > 0 ? "5" : "4",
-                            "reviewCount": agent.totalTrades + 1
                         },
                         "author": {
                             "@type": "Person",
@@ -219,54 +212,54 @@ export default async function AgentProfilePage({
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.04]">
-                            <TrendingUp className="h-3.5 w-3.5 text-emerald-400 mb-2" />
-                            <p className={`text-xl font-bold font-mono ${agent.roiPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                                {agent.roiPct >= 0 ? "+" : ""}{agent.roiPct}%
+                            <Briefcase className="h-3.5 w-3.5 text-orange-400 mb-2" />
+                            <p className="text-xl font-bold font-mono text-orange-400">
+                                {agent.totalHires || 0}
                             </p>
-                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">ROI</p>
+                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Times Hired</p>
                         </div>
                         <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.04]">
-                            <Wallet className="h-3.5 w-3.5 text-orange-400 mb-2" />
-                            <p className="text-xl font-bold font-mono">{agent.totalTrades}</p>
-                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Total Trades</p>
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 mb-2" />
+                            <p className="text-xl font-bold font-mono">{agent.tasksCompleted || agent.totalTrades || 0}</p>
+                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Tasks Done</p>
                         </div>
                         <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.04]">
                             <Users className="h-3.5 w-3.5 text-red-400 mb-2" />
-                            <p className="text-xl font-bold font-mono">{agent.subscribers.length}</p>
-                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Copiers</p>
+                            <p className="text-xl font-bold font-mono">{agent.activeHirers || 0}</p>
+                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Active Hirers</p>
                         </div>
                         <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.04]">
                             <Clock className="h-3.5 w-3.5 text-amber-400 mb-2" />
-                            <p className="text-xl font-bold font-mono text-amber-400">
-                                ${(agent.subscribers.length * parseFloat(agent.signalPriceUsdc) * 0.9).toFixed(2)}
+                            <p className="text-xl font-bold font-mono text-emerald-400">
+                                ${agent.rentalPriceUsdc || "5.00"}
                             </p>
-                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Revenue (USDC)</p>
+                            <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-1">Daily Rate</p>
                         </div>
                     </div>
 
-                    {/* Revenue Breakdown */}
+                    {/* Pricing Breakdown */}
                     <div className="bg-white/[0.02] rounded-xl border border-white/[0.04] p-4 mb-6">
-                        <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">💰 Revenue Breakdown</h3>
+                        <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">💰 Pricing</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                             <div>
                                 <p className="text-sm font-bold font-mono text-emerald-400">
-                                    ${(agent.subscribers.length * parseFloat(agent.signalPriceUsdc) * 0.9).toFixed(4)}
+                                    ${agent.rentalPriceUsdc || "5.00"}
                                 </p>
-                                <p className="text-[9px] text-zinc-600 mt-0.5">Agent Earnings (90%)</p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">Daily Hire</p>
                             </div>
                             <div>
                                 <p className="text-sm font-bold font-mono text-orange-400">
-                                    ${(agent.subscribers.length * parseFloat(agent.signalPriceUsdc) * 0.1).toFixed(4)}
+                                    ${agent.weeklyPriceUsdc || "25.00"}
                                 </p>
-                                <p className="text-[9px] text-zinc-600 mt-0.5">Platform Fee (10%)</p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">Weekly Hire</p>
                             </div>
                             <div>
-                                <p className="text-sm font-bold font-mono text-zinc-300">${agent.signalPriceUsdc}</p>
-                                <p className="text-[9px] text-zinc-600 mt-0.5">One-Time Price</p>
+                                <p className="text-sm font-bold font-mono text-zinc-300">${agent.monthlyPriceUsdc || "80.00"}</p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">Monthly Hire</p>
                             </div>
                             <div>
-                                <p className="text-sm font-bold font-mono text-zinc-300">{agent.subscribers.length}</p>
-                                <p className="text-[9px] text-zinc-600 mt-0.5">Paying Subscribers</p>
+                                <p className="text-sm font-bold font-mono text-zinc-300">{agent.totalHires || 0}</p>
+                                <p className="text-[9px] text-zinc-600 mt-0.5">Times Hired</p>
                             </div>
                         </div>
                     </div>
@@ -274,9 +267,6 @@ export default async function AgentProfilePage({
                     {/* Actions */}
                     {/* Primary Actions Grid */}
                     <div className="flex flex-col gap-4">
-                        {/* Copy Button (Full Width) */}
-                        <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} ownerWallet={agent.ownerWallet} />
-
                         {/* Hire Agent (x402 Commerce) */}
                         <HireAgentModal
                             agentId={agent.id}
@@ -284,8 +274,15 @@ export default async function AgentProfilePage({
                             agentWallet={agent.walletAddress}
                             ownerWallet={agent.ownerWallet}
                             rentalPriceUsdc={agent.rentalPriceUsdc || "5.00"}
+                            weeklyPriceUsdc={agent.weeklyPriceUsdc}
+                            monthlyPriceUsdc={agent.monthlyPriceUsdc}
                             skills={agent.skills}
                         />
+
+                        {/* Copy Button (Full Width) */}
+                        <div className="opacity-80">
+                            <CopyButton agentId={agent.id} agentName={agent.name} price={agent.signalPriceUsdc} agentWallet={agent.walletAddress} ownerWallet={agent.ownerWallet} />
+                        </div>
 
                         {/* Secondary Actions (Row) */}
                         <div className="flex flex-wrap gap-2">

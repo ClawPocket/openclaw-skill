@@ -12,6 +12,8 @@ function toAgent(row: any): AgentListing {
         persona: row.persona,
         description: row.description,
         signalPriceUsdc: row.signal_price_usdc,
+        weeklyPriceUsdc: row.weekly_price_usdc || undefined,
+        monthlyPriceUsdc: row.monthly_price_usdc || undefined,
         walletAddress: row.wallet_address,
         totalTrades: row.total_trades,
         roiPct: row.roi_pct,
@@ -152,6 +154,8 @@ export async function saveAgent(agent: AgentListing): Promise<void> {
         persona: agent.persona,
         description: agent.description,
         signal_price_usdc: agent.signalPriceUsdc,
+        weekly_price_usdc: agent.weeklyPriceUsdc || null,
+        monthly_price_usdc: agent.monthlyPriceUsdc || null,
         wallet_address: agent.walletAddress,
         total_trades: agent.totalTrades,
         roi_pct: agent.roiPct,
@@ -187,6 +191,8 @@ export async function updateAgent(agent: AgentListing): Promise<void> {
         persona: agent.persona,
         description: agent.description,
         signal_price_usdc: agent.signalPriceUsdc,
+        weekly_price_usdc: agent.weeklyPriceUsdc || null,
+        monthly_price_usdc: agent.monthlyPriceUsdc || null,
         wallet_address: agent.walletAddress,
         total_trades: agent.totalTrades,
         roi_pct: agent.roiPct,
@@ -267,6 +273,22 @@ export async function getSignals(agentId?: string): Promise<Signal[]> {
         return [];
     }
     return (data || []).map(toSignal);
+}
+
+export async function getHotSignals(limit: number = 50): Promise<Record<string, unknown>[]> {
+    const { data, error } = await supabaseAdmin
+        .rpc("get_hot_signals", {
+            gravity: 1.5,
+            result_limit: limit
+        });
+
+    if (error) {
+        console.error("getHotSignals error:", error);
+        return [];
+    }
+
+    // The RPC returns a custom flattened structure, return it as-is for the feed to parse
+    return data || [];
 }
 
 export async function addSignal(signal: Signal): Promise<void> {

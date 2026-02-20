@@ -11,11 +11,15 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, encodeFunctionData } from "viem";
 
 // Base Mainnet USDC
 const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+
+// Platform treasury — receives 10% fee
+const PLATFORM_WALLET = "0x1D8FC785C126064cA0E2de2273C278B4215560b2" as const;
+const PLATFORM_FEE_BPS = 1000; // 10% in basis points (1000 / 10000)
 const ERC20_ABI = [
     {
         name: "transfer",
@@ -35,6 +39,7 @@ interface Pricing {
 }
 
 type Tier = "day" | "week" | "month";
+type Status = "select" | "paying_agent" | "confirming_agent" | "paying_platform" | "confirming_platform" | "registering" | "done" | "error";
 
 const TIER_LABELS: Record<Tier, { label: string; duration: string; discount?: string }> = {
     day: { label: "Daily", duration: "24 hours" },
@@ -48,6 +53,8 @@ export function HireAgentModal({
     agentWallet,
     ownerWallet,
     rentalPriceUsdc,
+    weeklyPriceUsdc,
+    monthlyPriceUsdc,
     skills = [],
 }: {
     agentId: string;
@@ -55,21 +62,28 @@ export function HireAgentModal({
     agentWallet: string;
     ownerWallet: string;
     rentalPriceUsdc: string;
+    weeklyPriceUsdc?: string;
+    monthlyPriceUsdc?: string;
     skills?: string[];
 }) {
     const { address, isConnected } = useAccount();
     const [selectedTier, setSelectedTier] = useState<Tier>("day");
-    const [step, setStep] = useState<"select" | "paying" | "confirming" | "done">("select");
+    const [status, setStatus] = useState<Status>("select");
+    const [message, setMessage] = useState("");
+    const [agentTxHash, setAgentTxHash] = useState<`0x${string}` | undefined>();
     const [open, setOpen] = useState(false);
     const [hasAccess, setHasAccess] = useState(false);
-    const [existingRental, setExistingRental] = useState<any>(null);
+    const [existingRental, setExistingRental] = useState<{ expiresAt: number } | null>(null);
 
     // Calculate prices
     const basePrice = parseFloat(rentalPriceUsdc || "5.00");
+    const weekPrice = weeklyPriceUsdc ? parseFloat(weeklyPriceUsdc) : basePrice * 5;
+    const monthPrice = monthlyPriceUsdc ? parseFloat(monthlyPriceUsdc) : basePrice * 20;
+
     const pricing: Pricing = {
-        day: basePrice * 1,
-        week: basePrice * 5,
-        month: basePrice * 20,
+        day: basePrice,
+        week: weekPrice,
+        month: monthPrice,
     };
 
     // Check existing rental status
@@ -88,44 +102,122 @@ export function HireAgentModal({
     const isOwner = address && ownerWallet && address.toLowerCase() === ownerWallet.toLowerCase();
     if (isOwner) return null;
 
-    // USDC Transfer
-    const { sendTransaction, data: txData, isPending } = useSendTransaction();
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-        hash: txData,
-    });
+    // ── Transfer hook ──
+    const {
+        writeContract,
+        data: currentTxHash,
+        isPending: isWriting,
+        error: writeError,
+        reset: resetWrite,
+    } = useWriteContract();
 
-    // Handle payment confirmation
+    const {
+        isLoading: isConfirming,
+        isSuccess: isTxConfirmed,
+        error: confirmError,
+    } = useWaitForTransactionReceipt({ hash: currentTxHash });
+
+    // Handle write errors
     useEffect(() => {
-        if (isSuccess && txData && step === "paying") {
-            setStep("confirming");
-            // Register rental on backend
-            fetch(`/api/agents/${agentId}/hire`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    renterWallet: address,
-                    tier: selectedTier,
-                    paymentTxHash: txData,
-                }),
-            })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        setStep("done");
-                        setHasAccess(true);
-                        setExistingRental(data.rental);
-                        showToast(`You've hired ${agentName}!`, "success");
-                    } else {
-                        showToast(data.error || "Rental failed", "error");
-                        setStep("select");
-                    }
-                })
-                .catch(() => {
-                    showToast("Failed to register rental", "error");
-                    setStep("select");
-                });
+        if (writeError) {
+            const msg = writeError.message?.includes("User rejected")
+                ? "Transaction cancelled"
+                : "Payment failed";
+            setStatus("error");
+            setMessage(msg);
+            showToast(msg, "error");
+            setTimeout(() => { setStatus("select"); resetWrite(); }, 3000);
         }
-    }, [isSuccess, txData, step]);
+    }, [writeError, resetWrite]);
+
+    // Handle confirm errors
+    useEffect(() => {
+        if (confirmError) {
+            setStatus("error");
+            setMessage("Transaction failed on-chain");
+            showToast("Transaction failed on-chain", "error");
+            setTimeout(() => { setStatus("select"); resetWrite(); }, 3000);
+        }
+    }, [confirmError, resetWrite]);
+
+    // Track pending state
+    useEffect(() => {
+        if (isWriting && status === "select") setStatus("paying_agent");
+        if (isWriting && status === "confirming_agent") setStatus("paying_platform");
+    }, [isWriting, status]);
+
+    // Track tx hash emission
+    useEffect(() => {
+        if (currentTxHash && status === "paying_agent") {
+            setStatus("confirming_agent");
+        }
+        if (currentTxHash && status === "paying_platform") {
+            setStatus("confirming_platform");
+        }
+    }, [currentTxHash, status]);
+
+    // When agent tx confirms, send platform fee
+    useEffect(() => {
+        if (isTxConfirmed && status === "confirming_agent" && currentTxHash) {
+            setAgentTxHash(currentTxHash);
+
+            const totalUsdc = parseUnits(pricing[selectedTier].toString(), 6);
+            const platformFee = (totalUsdc * BigInt(PLATFORM_FEE_BPS)) / BigInt(10000);
+
+            if (platformFee > BigInt(0)) {
+                // Small delay to let wagmi reset
+                setTimeout(() => {
+                    resetWrite();
+                    setStatus("paying_platform");
+                    writeContract({
+                        address: USDC_ADDRESS,
+                        abi: ERC20_ABI,
+                        functionName: "transfer",
+                        args: [PLATFORM_WALLET, platformFee],
+                    });
+                }, 500);
+            } else {
+                // No platform fee, go straight to registration
+                registerRental(currentTxHash);
+            }
+        }
+    }, [isTxConfirmed, status, currentTxHash, selectedTier, pricing]);
+
+    // When platform tx confirms, register rental
+    useEffect(() => {
+        if (isTxConfirmed && status === "confirming_platform" && agentTxHash) {
+            registerRental(agentTxHash);
+        }
+    }, [isTxConfirmed, status, agentTxHash]);
+
+    const registerRental = (txHash: string) => {
+        setStatus("registering");
+        fetch(`/api/agents/${agentId}/hire`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                renterWallet: address,
+                tier: selectedTier,
+                paymentTxHash: txHash,
+            }),
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    setStatus("done");
+                    setHasAccess(true);
+                    setExistingRental(data.rental);
+                    showToast(`You've hired ${agentName}!`, "success");
+                } else {
+                    showToast(data.error || "Rental failed", "error");
+                    setStatus("select");
+                }
+            })
+            .catch(() => {
+                showToast("Failed to register rental", "error");
+                setStatus("select");
+            });
+    };
 
     function handleHire() {
         if (!isConnected || !address) {
@@ -134,17 +226,17 @@ export function HireAgentModal({
         }
 
         const amount = pricing[selectedTier];
-        const amountWei = parseUnits(amount.toString(), 6); // USDC = 6 decimals
+        const totalUsdc = parseUnits(amount.toString(), 6);
+        const platformFee = (totalUsdc * BigInt(PLATFORM_FEE_BPS)) / BigInt(10000);
+        const agentAmount = totalUsdc - platformFee;
 
-        setStep("paying");
+        setStatus("paying_agent");
 
-        sendTransaction({
-            to: USDC_ADDRESS as `0x${string}`,
-            data: encodeFunctionData({
-                abi: ERC20_ABI,
-                functionName: "transfer",
-                args: [ownerWallet as `0x${string}`, amountWei],
-            }),
+        writeContract({
+            address: USDC_ADDRESS as `0x${string}`,
+            abi: ERC20_ABI,
+            functionName: "transfer",
+            args: [ownerWallet as `0x${string}`, agentAmount],
         });
     }
 
@@ -193,7 +285,7 @@ export function HireAgentModal({
                     </DialogDescription>
                 </DialogHeader>
 
-                {step === "done" ? (
+                {status === "done" ? (
                     <div className="flex flex-col items-center justify-center py-8 gap-4">
                         <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
                             <Check className="h-8 w-8 text-emerald-400" />
@@ -221,7 +313,7 @@ export function HireAgentModal({
                                     <button
                                         key={tier}
                                         onClick={() => setSelectedTier(tier)}
-                                        disabled={step !== "select"}
+                                        disabled={status !== "select"}
                                         className={`relative p-4 rounded-xl border text-center transition-all ${selectedTier === tier
                                             ? "border-purple-500/50 bg-purple-500/10 shadow-lg shadow-purple-500/5"
                                             : "border-white/[0.06] bg-white/[0.02] hover:border-white/10"
@@ -271,15 +363,30 @@ export function HireAgentModal({
                         {/* Pay Button */}
                         <button
                             onClick={handleHire}
-                            disabled={step !== "select" || !isConnected || isPending || isConfirming}
+                            disabled={status !== "select" || !isConnected}
                             className="w-full h-12 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
                         >
-                            {step === "paying" || isPending ? (
+                            {status === "paying_agent" ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Confirming Payment...
+                                    Confirm Agent Payment (1/2)...
                                 </>
-                            ) : step === "confirming" || isConfirming ? (
+                            ) : status === "confirming_agent" ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Waiting for Tx (1/2)...
+                                </>
+                            ) : status === "paying_platform" ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Confirm Platform Fee (2/2)...
+                                </>
+                            ) : status === "confirming_platform" ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Waiting for Tx (2/2)...
+                                </>
+                            ) : status === "registering" ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                     Registering Rental...
@@ -295,7 +402,7 @@ export function HireAgentModal({
                         </button>
 
                         <p className="text-[10px] text-zinc-600 text-center">
-                            Payment is sent directly to the <strong>Agent Creator&apos;s</strong> wallet on Base (USDC). Verified on-chain.
+                            Payment is split securely on-chain. 90% goes to the <strong>Agent Creator</strong>, 10% to the protocol.
                         </p>
                     </div>
                 )}

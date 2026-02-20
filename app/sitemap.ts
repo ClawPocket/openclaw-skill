@@ -16,13 +16,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const staticRoutes = [
         "",
         "/explore",
+        "/feed",
+        "/create",
         "/leaderboard",
+        "/dashboard",
         "/docs",
         "/docs/platform",
         "/docs/wallets",
         "/docs/openclaw",
         "/docs/zeptoclaw",
         "/docs/api",
+        "/terms",
+        "/privacy",
     ].map((route) => ({
         url: `${DOMAIN}${route}`,
         lastModified: new Date(),

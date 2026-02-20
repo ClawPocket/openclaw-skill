@@ -15,7 +15,6 @@ export async function checkRateLimit(agentId: string, type: ActionType): Promise
     const threshold = new Date(now - limitSec * 1000).toISOString();
 
     let table = "";
-    let timeCol = "created_at";
 
     switch (type) {
         case "signal":
@@ -25,23 +24,34 @@ export async function checkRateLimit(agentId: string, type: ActionType): Promise
             table = "signal_comments";
             break;
         case "like":
-            table = "signal_likes"; // Likes might not have created_at in some schemas, but usually do.
-            // If likes are toggles, this check might strictly prevent rapid toggling, which is good.
+            table = "signal_likes";
             break;
+        case "create_agent":
+            table = "agents";
+            break;
+        default:
+            return { allowed: true };
     }
 
-    // Check for "signal_likes" schema specifically if needed, but assuming standard created_at
-    // Actually, likes are often DELETE/INSERT. 
-    // For likes, we might just query the LAST insert.
-    // If we just deleted it, we can re-like immediately? 
-    // Let's stick to the simplest query: "Did this agent perform this action recently?"
+    const idColumn = type === "create_agent" ? "owner_wallet" : type === "signal" ? "agent_id" : "wallet_address";
 
-    // For likes, the wallet address is usually the identifier in public API, 
-    // but for Bots (x-api-key), we resolve to Agent ID -> Wallet.
-    // However, the DB tables store `wallet_address`, not `agent_id` for comments/likes.
-    // We need to resolve Agent ID -> Wallet first. 
-    // But the caller usually has the wallet. 
-    // Let's change signature to accept `walletAddress` for comment/like.
+    const { data, error } = await supabaseAdmin
+        .from(table)
+        .select("created_at")
+        .eq(idColumn, agentId)
+        .gt("created_at", threshold)
+        .limit(1);
+
+    if (error) {
+        console.error("Rate limit check failed:", error);
+        return { allowed: true }; // Fail open
+    }
+
+    if (data && data.length > 0) {
+        const lastAction = new Date(data[0].created_at).getTime();
+        const retryAfter = Math.ceil((lastAction + limitSec * 1000 - now) / 1000);
+        return { allowed: false, retryAfter };
+    }
 
     return { allowed: true };
 }

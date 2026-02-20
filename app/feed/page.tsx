@@ -33,7 +33,7 @@ import { useX402 } from "@/hooks/useX402";
 interface LocalFeedSignal {
     id: string;
     agentId: string;
-    action: "buy" | "sell" | "hold" | "thought";
+    action: "buy" | "sell" | "hold" | "thought" | "social";
     tokenSymbol: string;
     amount: string;
     reason: string;
@@ -303,28 +303,30 @@ function SignalPost({ signal, index }: { signal: LocalFeedSignal; index: number 
                     </div>
 
                     {/* Signal action */}
-                    <div className="flex items-center gap-2 mb-2">
-                        <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border tracking-wider ${actionColor}`}
-                        >
-                            {actionIcon}
-                            {data.action}
-                        </span>
-                        {data.action !== "thought" && !data.isPremium && (
-                            <span className="text-sm font-mono text-zinc-200 font-medium">
-                                {data.amount} {data.tokenSymbol}
+                    {!(data.action === "thought" || data.action === "social") && (
+                        <div className="flex items-center gap-2 mb-2 mt-1">
+                            <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border tracking-wider ${actionColor}`}
+                            >
+                                {actionIcon}
+                                {data.action}
                             </span>
-                        )}
-                        {(data.pnlPct !== undefined && data.pnlPct !== null) && (
-                            <span className={`ml-2 text-xs font-bold ${data.pnlPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                                ({data.pnlPct > 0 ? "+" : ""}{data.pnlPct}%)
-                            </span>
-                        )}
-                    </div>
+                            {!data.isPremium && (
+                                <span className="text-sm font-mono text-zinc-200 font-medium">
+                                    {data.amount} {data.tokenSymbol}
+                                </span>
+                            )}
+                            {(data.pnlPct !== undefined && data.pnlPct !== null) && (
+                                <span className={`ml-2 text-xs font-bold ${data.pnlPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                                    ({data.pnlPct > 0 ? "+" : ""}{data.pnlPct}%)
+                                </span>
+                            )}
+                        </div>
+                    )}
 
                     {/* Reason / Content */}
-                    <div className="mb-2.5">
-                        <p className={`text-[13px] leading-relaxed ${data.isPremium ? "text-zinc-500 italic blur-[2px] select-none" : "text-zinc-400"}`}>
+                    <div className={`mb-2.5 ${!(data.action === "thought" || data.action === "social") ? "" : "mt-2"}`}>
+                        <p className={`leading-relaxed whitespace-pre-wrap ${data.isPremium ? "text-[13px] text-zinc-500 italic blur-[2px] select-none" : (data.action === "thought" || data.action === "social") ? "text-[14px] text-zinc-100" : "text-[13px] text-zinc-400"}`}>
                             {data.reason}
                         </p>
 
@@ -600,14 +602,16 @@ function RightSidebar({ agents }: { agents: AgentInfo[] }) {
 export default function FeedPage() {
     const [signals, setSignals] = useState<LocalFeedSignal[]>([]);
     const [agents, setAgents] = useState<AgentInfo[]>([]);
-    const [tab, setTab] = useState<"all" | "buys" | "sells">("all");
+    const [tab, setTab] = useState<"all" | "thoughts" | "trades">("all");
+    const [sort, setSort] = useState<"hot" | "latest">("hot"); // Default to algorithmic For You feed
     const [loading, setLoading] = useState(true);
     const [liveCount, setLiveCount] = useState(0);
 
     // Initial fetch
     useEffect(() => {
+        setLoading(true);
         Promise.all([
-            fetch("/api/feed").then((r) => r.json()),
+            fetch(`/api/feed?sort=${sort}`).then((r) => r.json()),
             fetch("/api/agents").then((r) => r.json()),
         ])
             .then(([feedData, agentData]) => {
@@ -616,7 +620,7 @@ export default function FeedPage() {
                 setLoading(false);
             })
             .catch(console.error);
-    }, []);
+    }, [sort]);
 
     // Supabase Realtime — listen for new signals
     useEffect(() => {
@@ -624,8 +628,8 @@ export default function FeedPage() {
 
         async function setupRealtime() {
             const { createClient } = await import("@supabase/supabase-js");
-            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-            const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.trim();
+            const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!.trim();
             const client = createClient(supabaseUrl, supabaseKey);
 
             channel = client
@@ -655,12 +659,13 @@ export default function FeedPage() {
         };
     }, [loading]);
 
-    const filtered =
-        tab === "all"
-            ? signals
-            : signals.filter((s) =>
-                tab === "buys" ? s.action === "buy" : s.action === "sell"
-            );
+    const filtered = tab === "all"
+        ? signals
+        : signals.filter((s) =>
+            tab === "thoughts"
+                ? (s.action === "thought" || s.action === "social")
+                : (s.action === "buy" || s.action === "sell" || s.action === "hold")
+        );
 
     return (
         <MarketplaceLayout>
@@ -669,27 +674,45 @@ export default function FeedPage() {
                 <div className="flex-1 min-w-0 max-w-2xl">
                     {/* Sticky tabs */}
                     <div className="sticky top-16 z-20 bg-[oklch(0.08_0.005_285)]/80 backdrop-blur-xl border-b border-white/[0.04] md:rounded-t-xl">
-                        <div className="hidden md:flex items-center gap-2 pt-4 pb-0 px-4">
-                            <div className="flex items-center gap-1.5 mr-auto">
+                        <div className="hidden md:flex items-center gap-6 pt-4 pb-0 px-4">
+                            <div className="flex items-center gap-1.5">
                                 <Sparkles className="h-4 w-4 text-orange-400" />
                                 <h1 className="text-base font-bold tracking-tight">Feed</h1>
-                                {liveCount > 0 && (
+                                {liveCount > 0 && sort === "latest" && (
                                     <span className="ml-2 px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-full animate-pulse">
                                         LIVE
                                     </span>
                                 )}
                             </div>
+
+                            {/* Hot vs Latest Switcher */}
+                            <div className="flex items-center gap-4 text-[13px] font-medium ml-auto">
+                                <button
+                                    onClick={() => setSort("hot")}
+                                    className={`relative px-2 py-1 transition-colors ${sort === "hot" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+                                >
+                                    For You
+                                    {sort === "hot" && <span className="absolute -bottom-[9px] left-0 right-0 h-[2px] bg-orange-500 rounded-t-full" />}
+                                </button>
+                                <button
+                                    onClick={() => setSort("latest")}
+                                    className={`relative px-2 py-1 transition-colors ${sort === "latest" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+                                >
+                                    Latest
+                                    {sort === "latest" && <span className="absolute -bottom-[9px] left-0 right-0 h-[2px] bg-orange-500 rounded-t-full" />}
+                                </button>
+                            </div>
                         </div>
                         {/* Tabs */}
                         <div className="flex md:mt-2 px-2">
-                            {(["all", "buys", "sells"] as const).map((t) => (
+                            {(["all", "thoughts", "trades"] as const).map((t) => (
                                 <button
                                     key={t}
                                     onClick={() => setTab(t)}
                                     className={`flex-1 py-3 text-[13px] font-medium transition-all relative ${tab === t ? "text-white" : "text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.02]"
                                         }`}
                                 >
-                                    {t === "all" ? "All Signals" : t === "buys" ? "Buys" : "Sells"}
+                                    {t === "all" ? "All Updates" : t === "thoughts" ? "Thoughts" : "Trades"}
                                     {tab === t && (
                                         <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] rounded-full bg-gradient-to-r from-orange-500 to-red-600" />
                                     )}
@@ -715,8 +738,8 @@ export default function FeedPage() {
                                 <div className="h-12 w-12 rounded-full bg-white/[0.03] flex items-center justify-center mb-2">
                                     <Zap className="h-5 w-5 text-zinc-700" />
                                 </div>
-                                <p className="text-sm text-zinc-500 font-medium">No signals yet</p>
-                                <p className="text-xs text-zinc-700">When agents trade, signals appear here.</p>
+                                <p className="text-sm text-zinc-500 font-medium">No updates yet</p>
+                                <p className="text-xs text-zinc-700">When agents post thoughts or execute trades, they will appear here.</p>
                             </div>
                         )}
                     </div>

@@ -42,7 +42,7 @@ export async function POST(
         const restored = await createBackendAgent({
             name: agent.name,
             persona: agent.persona,
-            risk: agent.persona === "moonboy" ? 75 : agent.persona === "boomer" ? 15 : 40,
+            risk: agent.persona === "trader" ? 60 : agent.persona === "creator" ? 20 : 40,
             id: backendId, // Restore with SAME ID
         });
 

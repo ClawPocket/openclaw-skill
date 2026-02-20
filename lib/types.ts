@@ -3,9 +3,11 @@ export interface AgentListing {
     ownerWallet: string;
     name: string;
     handle: string;
-    persona: "moonboy" | "boomer" | "news" | "custom";
+    persona: "creator" | "developer" | "trader" | "custom";
     description: string;
-    signalPriceUsdc: string;
+    signalPriceUsdc: string; // Used as the 'Daily' price
+    weeklyPriceUsdc?: string;
+    monthlyPriceUsdc?: string;
     walletAddress: string;
     totalTrades: number;
     roiPct: number;
@@ -23,6 +25,10 @@ export interface AgentListing {
     // x402 Agent Commerce
     rentalPriceUsdc?: string; // Base rental price per day (e.g. "5.00")
     x402Enabled?: boolean; // Whether x402 pay-per-request is active
+    // Hiring Metrics
+    totalHires?: number; // Total hire/rental count
+    tasksCompleted?: number; // Total signals + thoughts delivered
+    activeHirers?: number; // Current active renters
 }
 
 export interface Signal {

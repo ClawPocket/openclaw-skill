@@ -4,18 +4,18 @@ import { AgentListing } from "@/lib/types";
 import { v4 as uuid } from "uuid";
 import { createBackendAgent } from "@/lib/backendClient";
 
-const COLORS: Record<string, string> = {
-    moonboy: "#f97316",
-    boomer: "#10b981",
-    news: "#dc2626",
-    custom: "#f59e0b",
+const PERSONA_COLORS: Record<string, string> = {
+    creator: "#ec4899", // pink-500
+    developer: "#3b82f6", // blue-500
+    trader: "#10b981", // emerald-500
+    custom: "#6366f1", // indigo-500
 };
 
-const AVATARS: Record<string, string> = {
-    moonboy: "🚀",
-    boomer: "🛡️",
-    news: "📰",
-    custom: "⚡",
+const PERSONA_AVATARS: Record<string, string> = {
+    creator: "✨",
+    developer: "⚡",
+    trader: "📈",
+    custom: "🤖",
 };
 
 export const dynamic = "force-dynamic";
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     const body = await req.json();
-    const { name, handle, persona, description, signalPriceUsdc, ownerWallet, avatar, customPrompt } = body;
+    const { name, handle, persona, description, signalPriceUsdc, weeklyPriceUsdc, monthlyPriceUsdc, rentalPriceUsdc, ownerWallet, avatar, customPrompt } = body;
 
     if (!name || !handle || !persona || !ownerWallet) {
         return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Input Validation
-    if (parseFloat(signalPriceUsdc) < 0) {
+    if (parseFloat(signalPriceUsdc) < 0 || (rentalPriceUsdc && parseFloat(rentalPriceUsdc) < 0)) {
         return NextResponse.json({ error: "Price cannot be negative" }, { status: 400 });
     }
     if (description && description.length > 500) {
@@ -89,13 +89,23 @@ export async function POST(req: Request) {
     let agentWalletAddress: string = ownerWallet; // Default to owner's wallet (safe fallback)
     const agentType = body.type || "clawpocket";
 
+    const newAgentId = uuid(); // Generate ID early for backend agent creation
+
     if (agentType === "clawpocket") {
         try {
+            const systemPrompt =
+                customPrompt ||
+                `You are ${name} (@${handle}), a specialized AI ${persona} on ClawPocket Marketplace.
+${description}
+Respond to think/trade requests appropriately for your persona.`;
+
+            // Setup the backend agent
             const backendAgent = await createBackendAgent({
+                id: newAgentId,
                 name,
                 persona,
-                risk: persona === "moonboy" ? 75 : persona === "boomer" ? 15 : 40,
-                customPrompt: persona === "custom" ? customPrompt : undefined,
+                customPrompt: systemPrompt,
+                risk: persona === "trader" ? 60 : persona === "creator" ? 20 : 40,
             });
             if (backendAgent) {
                 backendAgentId = backendAgent.id;
@@ -115,27 +125,33 @@ export async function POST(req: Request) {
     }
 
     const agent: AgentListing = {
-        id: uuid(),
+        id: newAgentId,
         ownerWallet,
         name,
         handle,
-        persona: persona || "custom",
         description: description || "",
+        persona: persona || "custom",
         signalPriceUsdc: signalPriceUsdc || "0.01",
+        weeklyPriceUsdc: weeklyPriceUsdc || "0.05",
+        monthlyPriceUsdc: monthlyPriceUsdc || "0.20",
         walletAddress: agentWalletAddress,
         totalTrades: 0,
         roiPct: 0,
         subscribers: [],
-        avatar: avatar || AVATARS[persona] || "⚡",
-        color: COLORS[persona] || "#f59e0b",
+        avatar: avatar || PERSONA_AVATARS[persona] || "⚡",
+        color: PERSONA_COLORS[persona] || "#f59e0b",
         createdAt: Date.now(),
         backendAgentId,
         apiKey: uuid(), // Generate secret key for remote webhook
         type: agentType,
+        rentalPriceUsdc: rentalPriceUsdc || "5.00",
     };
 
     await saveAgent(agent);
-    return NextResponse.json(agent, { status: 201 });
+
+    // Strip sensitive fields before returning
+    const { apiKey: _apiKey, ...safeAgent } = agent;
+    return NextResponse.json(safeAgent, { status: 201 });
 }
 
 export async function PATCH(req: Request) {
@@ -171,7 +187,7 @@ export async function PATCH(req: Request) {
             avatar: avatar || existing.avatar,
             persona: persona || existing.persona,
             signalPriceUsdc: signalPriceUsdc || existing.signalPriceUsdc,
-            color: (persona && COLORS[persona]) || existing.color, // Auto-update color if persona changes
+            color: (persona && PERSONA_COLORS[persona]) || existing.color, // Auto-update color if persona changes
         };
 
         await updateAgent(updatedAgent);

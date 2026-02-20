@@ -4,7 +4,7 @@ import { MarketplaceLayout } from "@/components/MarketplaceLayout";
 import { Skeleton } from "@/components/Skeletons";
 import { Badge } from "@/components/ui/badge";
 import {
-    Trophy, TrendingUp, Users, BarChart3, ArrowUpRight,
+    Trophy, Briefcase, CheckCircle2, BarChart3,
     ChevronUp, ChevronDown, Flame, Crown, Medal,
 } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +12,7 @@ import { useState, useEffect, useMemo } from "react";
 import { AgentListing } from "@/lib/types";
 import { AgentAvatar } from "@/components/AgentAvatar";
 
-type SortKey = "roi" | "trades" | "subscribers" | "revenue";
+type SortKey = "hires" | "tasks" | "active" | "price";
 
 const rankIcons = [
     <Crown key="1" className="h-4 w-4 text-amber-400" />,
@@ -23,7 +23,7 @@ const rankIcons = [
 export default function LeaderboardPage() {
     const [agents, setAgents] = useState<AgentListing[]>([]);
     const [loading, setLoading] = useState(true);
-    const [sortBy, setSortBy] = useState<SortKey>("roi");
+    const [sortBy, setSortBy] = useState<SortKey>("hires");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
     useEffect(() => {
@@ -50,13 +50,13 @@ export default function LeaderboardPage() {
         const dir = sortDir === "desc" ? -1 : 1;
         arr.sort((a, b) => {
             switch (sortBy) {
-                case "roi": return (a.roiPct - b.roiPct) * dir;
-                case "trades": return (a.totalTrades - b.totalTrades) * dir;
-                case "subscribers": return (a.subscribers.length - b.subscribers.length) * dir;
-                case "revenue":
+                case "hires": return ((a.totalHires || 0) - (b.totalHires || 0)) * dir;
+                case "tasks": return ((a.tasksCompleted || a.totalTrades || 0) - (b.tasksCompleted || b.totalTrades || 0)) * dir;
+                case "active": return ((a.activeHirers || 0) - (b.activeHirers || 0)) * dir;
+                case "price":
                     return (
-                        (a.subscribers.length * parseFloat(a.signalPriceUsdc) -
-                            b.subscribers.length * parseFloat(b.signalPriceUsdc)) * dir
+                        (parseFloat(a.rentalPriceUsdc || a.signalPriceUsdc) -
+                            parseFloat(b.rentalPriceUsdc || b.signalPriceUsdc)) * dir
                     );
                 default: return 0;
             }
@@ -73,8 +73,8 @@ export default function LeaderboardPage() {
 
     // Top 3 stats summary
     const topAgent = sorted[0];
-    const totalTrades = agents.reduce((s, a) => s + a.totalTrades, 0);
-    const totalCopiers = agents.reduce((s, a) => s + a.subscribers.length, 0);
+    const totalHires = agents.reduce((s, a) => s + (a.totalHires || 0), 0);
+    const totalTasks = agents.reduce((s, a) => s + (a.tasksCompleted || a.totalTrades || 0), 0);
 
     return (
         <MarketplaceLayout>
@@ -100,16 +100,16 @@ export default function LeaderboardPage() {
                     <div className="glass-card rounded-xl p-4 text-center">
                         <BarChart3 className="h-4 w-4 mx-auto mb-1.5 text-emerald-400" />
                         <p className="text-lg font-bold font-mono">
-                            {loading ? "—" : totalTrades.toLocaleString()}
+                            {loading ? "—" : totalHires.toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">Total Trades</p>
+                        <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">Total Hires</p>
                     </div>
                     <div className="glass-card rounded-xl p-4 text-center">
-                        <Users className="h-4 w-4 mx-auto mb-1.5 text-red-400" />
+                        <CheckCircle2 className="h-4 w-4 mx-auto mb-1.5 text-red-400" />
                         <p className="text-lg font-bold font-mono">
-                            {loading ? "—" : totalCopiers.toLocaleString()}
+                            {loading ? "—" : totalTasks.toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">Total Copiers</p>
+                        <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">Tasks Done</p>
                     </div>
                 </div>
 
@@ -121,28 +121,28 @@ export default function LeaderboardPage() {
                         <div className="col-span-4 md:col-span-3">Agent</div>
                         <div className="col-span-2 hidden md:block">Persona</div>
                         <button
-                            onClick={() => toggleSort("roi")}
+                            onClick={() => toggleSort("hires")}
                             className="col-span-2 flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
-                            ROI <SortIcon col="roi" />
+                            Hired <SortIcon col="hires" />
                         </button>
                         <button
-                            onClick={() => toggleSort("trades")}
+                            onClick={() => toggleSort("tasks")}
                             className="col-span-2 hidden md:flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
-                            Trades <SortIcon col="trades" />
+                            Tasks <SortIcon col="tasks" />
                         </button>
                         <button
-                            onClick={() => toggleSort("subscribers")}
+                            onClick={() => toggleSort("active")}
                             className="col-span-2 flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
-                            Copiers <SortIcon col="subscribers" />
+                            Active <SortIcon col="active" />
                         </button>
                         <button
-                            onClick={() => toggleSort("revenue")}
+                            onClick={() => toggleSort("price")}
                             className="col-span-3 md:col-span-2 flex items-center hover:text-zinc-300 transition-colors cursor-pointer"
                         >
-                            Revenue <SortIcon col="revenue" />
+                            $/Day <SortIcon col="price" />
                         </button>
                     </div>
 
@@ -166,7 +166,6 @@ export default function LeaderboardPage() {
                         </div>
                     ) : sorted.length > 0 ? (
                         sorted.map((agent, i) => {
-                            const revenue = agent.subscribers.length * parseFloat(agent.signalPriceUsdc);
                             return (
                                 <Link
                                     key={agent.id}
@@ -219,28 +218,28 @@ export default function LeaderboardPage() {
                                         </Badge>
                                     </div>
 
-                                    {/* ROI */}
+                                    {/* Hired */}
                                     <div className="col-span-2">
-                                        <span className={`text-xs font-mono font-semibold flex items-center ${agent.roiPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                                            {agent.roiPct >= 0 && <ArrowUpRight className="h-3 w-3 mr-0.5" />}
-                                            {agent.roiPct >= 0 ? "+" : ""}{agent.roiPct}%
+                                        <span className="text-xs font-mono font-semibold text-orange-400 flex items-center">
+                                            <Briefcase className="h-3 w-3 mr-1" />
+                                            {agent.totalHires || 0}
                                         </span>
                                     </div>
 
-                                    {/* Trades */}
+                                    {/* Tasks */}
                                     <div className="col-span-2 hidden md:block">
-                                        <span className="text-xs font-mono text-zinc-300">{agent.totalTrades}</span>
+                                        <span className="text-xs font-mono text-zinc-300">{agent.tasksCompleted || agent.totalTrades || 0}</span>
                                     </div>
 
-                                    {/* Subscribers */}
+                                    {/* Active Hirers */}
                                     <div className="col-span-2">
-                                        <span className="text-xs font-mono text-zinc-300">{agent.subscribers.length}</span>
+                                        <span className="text-xs font-mono text-zinc-300">{agent.activeHirers || 0}</span>
                                     </div>
 
-                                    {/* Revenue */}
+                                    {/* Daily Rate */}
                                     <div className="col-span-3 md:col-span-2">
                                         <span className="text-xs font-mono text-emerald-400 font-semibold">
-                                            ${revenue.toFixed(2)}
+                                            ${agent.rentalPriceUsdc || agent.signalPriceUsdc}/day
                                         </span>
                                     </div>
                                 </Link>

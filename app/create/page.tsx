@@ -12,10 +12,10 @@ import { useAccount } from "wagmi";
 import { showToast } from "@/components/Toast";
 
 const personas = [
-    { id: "moonboy", label: "Moonboy", emoji: "🚀", desc: "Aggressive. Chases pumps & volume spikes.", color: "#06b6d4" },
-    { id: "boomer", label: "Boomer", emoji: "🛡️", desc: "Conservative. ETH/USDC only. DCA strategy.", color: "#10b981" },
-    { id: "news", label: "News Junkie", emoji: "📰", desc: "Data-driven. Only trades on clear signals.", color: "#7c3aed" },
-    { id: "custom", label: "Custom", emoji: "⚡", desc: "Define your own strategy and rules.", color: "#f59e0b" },
+    { id: "creator", label: "Creator / Social", emoji: "✨", desc: "Content creation, thread writing, and marketing.", color: "#ec4899" },
+    { id: "developer", label: "Developer", emoji: "⚡", desc: "Code review, engineering tasks, and QA.", color: "#3b82f6" },
+    { id: "trader", label: "Trader / DeFi", emoji: "📈", desc: "Market analysis, token signals, and trading.", color: "#10b981" },
+    { id: "custom", label: "Custom Strategy", emoji: "🤖", desc: "Define your own unique capability and rules.", color: "#6366f1" },
 ];
 
 export default function CreatePage() {
@@ -23,11 +23,14 @@ export default function CreatePage() {
     const { address, isConnected } = useAccount();
     const [name, setName] = useState("");
     const [handle, setHandle] = useState("");
-    const [persona, setPersona] = useState("moonboy");
+    const [persona, setPersona] = useState("creator");
     const [agentType, setAgentType] = useState<"clawpocket" | "zeptoclaw" | "openclaw">("clawpocket");
     const [description, setDescription] = useState("");
     const [customPrompt, setCustomPrompt] = useState("");
     const [price, setPrice] = useState("0.01");
+    const [rentalPrice, setRentalPrice] = useState("5.00");
+    const [weeklyPrice, setWeeklyPrice] = useState("25.00");
+    const [monthlyPrice, setMonthlyPrice] = useState("80.00");
     // Phase 10: Profile Enhancements
     const [bio, setBio] = useState("");
     const [skillsInput, setSkillsInput] = useState("");
@@ -111,6 +114,9 @@ export default function CreatePage() {
                     persona,
                     description,
                     signalPriceUsdc: price,
+                    rentalPriceUsdc: rentalPrice,
+                    weeklyPriceUsdc: weeklyPrice,
+                    monthlyPriceUsdc: monthlyPrice,
                     ownerWallet: address,
                     type: agentType,
                     customPrompt: persona === "custom" ? customPrompt : undefined,
@@ -153,7 +159,7 @@ export default function CreatePage() {
                         <h1 className="text-2xl font-bold tracking-tight">List Your Agent</h1>
                     </div>
                     <p className="text-sm text-zinc-500">
-                        Create an AI trading agent and list it on the marketplace. Other users will pay a one-time USDC fee to copy your signals.
+                        Create an AI agent and list it on the marketplace. Users will pay a USDC fee to hire your agent or copy your signals.
                     </p>
                 </div>
 
@@ -422,10 +428,66 @@ export default function CreatePage() {
                     </div>
                 </div>
 
+                <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-zinc-200 border-b border-white/10 pb-2">Pricing Settings</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Daily Price */}
+                        <div>
+                            <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
+                                Daily Hire (USDC)
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>
+                                <Input
+                                    value={rentalPrice}
+                                    onChange={(e) => setRentalPrice(e.target.value)}
+                                    type="number"
+                                    step="0.50"
+                                    min="0"
+                                    className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-10 pl-8 text-sm"
+                                />
+                            </div>
+                        </div>
+                        {/* Weekly Price */}
+                        <div>
+                            <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
+                                Weekly Hire (USDC)
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>
+                                <Input
+                                    value={weeklyPrice}
+                                    onChange={(e) => setWeeklyPrice(e.target.value)}
+                                    type="number"
+                                    step="1.00"
+                                    min="0"
+                                    className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-10 pl-8 text-sm"
+                                />
+                            </div>
+                        </div>
+                        {/* Monthly Price */}
+                        <div>
+                            <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
+                                Monthly Hire (USDC)
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>
+                                <Input
+                                    value={monthlyPrice}
+                                    onChange={(e) => setMonthlyPrice(e.target.value)}
+                                    type="number"
+                                    step="5.00"
+                                    min="0"
+                                    className="bg-white/[0.03] border-white/[0.06] focus:border-orange-500/30 h-10 pl-8 text-sm"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {/* Signal Price */}
                 <div>
                     <label className="text-xs text-zinc-500 uppercase tracking-wider mb-2 block">
-                        Access Price (One-time USDC)
+                        Lifetime Copy Price (USDC)
                     </label>
                     <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>

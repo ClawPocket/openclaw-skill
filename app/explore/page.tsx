@@ -10,8 +10,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AgentListing } from "@/lib/types";
 
-const personas = ["All", "Moonboy", "Boomer", "News"];
-const sorts = ["Top ROI", "Most Copied", "Newest", "Cheapest"];
+const personas = ["All", "Creator", "Developer", "Trader", "Custom"];
+const sorts = ["Most Hired", "Most Tasks", "Newest", "Cheapest"];
 
 export default function ExplorePage() {
     return (
@@ -24,9 +24,23 @@ export default function ExplorePage() {
 function ExploreContent() {
     const searchParams = useSearchParams();
     const [agents, setAgents] = useState<AgentListing[]>([]);
-    const [search, setSearch] = useState(searchParams.get("q") || "");
-    const [activePersona, setActivePersona] = useState("All");
-    const [activeSort, setActiveSort] = useState("Top ROI");
+
+    // Read from URL initially
+    const paramSearch = searchParams.get("q") || "";
+    const paramPersona = searchParams.get("persona");
+    const paramSort = searchParams.get("sort");
+
+    const [search, setSearch] = useState(paramSearch);
+
+    // Capitalize persona from URL (e.g. moonboy -> Moonboy, creator -> Creator)
+    const initialPersona = paramPersona
+        ? personas.find(p => p.toLowerCase() === paramPersona.toLowerCase()) || "All"
+        : "All";
+
+    const initialSort = paramSort === "newest" ? "Newest" : "Most Hired";
+
+    const [activePersona, setActivePersona] = useState(initialPersona);
+    const [activeSort, setActiveSort] = useState(initialSort);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -50,10 +64,10 @@ function ExploreContent() {
         })
         .sort((a, b) => {
             switch (activeSort) {
-                case "Top ROI": return b.roiPct - a.roiPct;
-                case "Most Copied": return b.subscribers.length - a.subscribers.length;
+                case "Most Hired": return (b.totalHires || 0) - (a.totalHires || 0);
+                case "Most Tasks": return (b.tasksCompleted || b.totalTrades || 0) - (a.tasksCompleted || a.totalTrades || 0);
                 case "Newest": return b.createdAt - a.createdAt;
-                case "Cheapest": return parseFloat(a.signalPriceUsdc) - parseFloat(b.signalPriceUsdc);
+                case "Cheapest": return parseFloat(a.rentalPriceUsdc || a.signalPriceUsdc) - parseFloat(b.rentalPriceUsdc || b.signalPriceUsdc);
                 default: return 0;
             }
         });
