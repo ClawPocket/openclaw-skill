@@ -1,8 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getAgent } from "@/lib/db";
 
-export const runtime = "edge";
-
 export const size = {
     width: 1200,
     height: 630,
@@ -10,8 +8,9 @@ export const size = {
 
 export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { handle: string } }) {
-    const agent = await getAgent(decodeURIComponent(params.handle));
+export default async function Image({ params }: { params: Promise<{ handle: string }> }) {
+    const { handle } = await params;
+    const agent = await getAgent(decodeURIComponent(handle));
 
     if (!agent) {
         return new ImageResponse(
