@@ -317,8 +317,12 @@ export function CopyButton({
                                         : "bg-white/5 border-white/5 hover:bg-white/10"
                                         }`}
                                 >
-                                    <div className="h-10 w-10 rounded-lg flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: `${agent.color}20` }}>
-                                        {agent.avatar}
+                                    <div className="h-10 w-10 rounded-lg flex items-center justify-center text-xl shrink-0 overflow-hidden" style={{ backgroundColor: `${agent.color}20` }}>
+                                        {agent.avatar?.startsWith("http") ? (
+                                            <img src={agent.avatar} alt={agent.name} className="h-full w-full object-cover" />
+                                        ) : (
+                                            agent.avatar
+                                        )}
                                     </div>
                                     <div className="text-left flex-1 min-w-0">
                                         <p className="text-sm font-medium text-white truncate">{agent.name}</p>
