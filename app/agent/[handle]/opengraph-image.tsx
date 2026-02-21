@@ -59,7 +59,7 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                     flexDirection: "column",
                     color: "white",
                     position: "relative",
-                    padding: "44px 56px",
+                    padding: "40px 50px",
                     overflow: "hidden",
                 }}
             >
@@ -70,7 +70,7 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: 4,
+                        height: 6,
                         background: `linear-gradient(90deg, ${c}, #f97316, ${c})`,
                         display: "flex",
                     }}
@@ -82,22 +82,22 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                         position: "absolute",
                         top: 0,
                         right: 0,
-                        width: 400,
-                        height: 400,
-                        background: `linear-gradient(225deg, ${c}12 0%, transparent 60%)`,
+                        width: 500,
+                        height: 500,
+                        background: `linear-gradient(225deg, ${c}14 0%, transparent 60%)`,
                         display: "flex",
                     }}
                 />
 
-                {/* Corner accent — bottom-left */}
+                {/* Corner accent — bottom-left triangle */}
                 <div
                     style={{
                         position: "absolute",
                         bottom: 0,
                         left: 0,
-                        width: 350,
-                        height: 350,
-                        background: "linear-gradient(45deg, rgba(249,115,22,0.06) 0%, transparent 60%)",
+                        width: 450,
+                        height: 450,
+                        background: "linear-gradient(45deg, rgba(249,115,22,0.08) 0%, transparent 60%)",
                         display: "flex",
                     }}
                 />
@@ -107,21 +107,21 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                     style={{
                         position: "absolute",
                         top: 60,
-                        right: 56,
-                        width: 180,
-                        height: 180,
+                        right: 60,
+                        width: 240,
+                        height: 240,
                         display: "flex",
                         flexWrap: "wrap",
-                        gap: 20,
-                        opacity: 0.12,
+                        gap: 24,
+                        opacity: 0.15,
                     }}
                 >
                     {Array.from({ length: 49 }).map((_, i) => (
                         <div
                             key={i}
                             style={{
-                                width: 4,
-                                height: 4,
+                                width: 5,
+                                height: 5,
                                 borderRadius: "50%",
                                 background: c,
                                 display: "flex",
@@ -134,11 +134,11 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                 <div
                     style={{
                         position: "absolute",
-                        bottom: 180,
-                        left: 56,
-                        right: 56,
+                        bottom: 190,
+                        left: 50,
+                        right: 50,
                         height: 1,
-                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)",
+                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
                         display: "flex",
                     }}
                 />
@@ -146,30 +146,30 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                 {/* ─── TOP ROW: Agent info (left) + ClawPocket branding (right) ─── */}
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", width: "100%" }}>
                     {/* Left: Agent avatar + name */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 30 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
                         {hasImageAvatar ? (
                             <img
                                 src={agent.avatar}
-                                width={140}
-                                height={140}
+                                width={180}
+                                height={180}
                                 style={{
-                                    borderRadius: 28,
-                                    border: `4px solid ${c}50`,
+                                    borderRadius: 36,
+                                    border: `5px solid ${c}60`,
                                     objectFit: "cover",
                                 }}
                             />
                         ) : (
                             <div
                                 style={{
-                                    width: 140,
-                                    height: 140,
-                                    borderRadius: 28,
-                                    border: `4px solid ${c}50`,
-                                    background: `${c}18`,
+                                    width: 180,
+                                    height: 180,
+                                    borderRadius: 36,
+                                    border: `5px solid ${c}60`,
+                                    background: `${c}20`,
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    fontSize: 64,
+                                    fontSize: 84,
                                 }}
                             >
                                 {agent.avatar}
@@ -177,19 +177,19 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                         )}
 
                         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                            <div style={{ fontSize: 56, fontWeight: 900, display: "flex", lineHeight: 1.1 }}>
+                            <div style={{ fontSize: 72, fontWeight: 900, display: "flex", lineHeight: 1.1 }}>
                                 {agent.name}
                             </div>
-                            <div style={{ fontSize: 26, color: "#71717a", display: "flex" }}>
+                            <div style={{ fontSize: 32, color: "#a1a1aa", display: "flex" }}>
                                 {agent.handle || `@${agent.name.toLowerCase().replace(/\s+/g, "")}`}
                             </div>
                             <div
                                 style={{
-                                    fontSize: 18,
+                                    fontSize: 22,
                                     color: c,
-                                    letterSpacing: 3,
+                                    letterSpacing: 4,
                                     display: "flex",
-                                    marginTop: 6,
+                                    marginTop: 8,
                                     fontWeight: 700,
                                 }}
                             >
@@ -199,18 +199,18 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                     </div>
 
                     {/* Right: ClawPocket branding */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 4 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 4 }}>
                         <img
                             src={logoUrl}
-                            width={52}
-                            height={52}
-                            style={{ borderRadius: 12 }}
+                            width={80}
+                            height={80}
+                            style={{ borderRadius: 16 }}
                         />
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                            <div style={{ fontSize: 24, fontWeight: 800, color: "white", display: "flex" }}>
+                            <div style={{ fontSize: 32, fontWeight: 800, color: "white", display: "flex" }}>
                                 ClawPocket
                             </div>
-                            <div style={{ fontSize: 13, color: "#71717a", display: "flex", letterSpacing: 1 }}>
+                            <div style={{ fontSize: 16, color: "#a1a1aa", display: "flex", letterSpacing: 1.5, fontWeight: 600 }}>
                                 AI AGENT MARKETPLACE
                             </div>
                         </div>
@@ -223,59 +223,59 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                         display: "flex",
                         gap: 0,
                         marginTop: "auto",
-                        background: "rgba(255,255,255,0.02)",
-                        border: "1px solid rgba(255,255,255,0.06)",
-                        borderRadius: 20,
-                        padding: "36px 0",
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: 24,
+                        padding: "44px 0",
                         width: "100%",
                     }}
                 >
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-                        <div style={{ fontSize: 52, fontWeight: 800, color: roiColor, display: "flex" }}>
+                        <div style={{ fontSize: 64, fontWeight: 800, color: roiColor, display: "flex" }}>
                             {roiSign}{agent.roiPct}%
                         </div>
-                        <div style={{ fontSize: 16, color: "#52525b", letterSpacing: 3, display: "flex", marginTop: 4 }}>
+                        <div style={{ fontSize: 18, color: "#71717a", letterSpacing: 4, display: "flex", marginTop: 4, fontWeight: 600 }}>
                             ROI
                         </div>
                     </div>
 
-                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex", alignSelf: "stretch" }} />
+                    <div style={{ width: 1, background: "rgba(255,255,255,0.08)", display: "flex", alignSelf: "stretch" }} />
 
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-                        <div style={{ fontSize: 52, fontWeight: 800, color: "#f97316", display: "flex" }}>
+                        <div style={{ fontSize: 64, fontWeight: 800, color: "#f97316", display: "flex" }}>
                             {agent.totalHires || 0}
                         </div>
-                        <div style={{ fontSize: 16, color: "#52525b", letterSpacing: 3, display: "flex", marginTop: 4 }}>
+                        <div style={{ fontSize: 18, color: "#71717a", letterSpacing: 4, display: "flex", marginTop: 4, fontWeight: 600 }}>
                             HIRED
                         </div>
                     </div>
 
-                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex", alignSelf: "stretch" }} />
+                    <div style={{ width: 1, background: "rgba(255,255,255,0.08)", display: "flex", alignSelf: "stretch" }} />
 
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-                        <div style={{ fontSize: 52, fontWeight: 800, color: "white", display: "flex" }}>
+                        <div style={{ fontSize: 64, fontWeight: 800, color: "white", display: "flex" }}>
                             {agent.tasksCompleted || agent.totalTrades || 0}
                         </div>
-                        <div style={{ fontSize: 16, color: "#52525b", letterSpacing: 3, display: "flex", marginTop: 4 }}>
+                        <div style={{ fontSize: 18, color: "#71717a", letterSpacing: 4, display: "flex", marginTop: 4, fontWeight: 600 }}>
                             TASKS
                         </div>
                     </div>
 
-                    <div style={{ width: 1, background: "rgba(255,255,255,0.06)", display: "flex", alignSelf: "stretch" }} />
+                    <div style={{ width: 1, background: "rgba(255,255,255,0.08)", display: "flex", alignSelf: "stretch" }} />
 
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-                        <div style={{ fontSize: 52, fontWeight: 800, color: "#34d399", display: "flex" }}>
+                        <div style={{ fontSize: 64, fontWeight: 800, color: "#34d399", display: "flex" }}>
                             ${agent.rentalPriceUsdc || "5.00"}
                         </div>
-                        <div style={{ fontSize: 16, color: "#52525b", letterSpacing: 3, display: "flex", marginTop: 4 }}>
+                        <div style={{ fontSize: 18, color: "#71717a", letterSpacing: 4, display: "flex", marginTop: 4, fontWeight: 600 }}>
                             / DAY
                         </div>
                     </div>
                 </div>
 
                 {/* ─── BOTTOM: URL ─── */}
-                <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
-                    <div style={{ fontSize: 16, color: "#3f3f46", display: "flex", letterSpacing: 1 }}>
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+                    <div style={{ fontSize: 18, color: "#52525b", display: "flex", letterSpacing: 2, fontWeight: 500 }}>
                         clawpocket.xyz
                     </div>
                 </div>
@@ -287,9 +287,9 @@ export default async function Image({ params }: { params: Promise<{ handle: stri
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: 3,
+                        height: 4,
                         background: `linear-gradient(90deg, #f97316, ${c}, #f97316)`,
-                        opacity: 0.6,
+                        opacity: 0.8,
                         display: "flex",
                     }}
                 />
